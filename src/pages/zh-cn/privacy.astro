@@ -1,0 +1,186 @@
+﻿---
+// src/pages/zh-cn/privacy.astro — 隐私权政策（简体中文，含侧边栏）
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AboutSidebar from '../../components/AboutSidebar.astro';
+import { getCanonicalUrl } from '../../lib/site';
+import { safeJsonStringify } from '../../lib/utils';
+
+const currentPath = Astro.url.pathname;
+const pageUrl = getCanonicalUrl(currentPath, Astro.site);
+const today = new Date().toLocaleDateString('zh-CN', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: '隐私权政策',
+  url: pageUrl,
+  description: '本站隐私权政策，说明数据收集与处理方式。',
+  publisher: { '@type': 'Person', name: 'Astro Blog Template' },
+};
+---
+
+<BaseLayout title="隐私权政策" description="本站隐私权政策，说明数据收集与处理方式。">
+  <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
+  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+    <div class="content-wrapper">
+      <AboutSidebar lang="zh-cn" currentPath={currentPath} />
+      <main id="main-content" class="main-content">
+        <article class="glass-card" style="padding: 2.5rem;">
+          <div class="article-entry">
+            <h1>隐私权政策</h1>
+            <p style="color:var(--text-muted); font-size:0.88rem;">最后更新：{today}</p>
+            <p>本站承诺保护使用者的隐私。以下内容说明本站处理使用者数据的相关政策：</p>
+
+            <h2>信息收集</h2>
+            <ul>
+              <li>
+                <strong>服务端：</strong>本站为采用 Astro
+                架构的静态网站。我们不会在服务端主动收集、储存或追踪使用者的个人识别信息、IP
+                地址或浏览纪录。
+              </li>
+              <li>
+                <strong>流量统计（Google Analytics）：</strong>本站使用 Google Analytics (GA4)
+                收集匿名流量信息，以协助了解网站使用情况并优化内容。这些数据皆为匿名化处理，不包含个人可识别身份信息。
+              </li>
+              <li>
+                您可透过本页下方的“您的隐私选择”面板，自主选择是否允许 Google Analytics
+                收集浏览数据。若您关闭此选项，GA4 追踪码将不会被载入。
+              </li>
+              <li>
+                <strong>时区检测：</strong
+                >首页时钟使用浏览器内置的时区信息，或用户手动选择时区。选择的时区储存在本地储存中。
+              </li>
+            </ul>
+
+            <h2>本地储存</h2>
+            <ul>
+              <li>
+                <strong>本地储存与隐私设定：</strong>本站使用 LocalStorage
+                记住您选择的时区设定。您可在下方隐私设定中选择是否允许：
+                <ul>
+                  <li>
+                    <strong>允许记住时区设定：</strong
+                    >打开此选项后，您选择的时区会储存在本地，下次访问时会自动载入。
+                  </li>
+                  <li>
+                    <strong>不允许记住时区设定：</strong
+                    >关闭此选项后，时区选择不会被储存，每次访问时都会重置为默认值。
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <h2>您的隐私选择</h2>
+            <div class="privacy-inline-panel">
+              <label class="privacy-toggle-row">
+                <input type="checkbox" id="remember-timezone-toggle" class="privacy-checkbox" />
+                <span>允许本站记住我选择的时区设定</span>
+              </label>
+              <label class="privacy-toggle-row">
+                <input type="checkbox" id="enable-analytics-toggle" class="privacy-checkbox" />
+                <span>允许 Google Analytics (GA4) 收集浏览数据进行网站分析</span>
+              </label>
+              <p style="font-size:0.88rem; color:var(--text-muted);">
+                您的设定会在按下“保存设定”后生效。关闭 GA4 后将在页面重新载入时生效。
+              </p>
+              <button
+                type="button"
+                id="privacy-save-inline"
+                class="btn-primary"
+                style="margin-top:0.5rem;">保存设定</button
+              >
+            </div>
+
+            <h2>安全性</h2>
+            <p>
+              本站实施多项安全措施，包括 HTTP
+              严格传输安全（HSTS）、内容安全政策（CSP）、防点击劫持标头等，以保护您的浏览安全。
+            </p>
+
+            <h2>第三方服务</h2>
+            <p>
+              本站部署于 <strong>Cloudflare Pages</strong>，Cloudflare
+              可能依其隐私政策收集基本存取日志。详情请参阅 <a
+                href="https://www.cloudflare.com/privacypolicy/"
+                rel="noopener noreferrer"
+                target="_blank">Cloudflare 隐私政策</a
+              >。本站<strong>不使用任何第三方字体 CDN</strong>，以保护您的隐私。
+            </p>
+
+            <h2>联系</h2>
+            <p>
+              如对本隐私政策有疑问，欢迎通过<a href="/zh-cn/contact">联系我们</a>页面与本站联系。
+            </p>
+          </div>
+        </article>
+      </main>
+    </div>
+  </div>
+
+
+<style is:global>
+  .privacy-inline-panel {
+    border: 1.5px solid var(--border-color);
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: rgba(245, 240, 232, 0.5);
+    margin: 1rem 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .privacy-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+  }
+  .privacy-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary-red);
+    flex-shrink: 0;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var settings = window.__privacySettings || {
+      rememberTimezone: true,
+      enableAnalytics: true,
+      hasSetCookies: false,
+    };
+    var tzToggle = document.getElementById('remember-timezone-toggle');
+    var gaToggle = document.getElementById('enable-analytics-toggle');
+    var saveBtn = document.getElementById('privacy-save-inline');
+    if (tzToggle)
+      tzToggle.checked = settings.hasSetCookies ? settings.rememberTimezone !== false : true;
+    if (gaToggle)
+      gaToggle.checked = settings.hasSetCookies ? settings.enableAnalytics !== false : true;
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function () {
+        if (typeof window.updatePrivacySettings === 'function') {
+          window.updatePrivacySettings({
+            hasSetCookies: true,
+            rememberTimezone: tzToggle ? tzToggle.checked : true,
+            enableAnalytics: gaToggle ? gaToggle.checked : true,
+          });
+          if (tzToggle && !tzToggle.checked) {
+            try {
+              localStorage.removeItem('bb-tz');
+            } catch (e) {}
+          }
+          window.location.reload();
+        }
+      });
+    }
+  })();
+</script>
+</BaseLayout>

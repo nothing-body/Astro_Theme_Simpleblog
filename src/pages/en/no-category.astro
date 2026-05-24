@@ -1,0 +1,34 @@
+﻿---
+// src/pages/en/no-category.astro — No category/tag found (English)
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations } from '../../i18n/utils';
+
+const t = useTranslations('en');
+---
+
+<BaseLayout title={t('noCategory.title')}>
+  <div class="page-container" style="padding-top:4rem; padding-bottom:4rem; text-align:center;">
+    <main id="main-content">
+      <div class="glass-card" style="padding:3rem 2rem; max-width:540px; margin:0 auto;">
+        <p style="font-size:3rem; margin:0 0 1rem;">🔍</p>
+        <h1
+          style="font-size:1.5rem; font-weight:800; color:var(--text-heading); margin-bottom:1rem;"
+        >
+          {t('noCategory.title')}
+        </h1>
+        <p style="color:var(--text-secondary); margin-bottom:2rem;">{t('noCategory.message')}</p>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
+          {t('noCategory.redirecting')}
+        </p>
+        <a href="/en/posts" class="btn-primary">{t('noCategory.manual')}</a>
+      </div>
+    </main>
+  </div>
+
+
+<script>
+  setTimeout(() => {
+    window.location.href = '/en/posts';
+  }, 3000);
+</script>
+</BaseLayout>

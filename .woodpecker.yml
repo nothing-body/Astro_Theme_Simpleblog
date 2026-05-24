@@ -1,0 +1,57 @@
+when:
+  event:
+    - push
+    - manual
+  branch:
+    - main
+    - master
+
+steps:
+  deploy:
+    image: node:22.12.0
+    environment:
+      CLOUDFLARE_API_TOKEN:
+        from_secret: CLOUDFLARE_API_TOKEN
+      CLOUDFLARE_ACCOUNT_ID:
+        from_secret: CLOUDFLARE_ACCOUNT_ID
+      CLOUDFLARE_PAGES_PROJECT_NAME:
+        from_secret: CLOUDFLARE_PAGES_PROJECT_NAME
+      PUBLIC_SITE_URL:
+        from_secret: PUBLIC_SITE_URL
+      PUBLIC_GA4_ID:
+        from_secret: PUBLIC_GA4_ID
+      PUBLIC_CONTACT_EMAIL:
+        from_secret: PUBLIC_CONTACT_EMAIL
+      VPS_HOST:
+        from_secret: VPS_HOST
+      VPS_USER:
+        from_secret: VPS_USER
+      VPS_PORT:
+        from_secret: VPS_PORT
+      VPS_TARGET_DIR:
+        from_secret: VPS_TARGET_DIR
+      VPS_SSH_PRIVATE_KEY:
+        from_secret: VPS_SSH_PRIVATE_KEY
+      VPS_SSH_PASSPHRASE:
+        from_secret: VPS_SSH_PASSPHRASE
+      VERCEL_TOKEN:
+        from_secret: VERCEL_TOKEN
+      VERCEL_ORG_ID:
+        from_secret: VERCEL_ORG_ID
+      VERCEL_PROJECT_ID:
+        from_secret: VERCEL_PROJECT_ID
+      DEPLOY_MODE:
+        from_secret: DEPLOY_MODE
+    commands:
+      - corepack enable
+      - corepack prepare pnpm@10 --activate
+      - pnpm install --frozen-lockfile
+      - pnpm check
+      - mkdir -p ~/.ssh
+      - |
+        if [ -n "$VPS_SSH_PRIVATE_KEY" ]; then
+          printf '%s' "$VPS_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+        fi
+      - export VPS_SSH_KEY_PATH="${VPS_SSH_KEY_PATH:-$HOME/.ssh/id_rsa}"
+      - pnpm deploy:switch --mode="${DEPLOY_MODE:-direct:cf+vps}" --yes

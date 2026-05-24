@@ -1,0 +1,66 @@
+﻿---
+// src/pages/en/posts.astro — English posts listing (page 1)
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import PostCard from '../../components/PostCard.astro';
+import Pagination from '../../components/Pagination.astro';
+import { useTranslations } from '../../i18n/utils';
+import { sortBlogPosts } from '../../lib/posts';
+import { getSiteUrl } from '../../lib/site';
+
+const t = useTranslations('en');
+const PAGE_SIZE = 5;
+
+const allPosts = await getCollection('blog', ({ id, data }) => id.startsWith('en/') && !data.draft);
+const sortedPosts = sortBlogPosts(allPosts);
+const totalPages = Math.max(1, Math.ceil(sortedPosts.length / PAGE_SIZE));
+const posts = sortedPosts.slice(0, PAGE_SIZE);
+
+const siteUrl = getSiteUrl(Astro.site);
+const canonicalPage1 = new URL('/en/page/1', siteUrl).href;
+---
+
+<BaseLayout
+  title={t('posts.title')}
+  description="All posts — Browse all articles."
+  customCanonical={canonicalPage1}
+>
+  <div class="page-container" style="padding-top:2rem; padding-bottom:4rem;">
+    <div class="content-wrapper">
+      <Sidebar allPosts={allPosts} lang="en" />
+      <main id="main-content" class="main-content">
+        <h1
+          style="font-size:1.6rem; font-weight:800; color:var(--text-heading); margin-bottom:1.5rem;"
+        >
+          {t('posts.title')}
+        </h1>
+        {
+          posts.length > 0 ? (
+            <>
+              {posts.map(post => (
+                <PostCard post={post} lang="en" />
+              ))}
+              <Pagination
+                currentPage={1}
+                totalPages={totalPages}
+                nextUrl={totalPages > 1 ? '/en/page/2' : undefined}
+                getPageUrl={n => (n === 1 ? '/en/posts' : `/en/page/${n}`)}
+                lang="en"
+              />
+            </>
+          ) : (
+            <p style="color:var(--text-muted); padding:3rem 0;">{t('posts.noPost')}</p>
+          )
+        }
+      </main>
+    </div>
+  </div>
+
+
+<script>
+  try {
+    sessionStorage.setItem('bb-last-list', window.location.pathname);
+  } catch {}
+</script>
+</BaseLayout>

@@ -1,0 +1,24 @@
+﻿---
+// src/pages/zh-cn/posts/[...slug].astro — 简体中文文章动态路由
+import { getCollection, render } from 'astro:content';
+import BlogPostLayout from '../../../layouts/BlogPostLayout.astro';
+import { getCleanSlug } from '../../../lib/utils';
+
+export async function getStaticPaths() {
+  const posts = await getCollection(
+    'blog',
+    ({ id, data }) => id.startsWith('zh-cn/') && !data.draft
+  );
+  return posts.map(post => ({
+    params: { slug: getCleanSlug(post.id) },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<BlogPostLayout frontmatter={post.data}>
+  <Content />
+</BlogPostLayout>

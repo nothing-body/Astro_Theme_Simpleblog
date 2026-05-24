@@ -1,0 +1,161 @@
+﻿---
+// src/pages/en/privacy.astro — Privacy Policy (English, with Sidebar)
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AboutSidebar from '../../components/AboutSidebar.astro';
+import { getCanonicalUrl } from '../../lib/site';
+import { safeJsonStringify } from '../../lib/utils';
+
+const currentPath = Astro.url.pathname;
+const pageUrl = getCanonicalUrl(currentPath, Astro.site);
+const today = new Date().toLocaleDateString('en-GB', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Privacy Policy',
+  url: pageUrl,
+  description: 'Privacy policy for the Astro Blog Template blog.',
+  publisher: { '@type': 'Person', name: 'Astro Blog Template' },
+};
+---
+
+<BaseLayout title="Privacy Policy" description="Privacy policy for the Astro Blog Template blog.">
+  <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
+  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+    <div class="content-wrapper">
+      <AboutSidebar lang="en" currentPath={currentPath} />
+      <main id="main-content" class="main-content">
+        <article class="glass-card" style="padding: 2.5rem;">
+          <div class="article-entry">
+            <h1>Privacy Policy</h1>
+            <p style="color:var(--text-muted); font-size:0.88rem;">Last updated: {today}</p>
+            <p>
+              This site takes your privacy seriously. This policy explains how we collect and use
+              data.
+            </p>
+
+            <h2>1. Data Collection</h2>
+            <ul>
+              <li>
+                <strong>Server-side:</strong> This is a static site. We do not actively collect, store,
+                or track personal data on our servers.
+              </li>
+              <li>
+                <strong>Google Analytics (GA4):</strong> We use GA4 to collect anonymous traffic data.
+                You can choose whether to allow this in the panel below.
+              </li>
+              <li>
+                <strong>Timezone:</strong> The clock uses your browser's timezone, stored locally if you
+                allow it.
+              </li>
+            </ul>
+
+            <h2>2. Local Storage</h2>
+            <ul>
+              <li>
+                We use LocalStorage to remember your timezone preference. You can manage this below:
+              </li>
+            </ul>
+
+            <h2>3. Your Privacy Choices</h2>
+            <div class="privacy-inline-panel">
+              <label class="privacy-toggle-row">
+                <input type="checkbox" id="remember-timezone-toggle" class="privacy-checkbox" />
+                <span>Allow this site to remember my timezone</span>
+              </label>
+              <label class="privacy-toggle-row">
+                <input type="checkbox" id="enable-analytics-toggle" class="privacy-checkbox" />
+                <span>Allow Google Analytics (GA4) to collect anonymous browsing data</span>
+              </label>
+              <p style="font-size:0.88rem; color:var(--text-muted);">
+                Settings take effect after you click "Save". Disabling GA4 will reload the page.
+              </p>
+              <button
+                type="button"
+                id="privacy-save-inline"
+                class="btn-primary"
+                style="margin-top:0.5rem;">Save Settings</button
+              >
+            </div>
+
+            <h2>4. Security & Third Parties</h2>
+            <p>
+              This site is hosted on <strong>Cloudflare Pages</strong>. We do not use third-party
+              font CDNs.
+            </p>
+
+            <h2>5. Contact</h2>
+            <p>If you have questions, please use our <a href="/en/contact">Contact Us</a> page.</p>
+          </div>
+        </article>
+      </main>
+    </div>
+  </div>
+
+
+<style is:global>
+  .privacy-inline-panel {
+    border: 1.5px solid var(--border-color);
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: rgba(245, 240, 232, 0.5);
+    margin: 1rem 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .privacy-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+  }
+  .privacy-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary-red);
+    flex-shrink: 0;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var settings = window.__privacySettings || {
+      rememberTimezone: true,
+      enableAnalytics: true,
+      hasSetCookies: false,
+    };
+    var tzToggle = document.getElementById('remember-timezone-toggle');
+    var gaToggle = document.getElementById('enable-analytics-toggle');
+    var saveBtn = document.getElementById('privacy-save-inline');
+    if (tzToggle)
+      tzToggle.checked = settings.hasSetCookies ? settings.rememberTimezone !== false : true;
+    if (gaToggle)
+      gaToggle.checked = settings.hasSetCookies ? settings.enableAnalytics !== false : true;
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function () {
+        if (typeof window.updatePrivacySettings === 'function') {
+          window.updatePrivacySettings({
+            hasSetCookies: true,
+            rememberTimezone: tzToggle ? tzToggle.checked : true,
+            enableAnalytics: gaToggle ? gaToggle.checked : true,
+          });
+          if (tzToggle && !tzToggle.checked) {
+            try {
+              localStorage.removeItem('bb-tz');
+            } catch (e) {}
+          }
+          window.location.reload();
+        }
+      });
+    }
+  })();
+</script>
+</BaseLayout>

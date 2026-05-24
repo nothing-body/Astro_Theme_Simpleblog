@@ -1,0 +1,80 @@
+﻿---
+// src/pages/en/about.astro — About page (English)
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AboutSidebar from '../../components/AboutSidebar.astro';
+import { getCanonicalUrl } from '../../lib/site';
+import { safeJsonStringify } from '../../lib/utils';
+
+const currentPath = Astro.url.pathname;
+const pageUrl = getCanonicalUrl(currentPath, Astro.site);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'About This Site',
+  url: pageUrl,
+  description: 'About the Astro Blog Template blog and its author.',
+  publisher: { '@type': 'Person', name: 'Astro Blog Template' },
+};
+---
+
+<BaseLayout title="About This Site" description="About the Astro Blog Template blog and its author.">
+  <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
+  <div class="page-container" style="padding-top:2rem; padding-bottom:4rem;">
+    <div class="content-wrapper">
+      <AboutSidebar lang="en" currentPath={currentPath} />
+      <main id="main-content" class="main-content">
+        <article class="glass-card" style="padding:2.5rem;">
+          <div class="article-entry">
+            <h1>About This Site</h1>
+            <p>
+              Welcome to my personal blog!<br />
+              This is not a highly polished professional portal, but rather my own corner of the digital
+              world.
+            </p>
+
+            <h2>Why did I build this site?</h2>
+            <p>
+              This site is built with the Astro framework. For me, it's not just a writing space —
+              it's a technical memo to prevent myself from forgetting operational details.
+            </p>
+
+            <h2>What's recorded here?</h2>
+            <p>
+              The content mainly revolves around interesting software I discover while browsing,
+              along with daily random notes. Think of it as a public "digital notebook" covering:
+            </p>
+            <ul>
+              <li>
+                <strong>Tech Notes:</strong> Quick records after successfully configuring a service.
+              </li>
+              <li>
+                <strong>Tool Reviews:</strong> Personal impressions of software, or thoughts when discovering
+                interesting tools.
+              </li>
+              <li>
+                <strong>Daily Notes:</strong> Spontaneous ideas, life observations, and personal reflections.
+              </li>
+            </ul>
+
+            <h2>About content accuracy</h2>
+            <p>
+              Every article here is a casual note — a product of spontaneous recording and thinking.<br
+              />
+              While the content is informal, it's primarily meant for my future self to look back on.
+              If it also helps you, that's a wonderful bonus.
+            </p>
+
+            <h2>About English translations</h2>
+            <p>
+              The English articles on this site are translated from Chinese originals by AI models.<br
+              />
+              While efforts have been made to maintain accuracy, there may be awkward phrasings or minor
+              inaccuracies. Thank you for your understanding.
+            </p>
+          </div>
+        </article>
+      </main>
+    </div>
+  </div>
+</BaseLayout>

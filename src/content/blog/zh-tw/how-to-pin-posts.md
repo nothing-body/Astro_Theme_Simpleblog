@@ -1,0 +1,53 @@
+---
+title: '如何置頂文章'
+description: '說明如何在這個 Astro 靜態部落格中使用 pinned 與 pinOrder 置頂一篇或多篇文章。'
+pubDate: 2026-05-24
+category: '網站設定'
+tags: ['Astro', '置頂文章', '網站設定']
+author: 'Astro Blog Template'
+pinned: true
+pinOrder: 1
+---
+
+這篇文章本身就是一篇置頂文章範例。
+
+在文章 frontmatter 加上 `pinned: true`，文章就會優先顯示在首頁、所有文章、分頁、分類頁與標籤頁的列表最前面。這是靜態建置時完成的排序，不需要資料庫、登入系統或前端寫入功能，因此不會增加額外攻擊面。
+
+## 單篇文章置頂
+
+```yaml
+---
+title: '文章標題'
+pubDate: 2026-05-24
+pinned: true
+pinOrder: 1
+---
+```
+
+`pinned: true` 代表這篇文章會被視為置頂文章。
+
+`pinOrder` 用來控制多篇置頂文章之間的順序，數字越小越前面。
+
+## 多篇文章置頂
+
+```yaml
+pinned: true
+pinOrder: 1
+```
+
+```yaml
+pinned: true
+pinOrder: 2
+```
+
+置頂文章會先依 `pinOrder` 排序；一般文章仍依發布日期由新到舊排序。
+
+## 取消置頂
+
+把 `pinned` 改成 `false`，或直接刪除 `pinned` 與 `pinOrder` 即可。
+
+```yaml
+pinned: false
+```
+
+新增或修改置頂文章後，重新執行建置並部署 `dist` 即可更新網站。

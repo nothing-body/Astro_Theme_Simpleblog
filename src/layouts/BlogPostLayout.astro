@@ -1,0 +1,387 @@
+﻿---
+// src/layouts/BlogPostLayout.astro — 部落格文章版面 (modular enhancements)
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import PostCopyright from '../components/PostCopyright.astro';
+import {
+  getLangFromUrl,
+  useTranslations,
+  useTranslatedPath,
+  getDynamicCategoryMapping,
+} from '../i18n/utils';
+import { formatDate, safeJsonStringify, summarizePlainText } from '../lib/utils';
+import { getSiteUrl } from '../lib/site';
+import '../styles/markdown.css';
+import '../assets/css/blog-enhancements.css'; // 新增樣式檔
+
+export interface Props {
+  frontmatter: {
+    title: string;
+    description?: string;
+    pubDate: Date;
+    updatedDate?: Date;
+    category?: string;
+    tags?: string[];
+    author?: string;
+    ogImage?: string;
+    heroImage?: string; // 文章 Hero 背景圖片（選填）
+  };
+}
+
+const { frontmatter } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+
+const categoryMapping = await getDynamicCategoryMapping();
+const currentCategory = frontmatter.category ?? (lang === 'en' ? 'Uncategorized' : '未分類');
+
+const formattedDate = formatDate(new Date(frontmatter.pubDate), lang);
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
+const siteUrl = getSiteUrl(Astro.site);
+const articleDescription = summarizePlainText(frontmatter.description ?? frontmatter.title, 180);
+
+// 麵包屑資料：包含 首頁 > 所有文章 > 文章分類 > 文章標題
+const breadcrumbs = [
+  { label: t('breadcrumb.home'), href: translatePath('/') },
+  { label: t('breadcrumb.posts'), href: translatePath('/posts') },
+  {
+    label: currentCategory,
+    href: translatePath(`/categories/${encodeURIComponent(currentCategory)}/1`),
+  },
+  { label: frontmatter.title },
+];
+---
+
+<BaseLayout
+  title={frontmatter.title}
+  description={articleDescription}
+  canonicalUrl={canonicalUrl}
+  ogImage={frontmatter.ogImage}
+  pubDate={new Date(frontmatter.pubDate)}
+  updatedDate={frontmatter.updatedDate ? new Date(frontmatter.updatedDate) : undefined}
+  type="article"
+  tags={frontmatter.tags}
+  category={currentCategory}
+  author={frontmatter.author}
+>
+  <!-- 文章 JSON-LD 結構化資料 -->
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={safeJsonStringify({
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: frontmatter.title,
+      description: articleDescription,
+      datePublished: new Date(frontmatter.pubDate).toISOString(),
+      dateModified: frontmatter.updatedDate
+        ? new Date(frontmatter.updatedDate).toISOString()
+        : new Date(frontmatter.pubDate).toISOString(),
+      author: {
+        '@type': 'Person',
+        name: frontmatter.author ?? 'Astro Blog Template',
+      },
+      publisher: {
+        '@type': 'Person',
+        name: 'Astro Blog Template',
+        url: siteUrl,
+      },
+      articleSection: currentCategory,
+      keywords: (frontmatter.tags ?? []).join(', '),
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': canonicalUrl,
+      },
+    })}
+  />
+
+  <div class="be-article-wrapper">
+    <div class="immersion-read-container be-content">
+      <article class="post-article">
+        <!-- 麵包屑導航 -->
+        <Breadcrumbs items={breadcrumbs} />
+
+        <!-- 文章標頭 -->
+        <header class="post-header">
+          <div class="post-meta-row">
+            <a
+              href={translatePath(`/categories/${encodeURIComponent(currentCategory)}/1`)}
+              class="post-category-badge"
+            >
+              {currentCategory}
+            </a>
+            <span class="meta-dot" aria-hidden="true">·</span>
+            <time class="post-date" datetime={new Date(frontmatter.pubDate).toISOString()}>
+              {formattedDate}
+            </time>
+            {
+              frontmatter.updatedDate && (
+                <>
+                  <span class="meta-dot" aria-hidden="true">
+                    ·
+                  </span>
+                  <span class="post-updated">
+                    {lang === 'en' ? 'Updated: ' : '更新：'}
+                    <time datetime={new Date(frontmatter.updatedDate).toISOString()}>
+                      {formatDate(new Date(frontmatter.updatedDate), lang)}
+                    </time>
+                  </span>
+                </>
+              )
+            }
+          </div>
+
+          <h1 class="post-main-title">{frontmatter.title}</h1>
+
+          {
+            (frontmatter.tags ?? []).length > 0 && (
+              <div class="post-tags-row" aria-label="文章標籤">
+                {(frontmatter.tags ?? []).map((tag: string) => (
+                  <a href={translatePath(`/tags/${encodeURIComponent(tag)}/1`)} class="inline-tag">
+                    #{tag}
+                  </a>
+                ))}
+              </div>
+            )
+          }
+
+          <div class="post-divider" role="separator" aria-hidden="true"></div>
+        </header>
+
+        <!-- 文章內容 -->
+        <div class="article-entry">
+          <slot />
+        </div>
+
+        <!-- 版權聲明 -->
+        <PostCopyright canonicalUrl={canonicalUrl} lang={lang} author={frontmatter.author} />
+
+        <!-- 文章頁尾：返回按鈕 -->
+        <footer class="post-footer">
+          <div class="post-footer-hr" aria-hidden="true"></div>
+          <nav class="post-back-nav" aria-label="文章導航">
+            <a href={translatePath('/posts')} class="back-link" id="post-back-link">
+              {t('nav.backToPosts')}
+            </a>
+          </nav>
+        </footer>
+      </article>
+    </div>
+    <!-- immersion-read-container -->
+  </div>
+  <!-- be-article-wrapper -->
+</BaseLayout>
+
+<!-- 返回鍵智慧跳轉：若前頁是分類/標籤列表，則跳回該頁 -->
+<script is:inline define:vars={{ lang, categoryMapping, currentCategory }}>
+  window.addEventListener('DOMContentLoaded', () => {
+    try {
+      const backLink = document.getElementById('post-back-link');
+      if (!(backLink instanceof HTMLAnchorElement)) return;
+
+      let lastPath = sessionStorage.getItem('bb-last-list');
+      const currentPath = window.location.pathname;
+
+      // 嚴格驗證路徑：必須以 / 開頭且第二字元非 /（防止 open redirect）
+      if (!lastPath || lastPath === currentPath || !/^\/[^/]/.test(lastPath)) return;
+
+      // 取得給定路徑的語系類型
+      const getPathLang = path => {
+        if (path.startsWith('/en/') || path === '/en') return 'en';
+        if (path.startsWith('/zh-cn/') || path === '/zh-cn') return 'zh-cn';
+        return 'zh-tw';
+      };
+
+      const lastLang = getPathLang(lastPath);
+
+      // 語系不同時換算路徑，支援 zh-tw / en / zh-cn 三語系互轉
+      if (lastLang !== lang) {
+        const parts = lastPath.split('/').filter(Boolean);
+        const hasPrefix = parts[0] === 'en' || parts[0] === 'zh-cn';
+
+        if (lastPath.includes('/categories/')) {
+          const catName = decodeURIComponent(parts[hasPrefix ? 2 : 1] ?? '');
+          const targetCat = categoryMapping[catName] ?? currentCategory;
+          const catPath = `/categories/${encodeURIComponent(targetCat)}/1`;
+          lastPath = lang === 'zh-tw' ? catPath : `/${lang}${catPath}`;
+        } else if (lastPath.includes('/tags/')) {
+          const tagName = decodeURIComponent(parts[hasPrefix ? 2 : 1] ?? '');
+          const tagPath = `/tags/${encodeURIComponent(tagName)}/1`;
+          lastPath = lang === 'zh-tw' ? tagPath : `/${lang}${tagPath}`;
+        } else {
+          lastPath = lang === 'zh-tw' ? '/posts' : `/${lang}/posts`;
+        }
+      }
+
+      backLink.href = lastPath;
+    } catch {
+      // 靜默失敗（隱私模式可能無法讀取 sessionStorage）
+    }
+  });
+</script>
+
+<style is:global>
+  .immersion-read-container {
+    max-width: 1100px; /* 放寬容器限制，讓卡片可以變得更寬 */
+    margin: 1.5rem auto 5rem;
+    padding: 0 1.5rem;
+  }
+
+  .post-article {
+    flex-grow: 1;
+    min-width: 0;
+  }
+
+  .post-header {
+    margin-bottom: 3rem;
+    padding-top: 0.5rem;
+  }
+
+  .post-meta-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 0.8rem;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .post-category-badge {
+    color: var(--primary-red);
+    font-weight: 800;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+    padding: 0.15rem 0.55rem;
+    background: var(--primary-red-light);
+    border-radius: 99px;
+    transition: all 0.2s ease;
+  }
+
+  .post-category-badge:hover {
+    background: var(--primary-red);
+    color: white;
+  }
+
+  .meta-dot {
+    opacity: 0.3;
+  }
+
+  .post-date {
+    color: var(--text-muted);
+  }
+
+  .post-updated {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+
+  .post-main-title {
+    font-size: clamp(2rem, 5.5vw, 3rem);
+    font-weight: 900;
+    line-height: 1.22;
+    margin: 0.5rem 0 1.2rem;
+    color: var(--text-heading);
+    letter-spacing: -0.02em;
+    word-break: break-word;
+  }
+
+  .post-tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 0.8rem;
+  }
+
+  .inline-tag {
+    font-size: 0.85rem;
+    color: var(--primary-red);
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+
+  .inline-tag:hover {
+    opacity: 0.7;
+  }
+
+  .post-divider {
+    height: 2px;
+    background: linear-gradient(to right, var(--primary-red), transparent);
+    margin-top: 1.5rem;
+    border-radius: 2px;
+    opacity: 0.4;
+  }
+
+  .post-footer {
+    margin-top: 3.5rem;
+  }
+
+  .post-footer-hr {
+    height: 1px;
+    background: var(--border-color);
+    margin-bottom: 2rem;
+  }
+
+  .post-back-nav {
+  }
+
+  .back-link {
+    color: var(--primary-red);
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all 0.2s ease;
+  }
+
+  .back-link:hover {
+    color: var(--primary-red-dark);
+    gap: 0.5rem;
+  }
+
+  /* ---------- 手機版自適應 ---------- */
+  @media (max-width: 768px) {
+    .immersion-read-container {
+      padding: 0 0.75rem;
+      margin: 1rem auto 3rem;
+    }
+
+    .post-header {
+      margin-bottom: 2rem;
+    }
+
+    .post-main-title {
+      font-size: clamp(1.5rem, 6vw, 2rem);
+      margin: 0.3rem 0 0.8rem;
+    }
+
+    .post-meta-row {
+      font-size: 0.82rem;
+      gap: 6px;
+    }
+
+    .post-category-badge {
+      font-size: 0.72rem;
+      padding: 0.12rem 0.45rem;
+    }
+
+    .post-tags-row {
+      gap: 6px;
+    }
+
+    .inline-tag {
+      font-size: 0.8rem;
+    }
+
+    .post-footer {
+      margin-top: 2.5rem;
+    }
+  }
+</style>

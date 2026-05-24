@@ -1,0 +1,41 @@
+﻿---
+// src/pages/en/contact.astro — Contact Us (English)
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AboutSidebar from '../../components/AboutSidebar.astro';
+import { getCanonicalUrl, getContactEmail } from '../../lib/site';
+import { safeJsonStringify } from '../../lib/utils';
+
+const currentPath = Astro.url.pathname;
+const pageUrl = getCanonicalUrl(currentPath, Astro.site);
+const contactEmail = getContactEmail();
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Contact Us',
+  url: pageUrl,
+  description: 'How to contact the author of this site.',
+  publisher: { '@type': 'Person', name: 'Astro Blog Template' },
+};
+---
+
+<BaseLayout title="Contact Us" description="How to contact the author of this site.">
+  <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
+  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+    <div class="content-wrapper">
+      <AboutSidebar lang="en" currentPath={currentPath} />
+      <main id="main-content" class="main-content">
+        <article class="glass-card" style="padding: 2.5rem;">
+          <div class="article-entry">
+            <h1>Contact Us</h1>
+            <p>
+              If you have any questions, suggestions, or copyright-related inquiries about this
+              site, feel free to reach out.
+            </p>
+            <p>Email: <a href={`mailto:${contactEmail}`}>{contactEmail}</a></p>
+          </div>
+        </article>
+      </main>
+    </div>
+  </div>
+</BaseLayout>

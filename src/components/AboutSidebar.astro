@@ -1,0 +1,56 @@
+﻿---
+// src/components/AboutSidebar.astro — 關於相關頁面側邊欄
+export interface Props {
+  lang?: 'zh-tw' | 'en' | 'zh-cn';
+  currentPath: string;
+}
+
+const { lang = 'zh-tw', currentPath } = Astro.props;
+
+const menuZh = [
+  { label: '關於本站', path: '/about' },
+  { label: '聯絡我們', path: '/contact' },
+  { label: '隱私權政策', path: '/privacy' },
+  { label: '免責聲明', path: '/disclaimer' },
+];
+
+const menuEn = [
+  { label: 'About This Site', path: '/en/about' },
+  { label: 'Contact Us', path: '/en/contact' },
+  { label: 'Privacy Policy', path: '/en/privacy' },
+  { label: 'Disclaimer', path: '/en/disclaimer' },
+];
+
+const menuZhCn = [
+  { label: '关于本站', path: '/zh-cn/about' },
+  { label: '联系我们', path: '/zh-cn/contact' },
+  { label: '隐私政策', path: '/zh-cn/privacy' },
+  { label: '免责声明', path: '/zh-cn/disclaimer' },
+];
+
+const menu = lang === 'en' ? menuEn : lang === 'zh-cn' ? menuZhCn : menuZh;
+
+// 比對當前路徑（容忍結尾斜線）
+const isActive = (menuPath: string) => currentPath === menuPath || currentPath === menuPath + '/';
+---
+
+<aside class="sidebar" aria-label={lang === 'en' ? 'About sidebar' : '關於側邊欄'}>
+  <div class="glass-card sidebar-widget">
+    <h3 class="widget-title">{lang === 'en' ? 'About' : '關於本站'}</h3>
+    <ul class="category-list" role="list">
+      {
+        menu.map(item => (
+          <li role="listitem">
+            <a
+              href={item.path}
+              class:list={['cat-link', { 'cat-link--active': isActive(item.path) }]}
+              aria-current={isActive(item.path) ? 'page' : undefined}
+            >
+              <span>{item.label}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</aside>

@@ -1,0 +1,91 @@
+﻿---
+// src/components/Sidebar.astro — 文章列表側邊欄（分類 + 標籤）
+import type { CollectionEntry } from 'astro:content';
+
+export interface Props {
+  allPosts: CollectionEntry<'blog'>[];
+  lang?: 'zh-tw' | 'en' | 'zh-cn';
+  activeCategory?: string;
+  activeTag?: string;
+}
+
+const { allPosts, lang = 'zh-tw', activeCategory, activeTag } = Astro.props;
+
+const pathPrefix = lang === 'zh-tw' ? '' : `/${lang}`;
+const categoryLabel = lang === 'en' ? 'Categories' : '文章分類';
+const tagLabel = lang === 'en' ? 'Tags' : '標籤';
+
+// 統計各分類數量
+const categoryMap = new Map<string, number>();
+for (const post of allPosts) {
+  const cat = post.data.category;
+  categoryMap.set(cat, (categoryMap.get(cat) ?? 0) + 1);
+}
+const categoriesList = [...categoryMap.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+
+// 蒐集所有標籤（去重）
+const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
+---
+
+<aside class="sidebar" aria-label={lang === 'en' ? 'Sidebar' : '側邊欄'}>
+  <!-- 分類列表 -->
+  <div class="glass-card sidebar-widget">
+    <h3 class="widget-title">{categoryLabel}</h3>
+    <ul class="category-list" role="list">
+      {
+        categoriesList.map(([cat, count]) => (
+          <li role="listitem">
+            <a
+              href={`${pathPrefix}/categories/${encodeURIComponent(cat)}/1`}
+              class:list={['cat-link', { 'cat-link--active': cat === activeCategory }]}
+              aria-current={cat === activeCategory ? 'page' : undefined}
+            >
+              <span>{cat}</span>
+              <span class="cat-count">{count}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <!-- 標籤雲 -->
+  <div class="glass-card sidebar-widget">
+    <h3 class="widget-title">{tagLabel}</h3>
+    <div class="tag-cloud" role="list">
+      {
+        allTags.map(tag => (
+          <a
+            href={`${pathPrefix}/tags/${encodeURIComponent(tag)}/1`}
+            class:list={['tag-box', { 'tag-box--active': tag === activeTag }]}
+            aria-current={tag === activeTag ? 'page' : undefined}
+            role="listitem"
+          >
+            #{tag}
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</aside>
+
+<style is:global>
+  .sidebar-widget {
+    padding: 1.2rem 1.3rem;
+    margin-bottom: 1.2rem;
+  }
+  .sidebar-widget:last-child {
+    margin-bottom: 0;
+  }
+
+  .cat-count {
+    background: var(--primary-red-light);
+    color: var(--primary-red);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    border-radius: 99px;
+    min-width: 1.4rem;
+    text-align: center;
+  }
+</style>

@@ -1,0 +1,77 @@
+name: Deploy Website
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Deployment mode"
+        required: true
+        default: "direct:cf+vps"
+        type: choice
+        options:
+          - direct:cf
+          - direct:vps
+          - direct:vercel
+          - direct:cf+vps
+          - direct:cf+vercel
+          - direct:vps+vercel
+          - direct:cf+vps+vercel
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment:
+      name: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate project
+        run: pnpm check
+
+      - name: Prepare VPS SSH key
+        if: ${{ secrets.VPS_SSH_PRIVATE_KEY != '' }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s' "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PAGES_PROJECT_NAME: ${{ secrets.CLOUDFLARE_PAGES_PROJECT_NAME }}
+          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL || secrets.PUBLIC_SITE_URL }}
+          PUBLIC_GA4_ID: ${{ vars.PUBLIC_GA4_ID || secrets.PUBLIC_GA4_ID }}
+          PUBLIC_CONTACT_EMAIL: ${{ vars.PUBLIC_CONTACT_EMAIL || secrets.PUBLIC_CONTACT_EMAIL }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_TARGET_DIR: ${{ secrets.VPS_TARGET_DIR }}
+          VPS_SSH_KEY_PATH: ~/.ssh/id_rsa
+          VPS_SSH_PASSPHRASE: ${{ secrets.VPS_SSH_PASSPHRASE }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || vars.DEPLOY_MODE || 'direct:cf+vps' }}
+        run: pnpm deploy:switch --mode="$DEPLOY_MODE" --yes

@@ -1,0 +1,27 @@
+stages:
+  - deploy
+
+deploy:
+  stage: deploy
+  image: node:22.12.0
+  environment:
+    name: production
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "master"'
+    - when: manual
+      allow_failure: false
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@10 --activate
+    - pnpm install --frozen-lockfile
+    - pnpm check
+    - mkdir -p ~/.ssh
+    - |
+      if [ -n "$VPS_SSH_PRIVATE_KEY" ]; then
+        printf '%s' "$VPS_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+      fi
+  script:
+    - export VPS_SSH_KEY_PATH="${VPS_SSH_KEY_PATH:-$HOME/.ssh/id_rsa}"
+    - pnpm deploy:switch --mode="${DEPLOY_MODE:-direct:cf+vps}" --yes

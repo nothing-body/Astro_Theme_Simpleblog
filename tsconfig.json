@@ -1,0 +1,30 @@
+{
+  "extends": "astro/tsconfigs/strictest",
+  "compilerOptions": {
+    "rootDir": ".",
+    "ignoreDeprecations": "6.0",
+    "types": ["node", "jest"],
+    "baseUrl": ".",
+    "paths": {
+      "@layouts/*": ["src/layouts/*"],
+      "@components/*": ["src/components/*"],
+      "@styles/*": ["src/styles/*"],
+      "@lib/*": ["src/lib/*"],
+      "@i18n/*": ["src/i18n/*"]
+    },
+    "strictNullChecks": true,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": false
+  },
+  "exclude": [
+    "backup",
+    "dist",
+    "lighthouse_tmp",
+    "node_modules",
+    "playwright-report",
+    "src/purgecss-output",
+    "test-results",
+    "tmp"
+  ]
+}

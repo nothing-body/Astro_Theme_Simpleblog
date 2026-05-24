@@ -1,0 +1,321 @@
+/* src/styles/markdown.css
+   Markdown / 文章內容排版樣式
+   護眼暖奶油色系，長閱讀舒適設計
+*/
+
+/* === 文章主體容器 === */
+.article-entry {
+  line-height: 1.9;
+  font-size: 1.13rem;
+  font-weight: 450;
+  color: var(--text-primary);
+  /* 中英文混排自動間距 */
+  text-autospace: ideograph-alpha;
+  overflow-wrap: break-word;
+}
+
+/* 段落間距 */
+.article-entry > * + * {
+  margin-top: 1.8rem;
+}
+
+/* === 標題 === */
+.article-entry h2 {
+  margin-top: 4rem !important;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-heading);
+  padding-bottom: 0.6rem;
+  border-bottom: 2px solid var(--border-color);
+  letter-spacing: -0.01em;
+}
+
+.article-entry h3 {
+  margin-top: 2.8rem !important;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.article-entry h4 {
+  margin-top: 2rem !important;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-700);
+}
+
+/* 標題後的第一個元素縮小間距 */
+.article-entry h2 + *,
+.article-entry h3 + *,
+.article-entry h4 + * {
+  margin-top: 0.8rem !important;
+}
+
+/* === 清單 === */
+.article-entry ul,
+.article-entry ol {
+  padding-left: 1.8rem;
+}
+
+.article-entry li {
+  margin-bottom: 0.4rem;
+  line-height: 1.75;
+}
+
+.article-entry li + li {
+  margin-top: 0.2rem;
+}
+
+/* 任務清單 */
+.article-entry .task-list-item {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.article-entry input[type='checkbox'] {
+  margin-right: 0.5rem;
+  accent-color: var(--primary-red);
+  transform: scale(1.15);
+  vertical-align: middle;
+}
+
+/* === 引言區塊 === */
+.article-entry blockquote {
+  padding: 0.8rem 1.5rem;
+  border-left: 4px solid var(--primary-red);
+  background: #f8e6df;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: #3a2a24;
+  margin: 1.5rem 0;
+}
+
+/* === 表格 === */
+.article-entry table {
+  width: 100%;
+  border-collapse: separate; /* 必須為 separate 才能單獨讓 cell 的邊角圓角生效 */
+  border-spacing: 0;
+  margin: 2rem 0;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-sm);
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 確保表格四周角落的儲存格有漂亮的圓角 */
+.article-entry th:first-child {
+  border-top-left-radius: 10px;
+}
+.article-entry th:last-child {
+  border-top-right-radius: 10px;
+  border-right: 1px solid rgba(196, 122, 101, 0.3);
+}
+.article-entry tr:last-child td:first-child {
+  border-bottom-left-radius: 10px;
+}
+.article-entry tr:last-child td:last-child {
+  border-bottom-right-radius: 10px;
+}
+
+.article-entry th {
+  background: var(--primary-red);
+  color: white;
+  font-weight: 700;
+  padding: 10px 14px;
+  text-align: left;
+  white-space: nowrap;
+  border-top: 1px solid rgba(196, 122, 101, 0.3);
+  border-bottom: 1px solid rgba(196, 122, 101, 0.3);
+  border-left: 1px solid rgba(196, 122, 101, 0.3);
+}
+
+.article-entry td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color);
+  border-left: 1px solid var(--cream-200, #f4ede3);
+  vertical-align: middle;
+  overflow-wrap: break-word;
+  background: #fffdf9;
+}
+
+.article-entry td:last-child {
+  border-right: 1px solid var(--border-color);
+}
+
+.article-entry td:first-child,
+.article-entry th:first-child {
+  border-left: none;
+}
+
+.article-entry tr:nth-child(even) {
+  background: #faf1ec;
+}
+
+.article-entry tr:hover {
+  background: #f5e7e0;
+}
+
+/* === 程式碼區塊（由 expressive-code 渲染）=== */
+.article-entry pre {
+  border-radius: 12px !important;
+  margin: 1.5rem 0 !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* === 圖片 === */
+.article-entry img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 2rem auto;
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  /* 護眼：略微降低亮度 */
+  filter: brightness(0.97);
+}
+
+/* === 水平線 === */
+.article-entry hr {
+  border: none;
+  height: 1px;
+  background: var(--border-color);
+  margin: 3rem 0;
+}
+
+/* === Directive 提示區塊 === */
+.article-entry div[data-directive] {
+  padding: 1rem 1.4rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  position: relative;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  /* 增加背景不透明度，使其成為獨立區塊 */
+  background: rgba(250, 250, 250, 0.7);
+
+  /* 拆開簡寫，防止 border 覆寫 border-left */
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-left: 0.35em solid currentColor;
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+/* 深色模式下的微調 (如果有深色模式的話，這裡可以確保可讀性) */
+@media (prefers-color-scheme: dark) {
+  .article-entry div[data-directive] {
+    background: rgba(30, 30, 30, 0.7);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.article-entry div[data-directive='tip'] {
+  border-left-color: #2ea043;
+  background: rgba(46, 160, 67, 0.12);
+}
+.article-entry div[data-directive='tip']::before {
+  content: '💡 Tip\A';
+  color: #2ea043;
+  font-weight: 600;
+  white-space: pre-wrap;
+}
+
+.article-entry div[data-directive='warning'] {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+}
+.article-entry div[data-directive='warning']::before {
+  content: '⚠️ Warning\A';
+  color: #d97706;
+  font-weight: 600;
+  white-space: pre-wrap;
+}
+
+.article-entry div[data-directive='danger'] {
+  border-left-color: #e11d48;
+  background: rgba(225, 29, 72, 0.12);
+}
+.article-entry div[data-directive='danger']::before {
+  content: '🚫 Danger\A';
+  color: #e11d48;
+  font-weight: 600;
+  white-space: pre-wrap;
+}
+
+.article-entry div[data-directive='note'] {
+  border-left-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.12);
+}
+.article-entry div[data-directive='note']::before {
+  content: 'ℹ️ Note\A';
+  color: #3b82f6;
+  font-weight: 600;
+  white-space: pre-wrap;
+}
+
+/* ---------- 手機版自適應 ---------- */
+@media (max-width: 768px) {
+  .article-entry {
+    font-size: 1.02rem;
+    line-height: 1.85;
+  }
+
+  .article-entry > * + * {
+    margin-top: 1.4rem;
+  }
+
+  .article-entry h2 {
+    margin-top: 3rem !important;
+    font-size: 1.45rem;
+  }
+
+  .article-entry h3 {
+    margin-top: 2rem !important;
+    font-size: 1.25rem;
+  }
+
+  .article-entry h4 {
+    margin-top: 1.5rem !important;
+    font-size: 1.1rem;
+  }
+
+  .article-entry ul,
+  .article-entry ol {
+    padding-left: 1.3rem;
+  }
+
+  .article-entry blockquote {
+    padding: 0.6rem 1rem;
+    margin: 1rem 0;
+  }
+
+  /* 表格：確保可水平捲動 */
+  .article-entry table {
+    font-size: 0.88rem;
+    margin: 1.5rem 0;
+  }
+
+  .article-entry th,
+  .article-entry td {
+    padding: 8px 10px;
+  }
+
+  .article-entry img {
+    margin: 1.5rem auto;
+    border-radius: 10px;
+  }
+
+  .article-entry pre {
+    margin: 1rem 0 !important;
+    border-radius: 10px !important;
+  }
+
+  .article-entry div[data-directive] {
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+  }
+}

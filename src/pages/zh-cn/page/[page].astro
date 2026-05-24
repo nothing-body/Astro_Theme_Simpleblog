@@ -1,0 +1,63 @@
+﻿---
+// src/pages/zh-cn/page/[page].astro — 简体中文文章列表分页页
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Sidebar from '../../../components/Sidebar.astro';
+import PostCard from '../../../components/PostCard.astro';
+import Pagination from '../../../components/Pagination.astro';
+import { useTranslations } from '../../../i18n/utils';
+import { sortBlogPosts } from '../../../lib/posts';
+
+export async function getStaticPaths() {
+  const PAGE_SIZE = 5;
+  const allPosts = await getCollection(
+    'blog',
+    ({ id, data }) => id.startsWith('zh-cn/') && !data.draft
+  );
+  const sorted = sortBlogPosts(allPosts);
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  return Array.from({ length: totalPages }, (_, i) => ({
+    params: { page: String(i + 1) },
+    props: { totalPages, allPosts: sorted },
+  }));
+}
+
+const { page } = Astro.params;
+const { totalPages, allPosts } = Astro.props;
+const t = useTranslations('zh-cn');
+const PAGE_SIZE = 5;
+const currentPage = Number(page);
+const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+const getPageUrl = (n: number) => (n === 1 ? '/zh-cn/posts' : `/zh-cn/page/${n}`);
+---
+
+<BaseLayout title={`${t('posts.title')} — 第 ${currentPage} 页`}>
+  <div class="page-container" style="padding-top:2rem; padding-bottom:4rem;">
+    <div class="content-wrapper">
+      <Sidebar allPosts={allPosts} lang="zh-cn" />
+      <main id="main-content" class="main-content">
+        <h1
+          style="font-size:1.6rem; font-weight:800; color:var(--text-heading); margin-bottom:1.5rem;"
+        >
+          {t('posts.title')}
+        </h1>
+        {posts.map(post => <PostCard post={post} lang="zh-cn" />)}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          prevUrl={currentPage > 1 ? getPageUrl(currentPage - 1) : undefined}
+          nextUrl={currentPage < totalPages ? getPageUrl(currentPage + 1) : undefined}
+          getPageUrl={getPageUrl}
+          lang="zh-cn"
+        />
+      </main>
+    </div>
+  </div>
+
+
+<script>
+  try {
+    sessionStorage.setItem('bb-last-list', window.location.pathname);
+  } catch {}
+</script>
+</BaseLayout>

@@ -1,0 +1,7 @@
+# Cloudflare Pages deployment configuration.
+# Do not put secrets here. Use .env.cloudflare or CI/CD secrets.
+
+name = "your-pages-project"
+pages_build_output_dir = "dist"
+compatibility_date = "2025-05-07"
+compatibility_flags = ["nodejs_compat"]

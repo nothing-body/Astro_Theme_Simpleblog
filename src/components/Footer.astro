@@ -1,0 +1,145 @@
+﻿---
+// src/components/Footer.astro — 頁腳元件
+import { useTranslatedPath } from '../i18n/utils';
+
+export interface Props {
+  lang: 'zh-tw' | 'en' | 'zh-cn';
+}
+
+const { lang } = Astro.props;
+const translatePath = useTranslatedPath(lang);
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-inner">
+    <!-- 版權文字 -->
+    <div class="footer-copyright">
+      © {year} All Rights Reserved
+    </div>
+
+    <!-- 中間導覽連結 -->
+    <nav class="footer-links" aria-label={lang === 'en' ? 'Footer navigation' : '頁腳導覽'}>
+      <a href={translatePath('/about')}>
+        {lang === 'en' ? 'About' : '關於本站'}
+      </a>
+      <span class="footer-sep" aria-hidden="true">|</span>
+      <a href={translatePath('/contact')}>
+        {lang === 'en' ? 'Contact Us' : '聯絡我們'}
+      </a>
+      <span class="footer-sep" aria-hidden="true">|</span>
+      <a href={translatePath('/privacy')}>
+        {lang === 'en' ? 'Privacy Policy' : '隱私權政策'}
+      </a>
+      <span class="footer-sep" aria-hidden="true">|</span>
+      <a href={translatePath('/disclaimer')}>
+        {lang === 'en' ? 'Disclaimer' : '免責聲明'}
+      </a>
+    </nav>
+
+    <!-- 隱私設定按鈕（避免使用 cookie 關鍵字，防止 EasyList-Cookie 過濾）-->
+    <button
+      type="button"
+      class="privacy-trigger-btn"
+      id="footer-privacy-trigger"
+      aria-label={lang === 'en' ? 'Cookie Settings' : 'Cookie 設定'}
+    >
+      🍪 {lang === 'en' ? 'Cookie Settings' : 'Cookie 設定'}
+    </button>
+  </div>
+</footer>
+
+<script is:inline>
+  var btn = document.getElementById('footer-privacy-trigger');
+  if (btn) {
+    btn.addEventListener('click', function () {
+      document.dispatchEvent(new CustomEvent('toggle-privacy-cfg'));
+    });
+  }
+</script>
+
+<style is:global>
+  .site-footer {
+    margin-top: 4rem;
+    padding: 1.2rem 1.5rem 1.8rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    background: var(--bg-main);
+  }
+
+  .footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    text-align: center;
+  }
+
+  .footer-copyright {
+    font-weight: 500;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .footer-links {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .footer-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover {
+    color: var(--primary-red);
+  }
+
+  .footer-sep {
+    color: var(--border-color);
+    opacity: 0.8;
+    flex-shrink: 0;
+  }
+
+  .privacy-trigger-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.3rem 0.8rem;
+    border-radius: 99px;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+  }
+
+  .privacy-trigger-btn:hover {
+    background: var(--primary-red);
+    border-color: var(--primary-red);
+    color: white;
+  }
+
+  @media (max-width: 640px) {
+    .footer-inner {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .footer-links {
+      font-size: 0.82rem;
+    }
+  }
+</style>

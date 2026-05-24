@@ -1,0 +1,188 @@
+﻿---
+import type { CollectionEntry } from 'astro:content';
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+import { formatDate, getPostUrl, summarizePlainText } from '../lib/utils';
+
+export interface Props {
+  post: CollectionEntry<'blog'>;
+  lang: Lang;
+}
+
+const { post, lang } = Astro.props;
+const t = useTranslations(lang);
+const postUrl = getPostUrl(post.id, lang);
+const formattedDate = formatDate(post.data.pubDate, lang);
+const description = post.data.description ? summarizePlainText(post.data.description, 96) : '';
+const pinnedLabel = lang === 'en' ? 'Pinned' : lang === 'zh-cn' ? '置顶' : '置頂';
+---
+
+<article class="post-card glass-card">
+  <a href={postUrl} class="post-card-link" rel="bookmark" aria-label={post.data.title}>
+    <div class="post-card-meta">
+      {post.data.pinned && <span class="post-card-pinned">{pinnedLabel}</span>}
+      <span class="post-card-category">{post.data.category}</span>
+      <time class="post-card-date" datetime={post.data.pubDate.toISOString()}>
+        {formattedDate}
+      </time>
+    </div>
+
+    <h2 class="post-card-title">{post.data.title}</h2>
+
+    {description && <p class="post-card-desc">{description}</p>}
+
+    <div class="post-card-footer">
+      <div class="post-card-tags" aria-label={t('sidebar.tags')}>
+        {post.data.tags.slice(0, 3).map((tag: string) => <span class="post-card-tag">#{tag}</span>)}
+      </div>
+      <span class="post-card-read" aria-hidden="true">
+        {t('posts.readMore')}
+      </span>
+    </div>
+  </a>
+</article>
+
+<style>
+  .post-card {
+    display: block;
+    transition:
+      transform 0.22s ease,
+      box-shadow 0.22s ease;
+    height: 100%;
+  }
+
+  @media (hover: hover) {
+    .post-card:hover {
+      transform: translateY(-4px);
+    }
+  }
+
+  .post-card-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    color: inherit;
+    text-decoration: none;
+    height: 100%;
+  }
+
+  .post-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .post-card-category {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--primary-red);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .post-card-pinned {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    min-height: 1.45rem;
+    padding: 0.16rem 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--primary-red) 42%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-red) 10%, transparent);
+    color: var(--primary-red);
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .post-card-date {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .post-card-title {
+    font-size: 1.12rem;
+    font-weight: 700;
+    color: var(--text-heading);
+    line-height: 1.45;
+    margin: 0;
+    transition: color 0.2s ease;
+  }
+
+  @media (hover: hover) {
+    .post-card:hover .post-card-title {
+      color: var(--primary-red);
+    }
+  }
+
+  .post-card-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
+    display: -webkit-box;
+    max-height: 4.65em;
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+
+  .post-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: auto;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .post-card-tags {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .post-card-tag {
+    font-size: 0.78rem;
+    color: var(--primary-red);
+    opacity: 0.8;
+    font-weight: 600;
+  }
+
+  .post-card-read {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--primary-red);
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: all 0.22s ease;
+  }
+
+  @media (hover: hover) {
+    .post-card:hover .post-card-read {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .post-card-footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .post-card-read {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>

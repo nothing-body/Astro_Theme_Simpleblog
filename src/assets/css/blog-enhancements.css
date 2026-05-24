@@ -1,0 +1,182 @@
+/* src/assets/css/blog-enhancements.css */
+/* 低耦合、模組化的部落格頁面增強樣式 */
+
+/* ---------- Hero 區塊 ---------- */
+.hero {
+  position: relative;
+  height: 260px;
+  background: var(--hero-bg, linear-gradient(135deg, #4e54c8, #8f94fb));
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  padding: 1.5rem 2rem;
+  color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.6));
+}
+.hero h1 {
+  position: relative;
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  z-index: 1;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* ---------- 文章容器 ---------- */
+.be-article-wrapper {
+  display: flex;
+  flex-direction: column; /* 預設為單欄（垂直排列），避免手機端撐破版面 */
+  justify-content: center; /* 讓內部元素置中 */
+  gap: 2rem;
+  margin: 2rem auto; /* 全域置中，確保在電腦大螢幕與手機端都有合適的上下與水平置中邊距 */
+  width: 100%;
+  max-width: 1200px; /* 與全站導覽列一致的最大寬度限制 */
+  padding: 0 1.5rem; /* 左右保留安全間距，避免文字貼邊 */
+}
+.be-content {
+  width: 100%; /* 確保自適應 */
+  min-width: 0; /* 讓 flex 項目可小於內容的 intrinsic 寬度，解決代碼區塊撐破版面問題 */
+  max-width: 860px; /* 在任何情況下都允許較寬 */
+  margin: 0 auto; /* 自身置中 */
+
+  /* 完美的毛玻璃大卡片 */
+  background: var(--glass-bg, rgba(255, 255, 255, 0.92));
+  backdrop-filter: blur(var(--glass-blur, 20px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
+  border: 1.5px solid var(--glass-border, rgba(200, 185, 170, 0.7));
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 3rem 4rem; /* 電腦端大內距，呼吸感十足 */
+  animation: fadeInUp 0.5s ease-out;
+}
+/* 電腦大螢幕下的完美置中佈局 */
+@media (min-width: 1024px) {
+  .be-article-wrapper {
+    flex-direction: column; /* 保持單欄垂直排列，確保不會因為 flex-row 機制導致偏左 */
+    align-items: center; /* 讓子元素在水平方向上完美置中 */
+  }
+  .be-content {
+    max-width: 860px; /* 限制最大寬度在黃金閱讀寬度，確保最佳閱讀體驗 */
+    margin: 0 auto; /* 雙重置中保險 */
+  }
+}
+
+/* ---------- 卡片化樣式已移至主容器本身，子元素只需自然呼吸邊距即可 ---------- */
+.be-content > * {
+  margin-top: 1.8rem;
+  margin-bottom: 1.8rem;
+}
+
+/* ---------- 表格排版防止文字溢出（不覆寫 markdown.css 中的精美設計） ---------- */
+.be-content td,
+.be-content th {
+  /* 解決英文單字被不當截斷的問題，並允許表頭換行 */
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
+}
+
+/* ---------- 微動畫 ---------- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- TOC 側邊欄 ---------- */
+.toc {
+  position: sticky;
+  top: 1rem;
+  max-width: 260px;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(8px);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+.toc ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+.toc li {
+  margin: 0.3rem 0;
+}
+.toc a {
+  color: var(--primary-red);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.toc a:hover {
+  color: var(--primary-red-dark);
+}
+
+/* ---------- 手機版自適應 ---------- */
+@media (max-width: 768px) {
+  /* 容器防止水平溢出 */
+  .be-article-wrapper {
+    padding: 0 0.75rem; /* 手機端左右保留較小安全間距 */
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  /* 減少大卡片內距與間距，讓內容在小螢幕有足夠寬度 */
+  .be-content {
+    padding: 1.5rem 1.2rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+  }
+  .be-content > * {
+    margin-top: 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+
+  /* Hero 區塊縮小 */
+  .hero {
+    height: 160px;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.3rem, 5vw, 1.8rem);
+  }
+
+  /* TOC 在手機上全寬 */
+  .toc {
+    max-width: 100%;
+    position: static;
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .be-content {
+    padding: 1rem 0.8rem;
+  }
+  .be-content > * {
+    margin-top: 0.8rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .be-content td {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
+  }
+}

@@ -1,0 +1,40 @@
+﻿---
+// src/pages/404.astro — 自定義 404 頁面
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getLangFromUrl, useTranslations, useTranslatedPath } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+---
+
+<BaseLayout title={t('404.title')}>
+  <div class="page-container" style="padding-top:5rem; padding-bottom:5rem; text-align:center;">
+    <main id="main-content">
+      <div class="glass-card" style="max-width:520px; margin:0 auto; padding:3.5rem 2rem;">
+        <p class="error-code" aria-hidden="true">404</p>
+        <h1
+          style="font-size:1.6rem; font-weight:800; color:var(--text-heading); margin:0.8rem 0 1rem;"
+        >
+          {t('404.title')}
+        </h1>
+        <p style="color:var(--text-secondary); margin-bottom:2rem;">{t('404.message')}</p>
+        <a href={translatePath('/')} class="btn-primary">{t('404.backHome')}</a>
+      </div>
+    </main>
+  </div>
+
+
+<style is:global>
+  .error-code {
+    font-size: 6rem;
+    font-weight: 900;
+    color: var(--primary-red);
+    opacity: 0.18;
+    line-height: 1;
+    margin: 0;
+    font-family: var(--font-family-mono, monospace);
+    letter-spacing: -4px;
+  }
+</style>
+</BaseLayout>

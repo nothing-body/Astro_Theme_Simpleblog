@@ -1,0 +1,51 @@
+﻿---
+// src/pages/disclaimer.astro — 免責聲明（繁體中文）
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AboutSidebar from '../components/AboutSidebar.astro';
+import { getCanonicalUrl } from '../lib/site';
+import { safeJsonStringify } from '../lib/utils';
+
+const currentPath = Astro.url.pathname;
+const pageUrl = getCanonicalUrl(currentPath, Astro.site);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: '免責聲明',
+  url: pageUrl,
+  description: '本站免責聲明，說明內容使用與責任範圍。',
+  publisher: { '@type': 'Person', name: 'Astro Blog Template' },
+};
+---
+
+<BaseLayout title="免責聲明" description="本站免責聲明，說明內容使用與責任範圍。">
+  <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
+  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+    <div class="content-wrapper">
+      <AboutSidebar lang="zh-tw" currentPath={currentPath} />
+      <main id="main-content" class="main-content">
+        <article class="glass-card" style="padding: 2.5rem;">
+          <div class="article-entry">
+            <h1>免責聲明</h1>
+            <p>請在閱讀與使用本網站內容前，詳細閱讀以下免責聲明：</p>
+
+            <h2>內容真實性與正確性</h2>
+            <p>
+              本站發佈之內容主要是作者個人的學習筆記、技術隨筆與主觀心得。我們不保證文章所述的技術方案或軟體資訊具備絕對的準確性或時效性。技術日新月異，在實際應用至正式環境前，請務必自行進行評估、測試並備份資料。
+            </p>
+
+            <h2>外部連結</h2>
+            <p>
+              本站包含指向第三方網站的連結。我們不對這些外部網站的內容、隱私政策及安全性承擔任何責任。
+            </p>
+
+            <h2>損害賠償</h2>
+            <p>
+              如因採納本站文章的任何建議而導致資料遺失、設備損壞或其他形式之損失，作者概不承擔任何法律與賠償責任。
+            </p>
+          </div>
+        </article>
+      </main>
+    </div>
+  </div>
+</BaseLayout>

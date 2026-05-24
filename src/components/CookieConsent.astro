@@ -1,0 +1,275 @@
+﻿---
+// src/components/CookieConsent.astro — GDPR Cookie 同意面板
+// 注意：CSS class / ID 刻意避免使用 "cookie" 一詞，
+// 以防止 Brave Shield 等廣告過濾器（EasyList-Cookie）
+// 透過 cosmetic filtering 將面板強制隱藏。
+export interface Props {
+  lang: 'zh-tw' | 'en' | 'zh-cn';
+}
+
+const { lang } = Astro.props;
+
+const i = {
+  title: lang === 'en' ? 'Cookie Settings' : 'Cookie 設定',
+  desc:
+    lang === 'en'
+      ? 'This site uses cookies and local storage to enhance your experience.'
+      : '本站使用 Cookie 與本機儲存以提供更好的瀏覽體驗。',
+  privacyText: lang === 'en' ? 'Privacy Policy' : '隱私政策',
+  privacyUrl: lang === 'en' ? '/en/privacy' : '/privacy',
+  settingsTitle: lang === 'en' ? 'Cookie / Local Storage Settings' : 'Cookie / 本機儲存設定',
+  rememberTz:
+    lang === 'en'
+      ? 'Allow this site to remember my selected timezone'
+      : '允許本站記住我選擇的時區設定',
+  analytics:
+    lang === 'en'
+      ? 'Allow Google Analytics (GA4) to collect browsing data'
+      : '允許 Google Analytics (GA4) 收集瀏覽數據進行網站分析',
+  save: lang === 'en' ? 'Save Settings' : '儲存設定',
+  close: lang === 'en' ? 'Close' : '關閉',
+};
+---
+
+<div
+  id="privacy-cfg"
+  class="privacy-cfg"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="privacy-cfg-title"
+  aria-hidden="true"
+>
+  <div class="privacy-cfg-body">
+    <h3 id="privacy-cfg-title">{i.title}</h3>
+    <p>
+      {i.desc}
+      {' '}
+      <a href={i.privacyUrl} rel="noopener noreferrer" class="privacy-cfg-link">
+        {i.privacyText}
+      </a>
+    </p>
+
+    <h4>{i.settingsTitle}</h4>
+
+    <label class="privacy-cfg-toggle">
+      <input type="checkbox" id="toggle-timezone" />
+      <span>{i.rememberTz}</span>
+    </label>
+
+    <label class="privacy-cfg-toggle">
+      <input type="checkbox" id="toggle-analytics" />
+      <span>{i.analytics}</span>
+    </label>
+
+    <div class="privacy-cfg-actions">
+      <button type="button" class="btn-save" id="privacy-cfg-save">{i.save}</button>
+      <button type="button" class="btn-dismiss" id="privacy-cfg-dismiss">{i.close}</button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    var panel = document.getElementById('privacy-cfg');
+    if (!panel) return;
+
+    var tzCheckbox = document.getElementById('toggle-timezone');
+    var gaCheckbox = document.getElementById('toggle-analytics');
+    var saveBtn = document.getElementById('privacy-cfg-save');
+    var closeBtn = document.getElementById('privacy-cfg-dismiss');
+
+    /* 從 window.__privacySettings 讀取目前設定 */
+    function getSettings() {
+      return (
+        window.__privacySettings || {
+          hasSetCookies: false,
+          rememberTimezone: false,
+          enableAnalytics: false,
+        }
+      );
+    }
+
+    /* 同步 checkbox 狀態 */
+    function syncCheckboxes() {
+      var s = getSettings();
+      if (tzCheckbox) tzCheckbox.checked = s.rememberTimezone !== false;
+      if (gaCheckbox) {
+        /* 首次進入時預設不勾選分析（GDPR opt-in）*/
+        gaCheckbox.checked = s.hasSetCookies ? s.enableAnalytics !== false : false;
+      }
+    }
+
+    /* 開啟面板 */
+    function openPanel() {
+      panel.setAttribute('aria-hidden', 'false');
+      panel.classList.add('is-visible');
+      syncCheckboxes();
+      if (saveBtn) saveBtn.focus();
+    }
+
+    /* 關閉面板 */
+    function closePanel() {
+      panel.setAttribute('aria-hidden', 'true');
+      panel.classList.remove('is-visible');
+      /* 將焦點還給頁腳觸發按鈕 */
+      var trigger = document.getElementById('footer-privacy-trigger');
+      if (trigger) trigger.focus();
+    }
+
+    /* 監聽 Footer 發出的開啟事件 */
+    document.addEventListener('toggle-privacy-cfg', openPanel);
+
+    /* 點擊遮罩關閉 */
+    panel.addEventListener('click', function (e) {
+      if (e.target === panel) closePanel();
+    });
+
+    /* 關閉按鈕 */
+    if (closeBtn) closeBtn.addEventListener('click', closePanel);
+
+    /* 儲存設定 */
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function () {
+        var updates = {
+          hasSetCookies: true,
+          rememberTimezone: !!(tzCheckbox && tzCheckbox.checked),
+          enableAnalytics: !!(gaCheckbox && gaCheckbox.checked),
+        };
+        if (typeof window.updatePrivacySettings === 'function') {
+          window.updatePrivacySettings(updates);
+        }
+        /* 若不允許記住時區，清除 localStorage */
+        if (!updates.rememberTimezone) {
+          try {
+            localStorage.removeItem('bb-tz');
+          } catch (e) {}
+        }
+        /* 重新載入以套用 GA4 設定 */
+        window.location.reload();
+      });
+    }
+
+    /* Escape 鍵關閉 */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && panel.classList.contains('is-visible')) {
+        closePanel();
+      }
+    });
+
+    /* 延遲 600ms 後，若使用者未做過設定則自動顯示 */
+    setTimeout(function () {
+      if (!getSettings().hasSetCookies) openPanel();
+    }, 600);
+  })();
+</script>
+
+<style is:global>
+  .privacy-cfg {
+    position: fixed;
+    inset: 0;
+    background: rgba(44, 36, 32, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+  }
+
+  .privacy-cfg.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .privacy-cfg-body {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    padding: 2rem 2.2rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: var(--shadow-lg);
+    font-size: 0.92rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+  }
+
+  .privacy-cfg-body h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-heading);
+  }
+
+  .privacy-cfg-body h4 {
+    margin-top: 1.3rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-heading);
+  }
+
+  .privacy-cfg-link {
+    color: var(--primary-red);
+    text-decoration: underline;
+  }
+
+  .privacy-cfg-toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+    cursor: pointer;
+    line-height: 1.5;
+  }
+
+  .privacy-cfg-toggle input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--primary-red);
+    cursor: pointer;
+  }
+
+  .privacy-cfg-actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .privacy-cfg .btn-save {
+    padding: 0.45rem 1.3rem;
+    border-radius: 99px;
+    border: none;
+    background: var(--primary-red);
+    color: white;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .privacy-cfg .btn-save:hover {
+    background: var(--primary-red-dark);
+    transform: translateY(-2px);
+  }
+
+  .privacy-cfg .btn-dismiss {
+    padding: 0.45rem 1.3rem;
+    border-radius: 99px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .privacy-cfg .btn-dismiss:hover {
+    background: var(--cream-200, #f4ede3);
+    transform: translateY(-2px);
+  }
+</style>

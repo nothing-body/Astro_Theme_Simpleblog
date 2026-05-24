@@ -1,0 +1,51 @@
+﻿---
+// src/pages/zh-cn/disclaimer.astro — 免责声明（简体中文）
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AboutSidebar from '../../components/AboutSidebar.astro';
+import { getCanonicalUrl } from '../../lib/site';
+import { safeJsonStringify } from '../../lib/utils';
+
+const currentPath = Astro.url.pathname;
+const pageUrl = getCanonicalUrl(currentPath, Astro.site);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: '免责声明',
+  url: pageUrl,
+  description: '本站免责声明，说明内容使用与责任范围。',
+  publisher: { '@type': 'Person', name: 'Astro Blog Template' },
+};
+---
+
+<BaseLayout title="免责声明" description="本站免责声明，说明内容使用与责任范围。">
+  <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
+  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+    <div class="content-wrapper">
+      <AboutSidebar lang="zh-cn" currentPath={currentPath} />
+      <main id="main-content" class="main-content">
+        <article class="glass-card" style="padding: 2.5rem;">
+          <div class="article-entry">
+            <h1>免责声明</h1>
+            <p>请在阅读与使用本网站内容前，详细阅读以下免责声明：</p>
+
+            <h2>内容真实性与正确性</h2>
+            <p>
+              本站发布之内容主要是作者个人的学习笔记、技术随笔与主观心得。我们不保证文章所述的技术方案或软件资讯具备绝对的准确性或时效性。技术日新月异，在实际应用至正式环境前，请务必自行进行评估、测试并备份数据。
+            </p>
+
+            <h2>外部链接</h2>
+            <p>
+              本站包含指向第三方网站的链接。我们不对这些外部网站的内容、隐私政策及安全性承担任何责任。
+            </p>
+
+            <h2>损害赔偿</h2>
+            <p>
+              如因采纳本站文章的任何建议而导致数据丢失、设备损坏或其他形式之损失，作者概不承担任何法律与赔偿责任。
+            </p>
+          </div>
+        </article>
+      </main>
+    </div>
+  </div>
+</BaseLayout>

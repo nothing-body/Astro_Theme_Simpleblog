@@ -1,0 +1,104 @@
+﻿---
+// src/components/PostCopyright.astro — 文章版權聲明區塊
+export interface Props {
+  canonicalUrl: string;
+  lang: 'zh-tw' | 'en' | 'zh-cn';
+  author?: string;
+}
+
+const { canonicalUrl, lang, author = 'Astro Blog Template' } = Astro.props;
+
+const i = {
+  author: lang === 'en' ? 'Author' : '作者',
+  canonical: lang === 'en' ? 'Canonical URL' : '原始連結',
+  license:
+    lang === 'en'
+      ? 'This article is licensed under CC BY-NC-SA 4.0.'
+      : '本文採 CC BY-NC-SA 4.0 授權，轉載請保留出處與連結。',
+  licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+};
+---
+
+<aside class="post-copyright" aria-label={lang === 'en' ? 'Copyright notice' : '版權聲明'}>
+  <dl class="copyright-body">
+    <div class="copyright-row">
+      <dt class="copyright-key">{i.author}</dt>
+      <dd class="copyright-val">{author}</dd>
+    </div>
+    <div class="copyright-row">
+      <dt class="copyright-key">{i.canonical}</dt>
+      <dd class="copyright-val">
+        <a href={canonicalUrl} rel="canonical" class="copyright-link">
+          {canonicalUrl}
+        </a>
+      </dd>
+    </div>
+    <div class="copyright-row">
+      <dt class="copyright-key">License</dt>
+      <dd class="copyright-val">
+        <a
+          href={i.licenseUrl}
+          rel="license noopener noreferrer"
+          target="_blank"
+          class="copyright-link"
+        >
+          {i.license}
+        </a>
+      </dd>
+    </div>
+  </dl>
+</aside>
+
+<style>
+  .post-copyright {
+    margin-top: 3.5rem;
+    padding: 1.2rem 1.5rem;
+    border-left: 3px solid #6f7f99;
+    background: #eef2f8;
+    border: 1px solid rgba(111, 127, 153, 0.3);
+    border-radius: 0 10px 10px 0;
+    font-size: 0.88rem;
+  }
+
+  .copyright-body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .copyright-row {
+    display: flex;
+    gap: 0.8rem;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+
+  .copyright-key {
+    font-weight: 700;
+    color: #3b4e6a;
+    min-width: 80px;
+    flex-shrink: 0;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .copyright-val {
+    color: var(--text-secondary);
+    margin: 0;
+    word-break: break-all;
+  }
+
+  .copyright-link {
+    color: #2f4d75;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    word-break: break-all;
+    transition: opacity 0.2s;
+  }
+
+  .copyright-link:hover {
+    opacity: 0.75;
+  }
+</style>

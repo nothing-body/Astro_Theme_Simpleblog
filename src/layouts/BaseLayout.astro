@@ -1,0 +1,111 @@
+﻿---
+import HeadMeta from '../components/HeadMeta.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import CookieConsent from '../components/CookieConsent.astro';
+import { getLangFromUrl } from '../i18n/utils';
+import '../styles/global.css';
+
+export interface Props {
+  title: string;
+  description?: string;
+  canonicalUrl?: string;
+  ogImage?: string;
+  pubDate?: Date;
+  updatedDate?: Date;
+  type?: 'website' | 'article';
+  tags?: string[];
+  category?: string;
+  author?: string;
+  customCanonical?: string;
+}
+
+const {
+  title,
+  description,
+  canonicalUrl,
+  ogImage,
+  pubDate,
+  updatedDate,
+  type = 'website',
+  tags,
+  category,
+  author,
+  customCanonical,
+} = Astro.props;
+
+const lang = getLangFromUrl(Astro.url);
+const htmlLang = lang === 'en' ? 'en' : lang === 'zh-cn' ? 'zh-CN' : 'zh-TW';
+const ga4Id = import.meta.env.PUBLIC_GA4_ID ?? '';
+const finalCanonical = customCanonical ?? canonicalUrl;
+---
+
+<!doctype html>
+<html lang={htmlLang} data-theme="light">
+  <head>
+    <HeadMeta
+      title={title}
+      description={description}
+      lang={lang}
+      canonicalUrl={finalCanonical}
+      ogImage={ogImage}
+      pubDate={pubDate}
+      updatedDate={updatedDate}
+      type={type}
+      tags={tags}
+      category={category}
+      author={author}
+      ga4Id={ga4Id}
+    />
+  </head>
+  <body>
+    <Navbar />
+    <CookieConsent lang={lang} />
+
+    <main>
+      <slot />
+    </main>
+
+    <button
+      type="button"
+      id="back-to-top-btn"
+      class="back-to-top-btn"
+      aria-label={lang === 'en' ? 'Back to top' : lang === 'zh-cn' ? '回到顶部' : '回到頂部'}
+      title={lang === 'en' ? 'Back to top' : lang === 'zh-cn' ? '回到顶部' : '回到頂部'}
+    >
+      ↑
+    </button>
+
+    <Footer lang={lang} />
+
+    <script is:inline>
+      (function () {
+        var btn = document.getElementById('back-to-top-btn');
+        if (!(btn instanceof HTMLButtonElement)) return;
+
+        var showAfter = 320;
+        var ticking = false;
+
+        function updateButtonVisibility() {
+          var y = window.scrollY || document.documentElement.scrollTop || 0;
+          btn.classList.toggle('is-visible', y > showAfter);
+          ticking = false;
+        }
+
+        function onScroll() {
+          if (!ticking) {
+            window.requestAnimationFrame(updateButtonVisibility);
+            ticking = true;
+          }
+        }
+
+        btn.addEventListener('click', function () {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        updateButtonVisibility();
+      })();
+    </script>
+  </body>
+</html>

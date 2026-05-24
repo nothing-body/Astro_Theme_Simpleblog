@@ -1,0 +1,83 @@
+# build output
+dist/
+
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# local environment files
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+.env.test
+.env.preview
+.env.ci
+.env.*.local
+.env.cloudflare
+.env.vps
+.env.vercel
+.env*.secret
+.dev.vars
+.dev.vars.*
+
+# package-manager auth files that may contain tokens
+.npmrc.local
+.yarnrc.local
+.pnpmrc.local
+
+# keep public examples commit-safe
+!.env.example
+!.env.*.example
+
+# Wrangler and Cloudflare local state
+.wrangler/
+.cloudflare/
+.vercel/
+.netlify/
+
+# local SSH keys and private key files
+.ssh/
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.crt
+*.csr
+*.jks
+*.keystore
+id_rsa
+id_ed25519
+kubeconfig
+*.kubeconfig
+service-account*.json
+credentials*.json
+*-credentials.json
+
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
+
+# local reports and generated artifacts
+backup/
+eslint-report.json
+lighthouse-report.html
+lighthouse_tmp/
+playwright-report/
+test-results/
+src/purgecss-output/
+tmp/
+
+# local pnpm store
+.pnpm-store/

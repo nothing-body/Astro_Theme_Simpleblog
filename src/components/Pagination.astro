@@ -1,0 +1,214 @@
+﻿---
+// src/components/Pagination.astro — 分頁導覽元件
+export interface Props {
+  currentPage: number;
+  totalPages: number;
+  prevUrl?: string;
+  nextUrl?: string;
+  getPageUrl: (pageNumber: number) => string;
+  lang?: 'zh-tw' | 'en' | 'zh-cn';
+}
+
+const { currentPage, totalPages, prevUrl, nextUrl, getPageUrl, lang = 'zh-tw' } = Astro.props;
+
+// 多語系標籤自適應（相容 zh-cn 簡體、zh-tw 繁體 與 en 英文）
+const prevLabel = lang === 'en' ? '← Prev' : lang === 'zh-cn' ? '← 上一页' : '← 上一頁';
+const nextLabel = lang === 'en' ? 'Next →' : lang === 'zh-cn' ? '下一页 →' : '下一頁 →';
+
+// 根據語系動態生成無障礙輔助標籤
+function getAriaLabel(num: number): string {
+  if (lang === 'en') return `Page ${num}`;
+  if (lang === 'zh-cn') return `第 ${num} 页`;
+  return `第 ${num} 頁`;
+}
+
+// 業界標準分頁演算法：總數大於 7 時，按鈕總數始終固定為 7，避免分頁抖動，提供極致流暢的 UI/UX 體驗
+function getPageNums(current: number, total: number): (number | null)[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+  // 1. 當前頁靠近首頁時：[1, 2, 3, 4, 5, null, total]
+  if (current <= 4) {
+    return [1, 2, 3, 4, 5, null, total];
+  }
+
+  // 2. 當前頁靠近尾頁時：[1, null, total - 4, total - 3, total - 2, total - 1, total]
+  if (current >= total - 3) {
+    return [1, null, total - 4, total - 3, total - 2, total - 1, total];
+  }
+
+  // 3. 當前頁處於中間時：[1, null, current - 1, current, current + 1, null, total]
+  return [1, null, current - 1, current, current + 1, null, total];
+}
+
+const pageNums = getPageNums(currentPage, totalPages);
+---
+
+{
+  totalPages > 1 && (
+    <nav class="pagination" aria-label={lang === 'en' ? 'Pagination' : '分頁導覽'}>
+      {/* 上一頁 */}
+      {prevUrl ? (
+        <a href={prevUrl} class="page-btn page-btn--nav" rel="prev" aria-label={prevLabel}>
+          <span class="nav-text-full">{prevLabel}</span>
+          <span class="nav-text-short">←</span>
+        </a>
+      ) : (
+        <span class="page-btn page-btn--nav page-btn--disabled" aria-disabled="true" aria-label={prevLabel}>
+          <span class="nav-text-full">{prevLabel}</span>
+          <span class="nav-text-short">←</span>
+        </span>
+      )}
+
+      {/* 頁碼 */}
+      <div class="page-numbers" role="list">
+        {pageNums.map(num =>
+          num === null ? (
+            <span class="page-ellipsis" aria-hidden="true">
+              …
+            </span>
+          ) : (
+            <a
+              href={getPageUrl(num)}
+              class:list={['page-btn', { 'page-btn--active': num === currentPage }]}
+              aria-label={getAriaLabel(num)}
+              aria-current={num === currentPage ? 'page' : undefined}
+              role="listitem"
+            >
+              {num}
+            </a>
+          )
+        )}
+      </div>
+
+      {/* 下一頁 */}
+      {nextUrl ? (
+        <a href={nextUrl} class="page-btn page-btn--nav" rel="next" aria-label={nextLabel}>
+          <span class="nav-text-full">{nextLabel}</span>
+          <span class="nav-text-short">→</span>
+        </a>
+      ) : (
+        <span class="page-btn page-btn--nav page-btn--disabled" aria-disabled="true" aria-label={nextLabel}>
+          <span class="nav-text-full">{nextLabel}</span>
+          <span class="nav-text-short">→</span>
+        </span>
+      )}
+    </nav>
+  )
+}
+
+<style>
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .page-numbers {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+  }
+
+  .page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2rem;
+    height: 2.2rem;
+    padding: 0 0.6rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .page-btn:hover {
+    background: var(--primary-red-light);
+    color: var(--primary-red);
+    border-color: var(--primary-red);
+  }
+
+  .page-btn--active {
+    background: var(--primary-red);
+    color: white;
+    border-color: var(--primary-red);
+    pointer-events: none;
+  }
+
+  .page-btn--nav {
+    padding: 0 1rem;
+    font-size: 0.85rem;
+  }
+
+  .page-btn--disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .page-ellipsis {
+    color: var(--text-muted);
+    padding: 0 0.2rem;
+    font-size: 0.9rem;
+  }
+
+  /* 響應式文字控制 */
+  .nav-text-full {
+    display: inline;
+  }
+
+  .nav-text-short {
+    display: none;
+  }
+
+  /* 行動裝置 (手機端) 響應式佈局調優：確保在窄螢幕上所有 9 個按鈕維持在同一行，絕不斷行 */
+  @media (max-width: 600px) {
+    /* 隱藏完整長文字，僅顯示簡短箭頭 */
+    .nav-text-full {
+      display: none;
+    }
+    
+    .nav-text-short {
+      display: inline;
+    }
+
+    /* 縮小分頁列整體與頁碼按鈕之間的間距 */
+    .pagination {
+      gap: 0.3rem;
+      margin-top: 1.8rem;
+    }
+
+    .page-numbers {
+      gap: 0.18rem;
+    }
+
+    /* 微調按鈕尺寸與字型大小以適應窄螢幕 */
+    .page-btn {
+      min-width: 1.8rem;
+      height: 1.8rem;
+      padding: 0 0.3rem;
+      font-size: 0.8rem;
+      border-radius: 6px;
+    }
+
+    /* 調整上一頁與下一頁導覽按鈕的尺寸，使其與數字按鈕一致，確保無縫對齊 */
+    .page-btn--nav {
+      padding: 0 0.45rem;
+      font-size: 0.8rem;
+      min-width: 1.8rem;
+    }
+
+    .page-ellipsis {
+      padding: 0 0.05rem;
+      font-size: 0.8rem;
+    }
+  }
+</style>

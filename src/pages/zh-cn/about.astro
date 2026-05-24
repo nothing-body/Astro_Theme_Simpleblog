@@ -1,0 +1,67 @@
+﻿---
+// src/pages/zh-cn/about.astro — 关于本站（简体中文）
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AboutSidebar from '../../components/AboutSidebar.astro';
+import { getCanonicalUrl } from '../../lib/site';
+import { safeJsonStringify } from '../../lib/utils';
+
+const currentPath = Astro.url.pathname;
+const pageUrl = getCanonicalUrl(currentPath, Astro.site);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: '关于本站',
+  url: pageUrl,
+  description: '关于Astro Blog Template博客及其作者的介绍。',
+  publisher: { '@type': 'Person', name: 'Astro Blog Template' },
+};
+---
+
+<BaseLayout title="关于本站" description="关于Astro Blog Template博客及其作者的介绍。">
+  <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
+  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+    <div class="content-wrapper">
+      <AboutSidebar lang="zh-cn" currentPath={currentPath} />
+      <main id="main-content" class="main-content">
+        <article class="glass-card" style="padding: 2.5rem;">
+          <div class="article-entry">
+            <h1>关于本站 (About)</h1>
+            <p>
+              欢迎来到我的个人博客！<br />
+              这里并非一个高度精雕细琢的专业入口网站，而是我个人在数字世界中的一块自留地。
+            </p>
+
+            <h2>为什么建立这个网站？</h2>
+            <p>
+              本站采用 Astro 现代化网页框架构建。对我来说，这不仅是一个记录空间，
+              更是技术实践后的备忘录，用来防止自己遗忘操作细节。
+            </p>
+
+            <h2>这里记录了什么？</h2>
+            <p>
+              本站内容主要围绕着我在网上冲浪时发现的有趣软件、技术，以及平时的日常随手小记。你可以将其视为一份公开的“数字笔记本”，范畴包括：
+            </p>
+            <ul>
+              <li><strong>技术随笔：</strong>配置服务成功运行后的随手纪录。</li>
+              <li><strong>工具心得：</strong>软件使用后的个人心得，或发现有趣软件时的想法分享。</li>
+              <li><strong>生活小记：</strong>那些不经意间产生的灵感、生活琐事与个人思考。</li>
+            </ul>
+
+            <h2>关于内容的真实性</h2>
+            <p>
+              这里的每一篇文章都是我的随手小记，是随性记录与思考的产物。<br />
+              虽然内容较为随兴，但这份笔记首先是为了让我未来的自己能回头查阅； 若能同时对来到这里的你有所帮助，那便是额外的收获。
+            </p>
+
+            <h2>关于英文翻译</h2>
+            <p>
+              本站的英文文章内容均由 AI 模型从中文原文翻译而成。<br />
+              虽然已尽力保持语意精确，但仍可能存在表达较生硬或不准确之处，敬请见谅。
+            </p>
+          </div>
+        </article>
+      </main>
+    </div>
+  </div>
+</BaseLayout>

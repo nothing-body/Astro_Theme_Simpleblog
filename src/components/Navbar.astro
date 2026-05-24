@@ -1,0 +1,558 @@
+﻿---
+// src/components/Navbar.astro — 響應式導覽列
+import {
+  getLangFromUrl,
+  useTranslations,
+  useTranslatedPath,
+  getDynamicCategoryMapping,
+  getTargetLangPath,
+} from '../i18n/utils';
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+
+// 動態分類對應（供語系切換使用）
+const categoryMapping = await getDynamicCategoryMapping();
+
+// 動態導入 languages 物件與類型
+import { languages } from '../i18n/ui';
+
+// 計算所有語系切換對應的路徑
+const languagePaths = await Promise.all(
+  (Object.keys(languages) as (keyof typeof languages)[]).map(async l => {
+    const path = await getTargetLangPath(Astro.url, l, categoryMapping);
+    return {
+      code: l,
+      label: languages[l],
+      path,
+      hreflang: l === 'zh-tw' ? 'zh-TW' : l === 'zh-cn' ? 'zh-CN' : 'en',
+    };
+  })
+);
+
+const currentPath = Astro.url.pathname;
+const isActive = (path: string) => currentPath === path || currentPath === `${path}/`;
+---
+
+<!-- Skip to Content（無障礙）-->
+<a href="#main-content" class="skip-link"
+  >{lang === 'en' ? 'Skip to main content' : '跳到主要內容'}</a
+>
+
+<nav
+  class="nav-header"
+  id="navbar"
+  role="navigation"
+  aria-label={lang === 'en' ? 'Main navigation' : '主導覽'}
+>
+  <div class="nav-container">
+    <!-- Logo -->
+    <a href={translatePath('/')} class="nav-logo" aria-label="Astro Blog Template - 返回首頁">
+      <span class="logo-icon" aria-hidden="true">✦</span>
+      <span class="logo-text">Astro Blog Template</span>
+    </a>
+
+    <!-- 桌面導覽連結 -->
+    <div class="nav-right">
+      <div class="nav-links" role="list">
+        <a
+          href={translatePath('/')}
+          class:list={['nav-item', { 'nav-item--active': isActive(lang === 'en' ? '/en' : '/') }]}
+          role="listitem">{t('nav.home')}</a
+        >
+        <a
+          href={translatePath('/posts')}
+          class:list={[
+            'nav-item',
+            {
+              'nav-item--active': currentPath.includes('/posts') || currentPath.includes('/page/'),
+            },
+          ]}
+          role="listitem">{t('nav.posts')}</a
+        >
+        <a
+          href={translatePath('/about')}
+          class:list={['nav-item', { 'nav-item--active': currentPath.includes('/about') }]}
+          role="listitem">{t('nav.about')}</a
+        >
+      </div>
+
+      <!-- 語系切換 -->
+      <div class="lang-switcher">
+        <button
+          class="lang-trigger"
+          id="lang-trigger-btn"
+          aria-label="選擇語系 / Select Language"
+          aria-expanded="false"
+          aria-haspopup="listbox"
+          type="button"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="19"
+            height="19"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path
+              d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+            ></path>
+          </svg>
+        </button>
+        <div
+          class="lang-dropdown"
+          id="lang-dropdown"
+          role="listbox"
+          aria-label="語系選擇"
+          aria-hidden="true"
+        >
+          {
+            languagePaths.map(item => (
+              <a
+                href={lang === item.code ? '#' : item.path}
+                class:list={['lang-option', { 'lang-option--active': lang === item.code }]}
+                role="option"
+                aria-selected={lang === item.code}
+                hreflang={item.hreflang}
+              >
+                {item.label}
+              </a>
+            ))
+          }
+        </div>
+      </div>
+
+      <!-- 漢堡按鈕（手機版）-->
+      <button
+        class="mobile-toggle"
+        id="mobile-toggle"
+        aria-label="開啟選單"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        type="button"
+      >
+        <svg
+          class="icon-menu"
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <line x1="3" y1="7" x2="21" y2="7"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="17" x2="21" y2="17"></line>
+        </svg>
+        <svg
+          class="icon-close"
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- 手機版選單 -->
+<div class="mobile-menu" id="mobile-menu" aria-hidden="true" role="dialog" aria-label="行動選單">
+  <nav class="mobile-links">
+    <a href={translatePath('/')} class="mobile-item">{t('nav.home')}</a>
+    <a href={translatePath('/posts')} class="mobile-item">{t('nav.posts')}</a>
+    <a href={translatePath('/about')} class="mobile-item">{t('nav.about')}</a>
+    <div class="mobile-lang-divider" aria-hidden="true"></div>
+    {
+      languagePaths.map(item => (
+        <a
+          href={lang === item.code ? '#' : item.path}
+          class:list={['mobile-lang', { active: lang === item.code }]}
+          hreflang={item.hreflang}
+        >
+          {item.label}
+        </a>
+      ))
+    }
+  </nav>
+</div>
+
+<script>
+  // Navbar 互動邏輯（捲動隱藏、手機選單、語系下拉）
+  const navbar = document.getElementById('navbar');
+  const mobileToggle = document.getElementById('mobile-toggle');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const langTrigger = document.getElementById('lang-trigger-btn');
+  const langDropdown = document.getElementById('lang-dropdown');
+
+  let lastScrollY = 0;
+  let rafPending = false;
+
+  // 捲動隱藏 navbar 的具名處理函式（使用 rAF 節流）
+  function handleScroll() {
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => {
+      const scrollY = window.scrollY;
+      // 手機選單開啟時不隱藏 navbar
+      if (mobileMenu?.classList.contains('is-open')) {
+        rafPending = false;
+        return;
+      }
+      if (navbar) {
+        if (scrollY > lastScrollY && scrollY > 80) {
+          navbar.style.transform = 'translateY(-100%)';
+        } else {
+          navbar.style.transform = 'translateY(0)';
+        }
+      }
+      lastScrollY = scrollY <= 0 ? 0 : scrollY;
+      rafPending = false;
+    });
+  }
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+
+  // 手機選單開關
+  function closeMobileMenu() {
+    mobileMenu?.classList.remove('is-open');
+    mobileMenu?.setAttribute('aria-hidden', 'true');
+    mobileToggle?.classList.remove('is-open');
+    mobileToggle?.setAttribute('aria-expanded', 'false');
+    mobileToggle?.setAttribute('aria-label', '開啟選單');
+    document.body.style.overflow = '';
+  }
+
+  function openMobileMenu() {
+    mobileMenu?.classList.add('is-open');
+    mobileMenu?.setAttribute('aria-hidden', 'false');
+    mobileToggle?.classList.add('is-open');
+    mobileToggle?.setAttribute('aria-expanded', 'true');
+    mobileToggle?.setAttribute('aria-label', '關閉選單');
+    document.body.style.overflow = 'hidden';
+  }
+
+  mobileToggle?.addEventListener('click', () => {
+    if (mobileMenu?.classList.contains('is-open')) {
+      closeMobileMenu();
+    } else {
+      openMobileMenu();
+    }
+  });
+
+  // 點擊選單內連結後關閉
+  mobileMenu?.addEventListener('click', e => {
+    if ((e.target as HTMLElement).tagName === 'A') {
+      closeMobileMenu();
+    }
+  });
+
+  // 語系下拉
+  function closeLangDropdown() {
+    langDropdown?.classList.remove('is-open');
+    langDropdown?.setAttribute('aria-hidden', 'true');
+    langTrigger?.setAttribute('aria-expanded', 'false');
+  }
+
+  langTrigger?.addEventListener('click', e => {
+    e.stopPropagation();
+    const isOpen = langDropdown?.classList.toggle('is-open');
+    langDropdown?.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    langTrigger?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  // 點擊其他區域關閉下拉
+  function handleOutsideClick() {
+    closeLangDropdown();
+  }
+  document.addEventListener('click', handleOutsideClick);
+
+  // 頁面卸載時清理（防止 Astro prefetch 累積監聽器）
+  function cleanup() {
+    closeMobileMenu();
+    closeLangDropdown();
+    document.removeEventListener('click', handleOutsideClick);
+    window.removeEventListener('scroll', handleScroll);
+  }
+  window.addEventListener('pagehide', cleanup, { once: true });
+  cleanup(); // 頁面初始化時確保狀態乾淨
+</script>
+
+<style is:global>
+  .nav-header {
+    height: 70px;
+    background: var(--bg-nav);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-light);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2000;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--text-heading);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+
+  .logo-icon {
+    font-size: 1.1rem;
+    color: var(--primary-red);
+  }
+
+  .logo-text {
+    color: var(--text-heading);
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1.8rem;
+    align-items: center;
+  }
+
+  .nav-item {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.3rem 0;
+    position: relative;
+    transition: color 0.2s ease;
+  }
+
+  .nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s ease;
+    border-radius: 2px;
+  }
+
+  .nav-item:hover,
+  .nav-item--active {
+    color: var(--primary-red);
+  }
+
+  .nav-item:hover::after,
+  .nav-item--active::after {
+    transform: scaleX(1);
+  }
+
+  /* 語系切換 */
+  .lang-switcher {
+    position: relative;
+    padding-left: 1rem;
+    border-left: 1px solid var(--border-color);
+  }
+
+  .lang-trigger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+  }
+
+  .lang-trigger:hover {
+    color: var(--primary-red);
+  }
+
+  .lang-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: -8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.5rem;
+    min-width: 130px;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .lang-dropdown.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .lang-option {
+    display: block;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
+  .lang-option:hover {
+    background: var(--primary-red-light);
+    color: var(--primary-red);
+  }
+  .lang-option--active {
+    color: var(--primary-red);
+    background: var(--primary-red-light);
+  }
+
+  /* 漢堡按鈕 */
+  .mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-heading);
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.2s;
+  }
+
+  .mobile-toggle .icon-close {
+    display: none;
+  }
+  .mobile-toggle.is-open .icon-menu {
+    display: none;
+  }
+  .mobile-toggle.is-open .icon-close {
+    display: block;
+  }
+
+  /* 手機選單 */
+  .mobile-menu {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-main);
+    z-index: 1990;
+    padding: 2.5rem 2rem;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition:
+      opacity 0.25s ease,
+      visibility 0.25s ease,
+      transform 0.25s ease;
+  }
+
+  .mobile-menu.is-open {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .mobile-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .mobile-item {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-heading);
+    text-decoration: none;
+    padding: 0.5rem 0;
+    letter-spacing: -0.03em;
+    transition: color 0.2s;
+  }
+
+  .mobile-item:hover {
+    color: var(--primary-red);
+  }
+
+  .mobile-lang-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 1rem 0;
+  }
+
+  .mobile-lang {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.3rem 0;
+    transition: color 0.2s;
+  }
+
+  .mobile-lang.active,
+  .mobile-lang:hover {
+    color: var(--primary-red);
+  }
+
+  /* 響應式 */
+  @media (max-width: 768px) {
+    .nav-links {
+      display: none;
+    }
+    .mobile-toggle {
+      display: flex;
+    }
+    .lang-switcher {
+      border-left: none;
+      padding-left: 0;
+    }
+  }
+</style>

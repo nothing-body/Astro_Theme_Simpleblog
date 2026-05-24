@@ -1,0 +1,54 @@
+﻿---
+// 目錄 (Table of Contents) 組件，接收 headings 陣列，產生巢狀清單
+interface Props {
+  headings?: { depth: number; slug: string; text: string }[];
+}
+const { headings = [] } = Astro.props;
+// 只保留 depth >= 2 的標題 (h2, h3, ...)
+const filtered = headings.filter(h => h.depth >= 2);
+---
+
+<style lang="css">
+  .toc {
+    position: sticky;
+    top: 1rem;
+    max-width: 260px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(8px);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+  .toc ul {
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+  }
+  .toc li {
+    margin: 0.3rem 0;
+  }
+  .toc a {
+    color: var(--primary-red);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .toc a:hover {
+    color: var(--primary-red-dark);
+  }
+</style>
+
+{
+  filtered.length > 0 && (
+    <nav class="toc" aria-label="文章目錄">
+      <ul>
+        {filtered.map(item => (
+          <li style={`margin-left:${(item.depth - 2) * 1.2}rem`}>
+            <a href={`#${item.slug}`}>{item.text}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}

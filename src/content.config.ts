@@ -1,0 +1,22 @@
+﻿import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { z } from 'astro/zod';
+
+const blog = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: 'src/content/blog' }),
+  schema: z.object({
+    title: z.string().min(1, 'Title is required.').max(200, 'Title must be 200 characters or fewer.'),
+    pubDate: z.coerce.date(),
+    description: z.string().max(500, 'Description must be 500 characters or fewer.').optional(),
+    updatedDate: z.coerce.date().optional(),
+    category: z.string().trim().default('Uncategorized'),
+    tags: z.array(z.string().trim().min(1, 'Tag cannot be empty.')).default([]),
+    author: z.string().default('Astro Blog Template'),
+    pinned: z.boolean().default(false),
+    pinOrder: z.number().int().min(1).max(9999).optional(),
+    draft: z.boolean().default(false),
+    ogImage: z.url().optional(),
+  }),
+});
+
+export const collections = { blog };
