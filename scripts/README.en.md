@@ -58,6 +58,8 @@ npm run upgrade:astro -- --lang=en --yes
 
 The script detects Astro-related dependencies from `package.json`, refuses to run on a dirty git working tree unless `--allow-dirty` is passed, updates with pnpm or npm, then verifies with the existing package scripts instead of hard-coding Astro commands. Optional flags:
 
+`--lang` only changes console output language. It does not change the upgrade target, package manager behavior, deployment target, or site content language. Use `--lang=en` for English script messages and `--lang=zh-tw` for Traditional Chinese script messages.
+
 - `--dry-run`: show the planned package-manager command without modifying files.
 - `--yes`: skip the confirmation prompt.
 - `--allow-dirty`: allow upgrading even when local files have uncommitted changes.

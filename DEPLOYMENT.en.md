@@ -274,6 +274,8 @@ npm run upgrade:astro -- --lang=en --yes
 
 Safety behavior:
 
+- Bilingual means console output language only. `--lang=en` prints English prompts, warnings, confirmations, and errors; `--lang=zh-tw` prints Traditional Chinese messages.
+- `--lang` does not change which packages are upgraded, does not change the site content language, and does not create a different upgrade process.
 - Detects Astro-related packages from `package.json`.
 - Stops by default if the git working tree is dirty.
 - Use `--allow-dirty` only when you intentionally want to upgrade with uncommitted changes.

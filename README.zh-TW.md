@@ -182,3 +182,5 @@ npm run upgrade:astro -- --lang=zh-tw --dry-run
 ```
 
 升級腳本會偵測 Astro 相關套件，預設拒絕在 dirty git 狀態下升級，支援 pnpm/npm，並使用既有的 `check`、`lint`、`build` 腳本驗證升級結果。
+
+`--lang` 只會切換腳本在終端機輸出的提示、警告、確認訊息與錯誤訊息語言。它不會改變實際升級哪些套件，不會切換網站內容語言，也不是另一套升級流程。需要英文訊息用 `--lang=en`，需要繁體中文訊息用 `--lang=zh-tw`。
