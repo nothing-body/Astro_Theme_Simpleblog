@@ -1,7 +1,6 @@
 <table>
   <tr>
-    <td align="center"><strong>README</strong><br><a href="./README.en.md">English</a></td>
-    <td align="center"><strong>README</strong><br><a href="./README.zh-TW.md">繁體中文</a></td>
+    <td align="center"><strong>English README</strong><br><a href="./README.md">Open English version</a></td>
   </tr>
 </table>
 
