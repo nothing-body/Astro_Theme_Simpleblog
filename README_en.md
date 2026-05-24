@@ -4,6 +4,15 @@ A public-safe multilingual Astro static blog template with deployment automation
 
 [Live Demo](https://blog.ouoxo.com/)
 
+## Language
+
+<table>
+  <tr>
+    <td align="center"><strong>English</strong><br><a href="./README.en.md">Open English README</a></td>
+    <td align="center"><strong>繁體中文</strong><br><a href="./README.zh-TW.md">開啟繁體中文 README</a></td>
+  </tr>
+</table>
+
 ## Guides
 
 - [Markdown writing guide](./MARKDOWN_GUIDE.md)
