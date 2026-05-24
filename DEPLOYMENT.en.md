@@ -144,7 +144,7 @@ cp .env.vps.example .env.vps
 Typical values:
 
 ```env
-VPS_HOST=203.0.113.10
+VPS_HOST=xxx.xxx.xxx
 VPS_PORT=22
 VPS_USER=deploy
 VPS_TARGET_DIR=/var/www/example.com
