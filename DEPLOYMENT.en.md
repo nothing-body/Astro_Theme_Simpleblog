@@ -268,6 +268,7 @@ Configure platform secrets for Cloudflare, VPS, Vercel, SSH keys, and tokens.
 
 ```bash
 pnpm upgrade:astro -- --lang=en --dry-run
+pnpm upgrade:astro -- --lang=en --dry-run --clean-install
 pnpm upgrade:astro -- --lang=zh-tw
 npm run upgrade:astro -- --lang=en --yes
 ```
@@ -276,6 +277,8 @@ Safety behavior:
 
 - Bilingual means console output language only. `--lang=en` prints English prompts, warnings, confirmations, and errors; `--lang=zh-tw` prints Traditional Chinese messages.
 - `--lang` does not change which packages are upgraded, does not change the site content language, and does not create a different upgrade process.
+- `--clean-install` removes reproducible folders (`node_modules`, `.astro`, `dist`) before the real upgrade, then runs the normal upgrade and verification flow.
+- Lockfiles are not deleted automatically because they preserve reproducible installs and make failed upgrades easier to review or revert.
 - Detects Astro-related packages from `package.json`.
 - Stops by default if the git working tree is dirty.
 - Use `--allow-dirty` only when you intentionally want to upgrade with uncommitted changes.
@@ -291,6 +294,7 @@ Options:
 | `--dry-run` | Preview only |
 | `--yes` | Skip confirmation |
 | `--allow-dirty` | Allow upgrading with a dirty git working tree |
+| `--clean-install` | Remove `node_modules`, `.astro`, and `dist` before upgrading |
 | `--skip-check` | Skip `check` |
 | `--skip-lint` | Skip `lint` |
 | `--skip-build` | Skip `build` |

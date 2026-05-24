@@ -177,6 +177,7 @@ npm run deploy:switch -- --mode=direct:cf --dry-run
 
 ```bash
 pnpm upgrade:astro -- --lang=en --dry-run
+pnpm upgrade:astro -- --lang=en --dry-run --clean-install
 pnpm upgrade:astro -- --lang=zh-tw
 npm run upgrade:astro -- --lang=en --dry-run
 ```
@@ -184,3 +185,5 @@ npm run upgrade:astro -- --lang=en --dry-run
 The upgrade script detects Astro-related packages, refuses dirty git state by default, supports pnpm/npm, and verifies with the existing `check`, `lint`, and `build` scripts.
 
 `--lang` only changes the script's console output language. It does not change which packages are upgraded, does not switch site content language, and does not create a separate upgrade flow. Use `--lang=en` for English messages and `--lang=zh-tw` for Traditional Chinese messages.
+
+For a stricter clean reinstall flow, add `--clean-install`. This removes the reproducible folders `node_modules`, `.astro`, and `dist` before the real upgrade, then runs the upgrade and existing `check`, `lint`, and `build` verification. It does not delete lockfiles automatically, so the install remains reversible and reproducible.

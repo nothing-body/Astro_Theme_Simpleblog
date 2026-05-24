@@ -52,6 +52,7 @@ Use the bilingual upgrade helper to update Astro-related packages safely:
 
 ```bash
 pnpm upgrade:astro -- --lang=en --dry-run
+pnpm upgrade:astro -- --lang=en --dry-run --clean-install
 pnpm upgrade:astro -- --lang=zh-tw
 npm run upgrade:astro -- --lang=en --yes
 ```
@@ -63,6 +64,7 @@ The script detects Astro-related dependencies from `package.json`, refuses to ru
 - `--dry-run`: show the planned package-manager command without modifying files.
 - `--yes`: skip the confirmation prompt.
 - `--allow-dirty`: allow upgrading even when local files have uncommitted changes.
+- `--clean-install`: remove `node_modules`, `.astro`, and `dist` before upgrading. Lockfiles are not deleted automatically.
 - `--skip-check`, `--skip-lint`, `--skip-build`: skip specific verification steps.
 
 ## VPS User And Permissions

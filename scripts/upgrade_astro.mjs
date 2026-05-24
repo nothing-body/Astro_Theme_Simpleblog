@@ -7,36 +7,49 @@
  *
  * Usage:
  *   pnpm upgrade:astro -- --lang=en --dry-run
- *   pnpm upgrade:astro -- --lang=zh-tw
+ *   pnpm upgrade:astro -- --lang=zh-tw --clean-install
  *   npm run upgrade:astro -- --lang=en --yes
  */
 import fs from "node:fs";
+import path from "node:path";
 import process from "node:process";
 import { spawnSync } from "node:child_process";
-import { color, ensureNodeRuntime, getPackageManager, packageScriptCommand, warnAboutPackageManager, warnIfPnpmMissing } from "./deploy_runtime.mjs";
+import {
+  color,
+  ensureNodeRuntime,
+  getPackageManager,
+  packageScriptCommand,
+  warnAboutPackageManager,
+  warnIfPnpmMissing,
+} from "./deploy_runtime.mjs";
 import { normalizeLanguage } from "./deploy_i18n.mjs";
+
+const CLEAN_TARGETS = ["node_modules", ".astro", "dist"];
 
 const i18n = {
   "zh-tw": {
-    title: "Astro 安全升級",
+    title: "安全升級 Astro",
     found: "偵測到 Astro 相關套件",
-    none: "找不到 Astro 相關套件，已停止。",
-    dirty: "目前 git working tree 不是乾淨狀態。為了避免升級後難以回復，預設停止。",
-    dirtyHint: "請先提交或備份變更，或使用 --allow-dirty 明確允許。",
-    dryRun: "模擬執行模式：不會修改 package.json 或 lockfile。",
+    none: "沒有找到 Astro 相關套件，已停止。",
+    dirty: "git working tree 不是乾淨狀態。為了讓升級容易回復，腳本預設會停止。",
+    dirtyHint: "請先提交或備份變更；如果確定要繼續，請加入 --allow-dirty。",
+    dryRun: "Dry run：不會修改 package.json、lockfile、node_modules 或 build 輸出。",
     commandPlan: "將執行的指令",
+    cleanMode: "乾淨重裝模式",
+    cleanModeDetail: "會先刪除可再生目錄，再升級與驗證。",
+    cleanTarget: "清理目標",
     confirm: "輸入 yes 開始升級，輸入其他內容取消：",
     cancelled: "已取消升級。",
     updating: "正在升級 Astro 相關套件...",
     verify: "正在執行升級後驗證...",
-    done: "Astro 相關套件升級與驗證完成。",
-    noScript: "找不到 package.json script，略過",
+    done: "Astro 相關套件已升級並完成驗證。",
     packageJsonMissing: "找不到 package.json。",
     invalidPackage: "偵測到不安全的套件名稱，已停止",
     latest: "升級目標",
-    latestValue: "latest（安全預設：交給套件管理器解析最新版本）",
+    latestValue: "latest（安全預設：交給套件管理器解析目前最新版本）",
     pm: "套件管理器",
-    note: "此腳本不直接寫死 astro check/build，而是使用 package.json 內既有的 check/lint/build scripts 進行驗證。",
+    note: "此腳本不寫死 astro check/build，而是使用 package.json 既有的 check/lint/build scripts 驗證。",
+    noLockDelete: "安全提示：腳本不會自動刪除 lockfile；lockfile 可保留可回溯與可重現安裝。",
   },
   en: {
     title: "Safe Astro Upgrade",
@@ -44,20 +57,23 @@ const i18n = {
     none: "No Astro-related packages were found. Stopped.",
     dirty: "The git working tree is not clean. To keep upgrades easy to revert, the script stops by default.",
     dirtyHint: "Commit or back up your changes first, or pass --allow-dirty to continue explicitly.",
-    dryRun: "Dry run: package.json and lockfiles will not be modified.",
+    dryRun: "Dry run: package.json, lockfiles, node_modules, and build output will not be modified.",
     commandPlan: "Commands to run",
+    cleanMode: "Clean install mode",
+    cleanModeDetail: "Generated dependency/build folders will be removed before upgrading and verifying.",
+    cleanTarget: "Clean target",
     confirm: "Type yes to start upgrading, anything else to cancel: ",
     cancelled: "Upgrade cancelled.",
     updating: "Upgrading Astro-related packages...",
     verify: "Running post-upgrade verification...",
     done: "Astro-related packages were upgraded and verified.",
-    noScript: "package.json script not found, skipped",
     packageJsonMissing: "package.json was not found.",
     invalidPackage: "Unsafe package name detected; stopped",
     latest: "Upgrade target",
     latestValue: "latest (safe default: let the package manager resolve the current latest version)",
     pm: "Package manager",
     note: "This script does not hard-code astro check/build. It uses the existing package.json check/lint/build scripts for verification.",
+    noLockDelete: "Safety note: the script does not delete lockfiles automatically; lockfiles preserve reproducible and reversible installs.",
   },
 };
 
@@ -69,6 +85,7 @@ const options = {
   dryRun: argv.includes("--dry-run"),
   yes: argv.includes("--yes") || argv.includes("-y"),
   allowDirty: argv.includes("--allow-dirty"),
+  cleanInstall: argv.includes("--clean-install"),
   skipCheck: argv.includes("--skip-check"),
   skipLint: argv.includes("--skip-lint"),
   skipBuild: argv.includes("--skip-build"),
@@ -177,6 +194,31 @@ function verifyCommands(pkg) {
     .map(([name]) => packageScriptCommand(name));
 }
 
+function safeCleanPath(target) {
+  if (!CLEAN_TARGETS.includes(target)) fail(`${text("invalidPackage")}: ${target}`);
+  const cwd = fs.realpathSync(process.cwd());
+  const absolute = path.resolve(cwd, target);
+  const relative = path.relative(cwd, absolute);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+    fail(`${text("invalidPackage")}: ${target}`);
+  }
+  return absolute;
+}
+
+function removeCleanTargets() {
+  if (!options.cleanInstall) return;
+  frame(text("cleanMode"));
+  console.log(color.dim(text("cleanModeDetail")));
+  console.log(color.dim(text("noLockDelete")));
+  for (const target of CLEAN_TARGETS) {
+    const absolute = safeCleanPath(target);
+    console.log(`${text("cleanTarget")}: ${target}`);
+    if (!options.dryRun && fs.existsSync(absolute)) {
+      fs.rmSync(absolute, { recursive: true, force: true });
+    }
+  }
+}
+
 async function confirm() {
   if (options.yes || options.dryRun) return true;
   if (!process.stdin.isTTY) return false;
@@ -210,10 +252,15 @@ async function main() {
   console.log(`${color.dim(text("pm").padEnd(22, " "))} ${pm.name}`);
   console.log(`${color.dim(text("latest").padEnd(22, " "))} ${text("latestValue")}`);
   console.log(color.dim(text("note")));
+  if (options.cleanInstall) {
+    console.log(color.dim(`${text("cleanMode")}: ${CLEAN_TARGETS.join(", ")}`));
+    console.log(color.dim(text("noLockDelete")));
+  }
   console.log(`\n${text("found")}:`);
   for (const name of packages) console.log(`  - ${name}`);
 
   frame(text("commandPlan"));
+  if (options.cleanInstall) console.log(`${text("cleanMode")}: ${CLEAN_TARGETS.join(", ")}`);
   console.log(update.display);
   for (const command of verify) console.log(command.display);
   if (options.dryRun) {
@@ -226,6 +273,8 @@ async function main() {
     console.log(color.amber(text("cancelled")));
     return;
   }
+
+  removeCleanTargets();
 
   console.log(color.cyan(`\n==> ${text("updating")}`));
   run(update.command, update.args, text("updating"));
