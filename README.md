@@ -1,17 +1,15 @@
+<table>
+  <tr>
+    <td align="center"><strong>README</strong><br><a href="./README.en.md">English</a></td>
+    <td align="center"><strong>README</strong><br><a href="./README.zh-TW.md">繁體中文</a></td>
+  </tr>
+</table>
+
 # Astro Multilingual Blog Template
 
 A public-safe multilingual Astro static blog template with deployment automation for Cloudflare Pages, VPS, and Vercel.
 
 [Live Demo](https://blog.ouoxo.com/)
-
-## Language
-
-<table>
-  <tr>
-    <td align="center"><strong>English</strong><br><a href="./README.en.md">Open English README</a></td>
-    <td align="center"><strong>繁體中文</strong><br><a href="./README.zh-TW.md">開啟繁體中文 README</a></td>
-  </tr>
-</table>
 
 ## Guides
 
