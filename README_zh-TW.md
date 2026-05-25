@@ -1,12 +1,10 @@
+# Astro 多語部落格模板
+
 <p align="center">
   <a href="https://blog.ouoxo.com/en/">Live Demo</a>
   ·
   <a href="./README.md">English README</a>
-  ·
-  <a href="./README.zh-TW.md">繁體中文 README</a>
 </p>
-
-# Astro 多語部落格模板
 
 這是一個可公開上傳 Git 平台的 Astro 靜態多語部落格模板，內建 Cloudflare Pages、VPS、Vercel 的自動部署腳本。
 
