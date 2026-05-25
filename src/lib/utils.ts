@@ -2,12 +2,7 @@ export type SupportedLang = 'zh-tw' | 'en' | 'zh-cn';
 
 export function estimateReadingTime(content: string, lang: SupportedLang = 'zh-tw'): number {
   const wordsPerMinute = lang === 'en' ? 200 : 300;
-  const plainText = content
-    .replace(/```[\s\S]*?```/g, '')
-    .replace(/`[^`]*`/g, '')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/[#*_~>|]/g, '')
-    .trim();
+  const plainText = stripMarkdown(content);
 
   return Math.max(1, Math.ceil(plainText.length / wordsPerMinute));
 }
@@ -48,7 +43,9 @@ export function stripMarkdown(value: string): string {
 export function summarizePlainText(value: string, maxLen: number): string {
   const lead = value
     .replace(/\r\n?/g, '\n')
-    .split(/\n\s*\n|(?:^|\s)>|(?:^|\s)前置條件|(?:^|\s)前置条件/i)[0]
+    .split(
+      /\n\s*\n|(?:^|\s)>|(?:^|\s)\u524d\u7f6e\u689d\u4ef6|(?:^|\s)\u524d\u7f6e\u6761\u4ef6|(?:^|\s)Prerequisites/i
+    )[0]
     ?.trim();
 
   return truncate(stripMarkdown(lead || value), maxLen);

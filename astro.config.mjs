@@ -66,7 +66,7 @@ export default defineConfig({
     syntaxHighlight: false,
   },
 
-  prefetch: true,
+  prefetch: false,
 
   image: {
     domains: [],

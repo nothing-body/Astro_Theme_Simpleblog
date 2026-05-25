@@ -5,7 +5,7 @@ A public-safe multilingual Astro static blog template with deployment automation
 <p align="center">
   <a href="https://blog.ouoxo.com/en/">Live Demo</a>
   ·
-  <a href="./README.zh-TW.md">繁體中文 README</a>
+  <a href="./README.zh-TW.md">Traditional Chinese README</a>
 </p>
 
 ## Guides

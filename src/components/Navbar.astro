@@ -293,7 +293,6 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
     window.removeEventListener('scroll', handleScroll);
   }
   window.addEventListener('pagehide', cleanup, { once: true });
-  cleanup(); // 頁面初始化時確保狀態乾淨
 </script>
 
 <style is:global>

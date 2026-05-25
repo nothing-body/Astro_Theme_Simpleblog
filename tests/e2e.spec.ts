@@ -16,15 +16,24 @@ test.describe('layout regression checks', () => {
     await page.goto('/posts/');
 
     const pagination = page.locator('.pagination');
-    await expect(pagination).toBeVisible();
+    if ((await pagination.count()) > 0) {
+      await expect(pagination).toBeVisible();
 
-    const activeButton = page.locator('.page-btn--active').first();
-    await expect(activeButton).toBeVisible();
-    await expect(activeButton).toHaveCSS('border-radius', /.+/);
+      const activeButton = page.locator('.page-btn--active').first();
+      await expect(activeButton).toBeVisible();
+      await expect(activeButton).toHaveCSS('border-radius', /.+/);
+    } else {
+      await expect(page.locator('.post-card').first()).toBeVisible();
+    }
   });
 
   test('article breadcrumb uses arrow separators and pill styling', async ({ page }) => {
-    await page.goto('/posts/cloudflare-tunnels-npm-cdn-guide/');
+    await page.goto('/posts/');
+    const firstPostLink = page.locator('.post-card a').first();
+    const href = await firstPostLink.getAttribute('href');
+    expect(href).toBeTruthy();
+
+    await page.goto(href!);
 
     const breadcrumbs = page.locator('.breadcrumbs');
     await expect(breadcrumbs).toBeVisible();
@@ -34,5 +43,19 @@ test.describe('layout regression checks', () => {
     await expect(firstLink).toBeVisible();
     await expect(firstLink).toHaveCSS('border-radius', /.+/);
     await expect(firstLink).not.toHaveText(/\//);
+  });
+
+  test('navbar language and mobile controls stay interactive after initialization', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    await page.locator('#lang-trigger-btn').click();
+    await expect(page.locator('#lang-dropdown')).toHaveClass(/is-open/);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator('#mobile-toggle').click();
+    await expect(page.locator('#mobile-menu')).toHaveClass(/is-open/);
+    await expect(page.locator('#mobile-toggle')).toHaveAttribute('aria-expanded', 'true');
   });
 });

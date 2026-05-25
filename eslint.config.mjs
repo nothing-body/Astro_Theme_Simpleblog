@@ -16,7 +16,6 @@ export default [
       'lighthouse_tmp/**',
       'node_modules/**',
       'playwright-report/**',
-      'src/purgecss-output/**',
       'test-results/**',
       'tmp/**',
     ],

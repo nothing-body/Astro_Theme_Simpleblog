@@ -1,7 +1,7 @@
 // stylelint.config.cjs
 module.exports = {
   extends: 'stylelint-config-recommended',
-  ignoreFiles: ['**/scripts/**', 'node_modules/**', 'dist/**', 'public/**', 'src/purgecss-output/**'],
+  ignoreFiles: ['**/scripts/**', 'node_modules/**', 'dist/**', 'public/**'],
   rules: {
     'at-rule-no-unknown': [true, { ignoreAtRules: ['plugin', 'theme'] }],
     'color-no-invalid-hex': true,

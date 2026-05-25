@@ -164,6 +164,33 @@ Notes:
 - If the project does not exist, the script creates it, writes the name back to `.env.cloudflare`, and continues.
 - Review `public/_headers` before production deployment.
 
+Place Cloudflare Pages headers in `public/_headers`. Astro copies it to `dist/_headers` during build, and Cloudflare Pages applies it automatically. If you do not use GA4, remove the Google Tag Manager and Google Analytics domains from the CSP.
+
+Secure example:
+
+```text
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  Cross-Origin-Embedder-Policy: credentialless
+  Permissions-Policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), cross-origin-isolated=(), display-capture=(), document-domain=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), keyboard-map=(), magnetometer=(), microphone=(), midi=(), navigation-override=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; script-src-attr 'none'; connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/images/*
+  Cache-Control: public, max-age=86400
+```
+
 Deploy:
 
 ```bash
@@ -346,10 +373,34 @@ Never commit real secrets:
 - `.env.vps`
 - `.env.vercel`
 - `.dev.vars`
+- `.dev.vars.*`
+- `.npmrc`
+- `.yarnrc`
+- `.pnpmrc`
+- `.npmrc.local`
+- `.yarnrc.local`
+- `.pnpmrc.local`
 - `.wrangler/`
+- `.cloudflare/`
 - `.vercel/`
+- `.netlify/`
 - `.ssh/`
 - `*.pem`
 - `*.key`
+- `*.p8`
+- `*.p12`
+- `*.pfx`
+- `*.crt`
+- `*.csr`
+- `*.jks`
+- `*.keystore`
+- `id_rsa`
+- `id_ed25519`
+- `kubeconfig`
+- `*.kubeconfig`
+- `service-account*.json`
+- `credentials*.json`
+- `*-credentials.json`
+- `debug.log`
 
 The deployment scripts check `.gitignore` before deployment and can repair missing sensitive-file patterns.

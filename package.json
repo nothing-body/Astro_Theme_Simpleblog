@@ -34,6 +34,7 @@
     "format": "prettier --write \"src/**/*.{js,ts,astro,css,md}\"",
     "test": "jest && astro build && node ./scripts/run-e2e.mjs",
     "analyze": "node ./scripts/analysis.mjs",
+    "selfcheck": "node ./scripts/analysis.mjs",
     "deploy:menu": "node ./scripts/deploy_menu.mjs",
     "upgrade:astro": "node ./scripts/upgrade_astro.mjs",
     "lighthouse": "node ./run-lh.mjs"
@@ -55,7 +56,6 @@
     "@astrojs/check": "^0.9.9",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
-    "@fullhuman/postcss-purgecss": "^8.0.0",
     "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4.3.0",
     "@types/jest": "^30.0.0",

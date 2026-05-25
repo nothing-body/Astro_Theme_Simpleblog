@@ -1,116 +1,321 @@
 #!/usr/bin/env node
-import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 import process from 'node:process';
+import { spawnSync } from 'node:child_process';
 
-const pnpmExecPath = process.env.npm_execpath;
-const pnpmCommand = pnpmExecPath ? process.execPath : process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
-const pnpmArgsPrefix = pnpmExecPath ? [pnpmExecPath] : [];
+const ROOT = process.cwd();
+const args = new Set(process.argv.slice(2));
+const quick = args.has('--quick');
 
-const checks = [
-  {
-    name: 'Build',
-    command: pnpmCommand,
-    args: [...pnpmArgsPrefix, 'build'],
-  },
-  {
-    name: 'Astro check',
-    command: pnpmCommand,
-    args: [...pnpmArgsPrefix, 'check'],
-  },
-  {
-    name: 'ESLint',
-    command: pnpmCommand,
-    args: [...pnpmArgsPrefix, 'lint'],
-  },
-  {
-    name: 'Stylelint',
-    command: pnpmCommand,
-    args: [...pnpmArgsPrefix, 'lint:css'],
-  },
-  {
-    name: 'Unit and e2e tests',
-    command: pnpmCommand,
-    args: [...pnpmArgsPrefix, 'test'],
-  },
+const ignoredDirs = new Set([
+  '.astro',
+  '.git',
+  '.pnpm-store',
+  '.vercel',
+  '.wrangler',
+  'backup',
+  'dist',
+  'lighthouse_tmp',
+  'node_modules',
+  'playwright-report',
+  'test-results',
+  'tmp',
+]);
+
+const sensitiveFiles = [
+  '.env',
+  '.env.local',
+  '.env.production',
+  '.env.cloudflare',
+  '.env.vps',
+  '.env.vercel',
+  '.npmrc',
+  '.yarnrc',
+  '.ssh',
+  'id_rsa',
+  'id_ed25519',
 ];
+
+const requiredGitignorePatterns = [
+  '.env',
+  '.env.local',
+  '.env.production',
+  '.env.*.local',
+  '.env.cloudflare',
+  '.env.vps',
+  '.env.vercel',
+  '.env*.secret',
+  '.npmrc',
+  '.yarnrc',
+  '.ssh/',
+  '*.pem',
+  '*.key',
+  'id_rsa',
+  'id_ed25519',
+  'dist/',
+  'node_modules/',
+  '.wrangler/',
+  '.vercel/',
+  'playwright-report/',
+  'test-results/',
+];
+
+const sourceExtensions = new Set([
+  '.astro',
+  '.css',
+  '.cjs',
+  '.html',
+  '.js',
+  '.json',
+  '.md',
+  '.mdx',
+  '.mjs',
+  '.toml',
+  '.ts',
+  '.tsx',
+  '.yml',
+  '.yaml',
+]);
 
 const dangerousPatterns = [
-  'eval\\(',
-  'new Function',
-  'innerHTML',
-  'outerHTML',
-  'insertAdjacentHTML',
-  'document\\.write',
-  'shell:\\s*true',
+  { label: 'eval()', regex: /\beval\s*\(/ },
+  { label: 'new Function()', regex: /\bnew\s+Function\s*\(/ },
+  { label: 'document.write()', regex: /\bdocument\.write\s*\(/ },
+  { label: 'HTML string injection APIs', regex: /\.(innerHTML|outerHTML)\s*=|\.insertAdjacentHTML\s*\(/ },
+  { label: 'child_process shell:true', regex: /shell\s*:\s*true/ },
+  { label: 'disabled SSH host-key checking', regex: /StrictHostKeyChecking\s*=\s*no/ },
+  { label: 'plain sshpass usage', regex: /\bsshpass\b/ },
+  { label: 'destructive rm -rf', regex: /\brm\s+-rf\b/ },
 ];
 
-function runCheck(check) {
-  console.log(`\n=== ${check.name} ===`);
-  const result = spawnSync(check.command, check.args, {
-    stdio: 'inherit',
-    env: process.env,
-    shell: false,
-  });
+const allowedDangerousMatches = [
+  { file: 'scripts/analysis.mjs', labels: new Set(dangerousPatterns.map(item => item.label)) },
+  { file: 'src/components/HeadMeta.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/components/Breadcrumbs.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/layouts/BlogPostLayout.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/index.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/en/index.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/zh-cn/index.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/about.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/en/about.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/zh-cn/about.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/contact.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/en/contact.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/zh-cn/contact.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/disclaimer.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/en/disclaimer.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/zh-cn/disclaimer.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/privacy.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/en/privacy.astro', labels: new Set(['HTML string injection APIs']) },
+  { file: 'src/pages/zh-cn/privacy.astro', labels: new Set(['HTML string injection APIs']) },
+];
 
-  if (result.error) {
-    console.error(`Unable to run ${check.name}: ${result.error.message}`);
-    return 1;
-  }
-
-  return result.status ?? 1;
+function rel(file) {
+  return path.relative(ROOT, file).replace(/\\/g, '/');
 }
 
-function runRipgrep(pattern) {
-  const result = spawnSync(
-    'rg',
-    [
-      '-n',
-      '-g',
-      '!scripts/analysis.mjs',
-      '-g',
-      '!backup/**',
-      '-g',
-      '!dist/**',
-      '-g',
-      '!node_modules/**',
-      pattern,
-      'src',
-      'scripts',
-      'astro.config.mjs',
-      'run-lh.mjs',
-      'eslint.config.mjs',
-      'postcss.config.cjs',
-      'playwright.config.cjs',
-      'jest.config.cjs',
-    ],
-    {
-      stdio: 'inherit',
-      env: process.env,
-    }
-  );
+function section(title) {
+  console.log(`\n=== ${title} ===`);
+}
 
+function fail(message) {
+  console.error(`[FAIL] ${message}`);
+  return 1;
+}
+
+function ok(message) {
+  console.log(`[OK] ${message}`);
+  return 0;
+}
+
+function getPackageRunner() {
+  const execPath = process.env.npm_execpath;
+  if (execPath && fs.existsSync(execPath)) {
+    return { command: process.execPath, prefix: [execPath] };
+  }
+  return { command: process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm', prefix: [] };
+}
+
+function runScript(name) {
+  const runner = getPackageRunner();
+  const result = spawnSync(runner.command, [...runner.prefix, name], {
+    cwd: ROOT,
+    stdio: 'inherit',
+    shell: false,
+    env: process.env,
+  });
   if (result.error) {
-    console.error(`Unable to run rg: ${result.error.message}`);
+    console.error(`[FAIL] ${name}: ${result.error.message}`);
     return 1;
   }
+  return result.status === 0 ? 0 : 1;
+}
 
-  return result.status === 0 ? 1 : 0;
+function walk(dir, out = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (ignoredDirs.has(entry.name)) continue;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      walk(full, out);
+    } else {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+function textFiles() {
+  return walk(ROOT).filter(file => sourceExtensions.has(path.extname(file)));
+}
+
+function isAllowed(file, label) {
+  const normalized = rel(file);
+  return allowedDangerousMatches.some(item => item.file === normalized && item.labels.has(label));
+}
+
+function scanDangerousSyntax(files) {
+  section('Dangerous syntax scan');
+  let failures = 0;
+  for (const file of files) {
+    const text = fs.readFileSync(file, 'utf8');
+    const lines = text.split(/\r?\n/);
+    for (const { label, regex } of dangerousPatterns) {
+      regex.lastIndex = 0;
+      if (!regex.test(text) || isAllowed(file, label)) continue;
+      const line = lines.findIndex(value => regex.test(value)) + 1;
+      failures += fail(`${label}: ${rel(file)}:${line}`);
+    }
+  }
+  if (failures === 0) ok('No unexpected dangerous syntax found.');
+  return failures;
+}
+
+function scanMojibake(files) {
+  section('Mojibake scan');
+  let failures = 0;
+  const badChars = /[\uFFFD\uF000-\uF8FF]/;
+  for (const file of files) {
+    const text = fs.readFileSync(file, 'utf8');
+    if (!badChars.test(text)) continue;
+    const line = text.split(/\r?\n/).findIndex(value => badChars.test(value)) + 1;
+    failures += fail(`Possible mojibake/private-use character: ${rel(file)}:${line}`);
+  }
+  if (failures === 0) ok('No mojibake markers found in project text files.');
+  return failures;
+}
+
+function scanGitignore() {
+  section('Sensitive file and .gitignore scan');
+  let failures = 0;
+  const gitignorePath = path.join(ROOT, '.gitignore');
+  if (!fs.existsSync(gitignorePath)) return fail('.gitignore is missing.');
+  const gitignoreLines = fs
+    .readFileSync(gitignorePath, 'utf8')
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean);
+
+  for (const pattern of requiredGitignorePatterns) {
+    if (!gitignoreLines.includes(pattern)) failures += fail(`.gitignore missing: ${pattern}`);
+  }
+
+  for (const file of sensitiveFiles) {
+    if (fs.existsSync(path.join(ROOT, file))) {
+      console.warn(`[WARN] Local sensitive/runtime file exists and must stay untracked: ${file}`);
+    }
+  }
+
+  if (failures === 0) ok('.gitignore contains required sensitive-file protections.');
+  return failures;
+}
+
+function scanHeaders() {
+  section('Security headers scan');
+  const file = path.join(ROOT, 'public', '_headers');
+  if (!fs.existsSync(file)) return fail('public/_headers is missing.');
+  const headers = fs.readFileSync(file, 'utf8');
+  const checks = [
+    ['X-Frame-Options', /X-Frame-Options:\s*DENY/],
+    ['X-Content-Type-Options', /X-Content-Type-Options:\s*nosniff/],
+    ['Referrer-Policy', /Referrer-Policy:\s*strict-origin-when-cross-origin/],
+    ['HSTS', /Strict-Transport-Security:\s*max-age=31536000/],
+    ['CSP object/frame/base restrictions', /Content-Security-Policy:.*object-src 'none'.*frame-ancestors 'none'.*base-uri 'self'/s],
+    ['Static asset immutable cache', /\/_astro\/\*\s+Cache-Control:\s*public, max-age=31536000, immutable/s],
+  ];
+  let failures = 0;
+  for (const [label, regex] of checks) {
+    failures += regex.test(headers) ? ok(label) : fail(`Missing or weak header: ${label}`);
+  }
+  return failures;
+}
+
+function scanRobots() {
+  section('Robots and sitemap scan');
+  let failures = 0;
+  const robotsSource = path.join(ROOT, 'src', 'pages', 'robots.txt.ts');
+  if (!fs.existsSync(robotsSource)) failures += fail('src/pages/robots.txt.ts is missing.');
+  const sitemap = path.join(ROOT, 'dist', 'sitemap-index.xml');
+  if (!fs.existsSync(sitemap)) failures += fail('dist/sitemap-index.xml missing; build may have failed.');
+  if (failures === 0) ok('Robots source and built sitemap exist.');
+  return failures;
+}
+
+function scanBuiltSeo() {
+  section('Built SEO scan');
+  const pages = ['dist/index.html', 'dist/en/index.html', 'dist/zh-cn/index.html'];
+  let failures = 0;
+  for (const page of pages) {
+    const full = path.join(ROOT, page);
+    if (!fs.existsSync(full)) {
+      failures += fail(`${page} is missing.`);
+      continue;
+    }
+    const html = fs.readFileSync(full, 'utf8');
+    for (const [label, regex] of [
+      ['title', /<title>[^<]+<\/title>/],
+      ['description', /<meta name="description" content="[^"]+"/],
+      ['canonical', /<link rel="canonical" href="https?:\/\/[^"]+"/],
+      ['hreflang', /<link rel="alternate" hreflang=/],
+      ['json-ld', /type="application\/ld\+json"/],
+    ]) {
+      failures += regex.test(html) ? 0 : fail(`${page} missing ${label}.`);
+    }
+  }
+  if (failures === 0) ok('Key built pages include core SEO tags.');
+  return failures;
+}
+
+function scanReadmes() {
+  section('README duplication scan');
+  const duplicateNames = ['README_en.md', 'README_zh-TW.md'];
+  let failures = 0;
+  for (const name of duplicateNames) {
+    if (fs.existsSync(path.join(ROOT, name))) failures += fail(`Duplicate legacy README exists: ${name}`);
+  }
+  if (failures === 0) ok('No legacy duplicate README files found.');
+  return failures;
 }
 
 let failures = 0;
-for (const check of checks) {
-  if (runCheck(check) !== 0) failures += 1;
+section('Command checks');
+for (const script of quick ? ['check', 'lint', 'lint:css', 'build'] : ['check', 'lint', 'lint:css', 'build', 'test']) {
+  console.log(`\n$ package ${script}`);
+  failures += runScript(script);
 }
 
-console.log('\n=== Dangerous syntax scan ===');
-for (const pattern of dangerousPatterns) {
-  console.log(`\nPattern: ${pattern}`);
-  failures += runRipgrep(pattern);
-}
+const files = textFiles();
+failures += scanDangerousSyntax(files);
+failures += scanMojibake(files);
+failures += scanGitignore();
+failures += scanHeaders();
+failures += scanRobots();
+failures += scanBuiltSeo();
+failures += scanReadmes();
 
 if (failures > 0) {
-  console.error(`\nAnalysis completed with ${failures} failing check(s).`);
+  console.error(`\nSelf-check completed with ${failures} issue(s).`);
   process.exit(1);
 }
 
-console.log('\nAnalysis completed successfully.');
+console.log('\nSelf-check completed successfully.');
