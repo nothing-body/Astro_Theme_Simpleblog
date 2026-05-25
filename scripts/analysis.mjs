@@ -23,6 +23,11 @@ const ignoredDirs = new Set([
   'tmp',
 ]);
 
+const ignoredFiles = new Set([
+  'eslint-report.json',
+  'lighthouse-report.html',
+]);
+
 const sensitiveFiles = [
   '.env',
   '.env.local',
@@ -32,6 +37,7 @@ const sensitiveFiles = [
   '.env.vercel',
   '.npmrc',
   '.yarnrc',
+  '.pnpmrc',
   '.ssh',
   'id_rsa',
   'id_ed25519',
@@ -48,6 +54,7 @@ const requiredGitignorePatterns = [
   '.env*.secret',
   '.npmrc',
   '.yarnrc',
+  '.pnpmrc',
   '.ssh/',
   '*.pem',
   '*.key',
@@ -60,6 +67,8 @@ const requiredGitignorePatterns = [
   'playwright-report/',
   'test-results/',
 ];
+
+const commentCheckedExtensions = new Set(['.astro', '.css', '.js', '.mjs', '.ts', '.tsx']);
 
 const sourceExtensions = new Set([
   '.astro',
@@ -91,24 +100,6 @@ const dangerousPatterns = [
 
 const allowedDangerousMatches = [
   { file: 'scripts/analysis.mjs', labels: new Set(dangerousPatterns.map(item => item.label)) },
-  { file: 'src/components/HeadMeta.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/components/Breadcrumbs.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/layouts/BlogPostLayout.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/index.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/en/index.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/zh-cn/index.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/about.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/en/about.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/zh-cn/about.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/contact.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/en/contact.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/zh-cn/contact.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/disclaimer.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/en/disclaimer.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/zh-cn/disclaimer.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/privacy.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/en/privacy.astro', labels: new Set(['HTML string injection APIs']) },
-  { file: 'src/pages/zh-cn/privacy.astro', labels: new Set(['HTML string injection APIs']) },
 ];
 
 function rel(file) {
@@ -155,6 +146,7 @@ function runScript(name) {
 function walk(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (ignoredDirs.has(entry.name)) continue;
+    if (ignoredFiles.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       walk(full, out);
@@ -194,7 +186,8 @@ function scanDangerousSyntax(files) {
 function scanMojibake(files) {
   section('Mojibake scan');
   let failures = 0;
-  const badChars = /[\uFFFD\uF000-\uF8FF]/;
+  const badChars =
+    /[\uFFFD\uE000-\uF8FF]|[\u875c\u929d\u5697\u7507\u96ff\u646e\u64a0\u922d\u61ad\u76ba\u875e\u761a\u66ba\u8763\u981d\u981b\u92c6\u978e\u6468\u9758\u8751\u875b\u64a3\u928b\u66b9\u7441\u9903\u977d\u865c\u8a3e\u8c62\u6f66]/;
   for (const file of files) {
     const text = fs.readFileSync(file, 'utf8');
     if (!badChars.test(text)) continue;
@@ -202,6 +195,115 @@ function scanMojibake(files) {
     failures += fail(`Possible mojibake/private-use character: ${rel(file)}:${line}`);
   }
   if (failures === 0) ok('No mojibake markers found in project text files.');
+  return failures;
+}
+
+function scanRawHtmlUsage(files) {
+  section('Raw HTML safety scan');
+  let failures = 0;
+  for (const file of files.filter(item => path.extname(item) === '.astro')) {
+    const text = fs.readFileSync(file, 'utf8');
+    if (!/\bset:html\s*=/.test(text)) continue;
+    const safeJsonLd = /type="application\/ld\+json"\s+set:html=\{safeJsonStringify\(/.test(text);
+    const safeGa4 = rel(file) === 'src/components/HeadMeta.astro' && /safeJsonStringify\(safeGa4Id\)/.test(text);
+    if (!safeJsonLd && !safeGa4) failures += fail(`Unsafe or unreviewed set:html usage: ${rel(file)}`);
+  }
+  if (failures === 0) ok('Raw HTML injection points are restricted to JSON-LD or sanitized analytics bootstrap.');
+  return failures;
+}
+
+function scanBlankTargetLinks(files) {
+  section('External link safety scan');
+  let failures = 0;
+  const targetBlank = /<a\b[^>]*target=["']_blank["'][^>]*>/g;
+  for (const file of files.filter(item => ['.astro', '.md', '.mdx'].includes(path.extname(item)))) {
+    const text = fs.readFileSync(file, 'utf8');
+    for (const match of text.matchAll(targetBlank)) {
+      const tag = match[0];
+      if (!/rel=["'][^"']*\bnoopener\b[^"']*\bnoreferrer\b[^"']*["']/.test(tag)) {
+        const line = text.slice(0, match.index).split(/\r?\n/).length;
+        failures += fail(`target="_blank" missing rel="noopener noreferrer": ${rel(file)}:${line}`);
+      }
+    }
+  }
+  if (failures === 0) ok('External blank-target links include noopener noreferrer.');
+  return failures;
+}
+
+function scanLocaleRoutes() {
+  section('Locale route parity scan');
+  const pagesDir = path.join(ROOT, 'src', 'pages');
+  let failures = 0;
+  const requiredRoots = [
+    'index.astro',
+    'about.astro',
+    'contact.astro',
+    'disclaimer.astro',
+    'privacy.astro',
+    'posts.astro',
+    'no-category.astro',
+    'page/[page].astro',
+    'posts/[...slug].astro',
+    'categories/[category]/[page].astro',
+    'tags/[tag]/[page].astro',
+  ];
+
+  for (const route of requiredRoots) {
+    if (!fs.existsSync(path.join(pagesDir, route))) failures += fail(`Missing default route: src/pages/${route}`);
+    for (const locale of ['en', 'zh-tw', 'zh-cn']) {
+      if (!fs.existsSync(path.join(pagesDir, locale, route))) {
+        failures += fail(`Missing localized route: src/pages/${locale}/${route}`);
+      }
+    }
+  }
+
+  if (failures === 0) ok('Default and localized route files are present.');
+  return failures;
+}
+
+function scanCommentLanguage(files) {
+  section('Code comment language scan');
+  let failures = 0;
+  const badChars = /[\p{Script=Han}\uFFFD\uE000-\uF8FF]/u;
+  const lineComment = /^\s*\/\//;
+  const blockCommentLine = /^\s*(\/\*|\*|\*\/)/;
+  const inlineComment = /\/\/|\/\*/;
+
+  for (const file of files.filter(item => commentCheckedExtensions.has(path.extname(item)))) {
+    const text = fs.readFileSync(file, 'utf8');
+    const lines = text.split(/\r?\n/);
+    lines.forEach((lineText, index) => {
+      if (!badChars.test(lineText) || !inlineComment.test(lineText)) return;
+      if (lineComment.test(lineText) || blockCommentLine.test(lineText) || /\/\*.*\*\//.test(lineText)) {
+        failures += fail(`Non-English or mojibake code comment: ${rel(file)}:${index + 1}`);
+      }
+    });
+  }
+
+  if (failures === 0) ok('Code comments contain no Chinese or mojibake markers.');
+  return failures;
+}
+
+function scanRemovedArtifacts() {
+  section('Removed artifact scan');
+  let failures = 0;
+  const forbiddenPaths = [
+    'src/purgecss-output',
+  ];
+  for (const item of forbiddenPaths) {
+    if (fs.existsSync(path.join(ROOT, item))) failures += fail(`Removed/generated artifact still exists: ${item}`);
+  }
+
+  const packageJson = path.join(ROOT, 'package.json');
+  const postcssConfig = path.join(ROOT, 'postcss.config.cjs');
+  for (const file of [packageJson, postcssConfig].filter(item => fs.existsSync(item))) {
+    const text = fs.readFileSync(file, 'utf8');
+    if (/purgecss|ENABLE_PURGECSS|@fullhuman\/postcss-purgecss/i.test(text)) {
+      failures += fail(`PurgeCSS configuration or dependency remains: ${rel(file)}`);
+    }
+  }
+
+  if (failures === 0) ok('No removed build artifacts or PurgeCSS configuration found.');
   return failures;
 }
 
@@ -263,7 +365,7 @@ function scanRobots() {
 
 function scanBuiltSeo() {
   section('Built SEO scan');
-  const pages = ['dist/index.html', 'dist/en/index.html', 'dist/zh-cn/index.html'];
+  const pages = ['dist/index.html', 'dist/en/index.html', 'dist/zh-tw/index.html', 'dist/zh-cn/index.html'];
   let failures = 0;
   for (const page of pages) {
     const full = path.join(ROOT, page);
@@ -286,9 +388,32 @@ function scanBuiltSeo() {
   return failures;
 }
 
+function scanDefaultEnglishSeo() {
+  section('Default English SEO scan');
+  const root = path.join(ROOT, 'dist', 'index.html');
+  const en = path.join(ROOT, 'dist', 'en', 'index.html');
+  let failures = 0;
+  if (!fs.existsSync(root)) return fail('dist/index.html is missing.');
+  const rootHtml = fs.readFileSync(root, 'utf8');
+  if (!/<html[^>]+lang="en"/.test(rootHtml)) failures += fail('Default root page is not marked lang="en".');
+  if (!/rel="alternate" hreflang="x-default"[^>]+href="[^"]+"/.test(rootHtml)) {
+    failures += fail('Default root page is missing x-default alternate link.');
+  }
+  if (fs.existsSync(en)) {
+    const enHtml = fs.readFileSync(en, 'utf8');
+    const rootCanonical = rootHtml.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+    const enCanonical = enHtml.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
+    if (rootCanonical && enCanonical && rootCanonical !== enCanonical) {
+      failures += fail('/en canonical differs from root canonical; this can split SEO signals.');
+    }
+  }
+  if (failures === 0) ok('Root defaults to English and /en canonical stays consolidated.');
+  return failures;
+}
+
 function scanReadmes() {
   section('README duplication scan');
-  const duplicateNames = ['README_en.md', 'README_zh-TW.md'];
+  const duplicateNames = ['README.en.md', 'README_en.md', 'README_zh-TW.md'];
   let failures = 0;
   for (const name of duplicateNames) {
     if (fs.existsSync(path.join(ROOT, name))) failures += fail(`Duplicate legacy README exists: ${name}`);
@@ -307,10 +432,16 @@ for (const script of quick ? ['check', 'lint', 'lint:css', 'build'] : ['check', 
 const files = textFiles();
 failures += scanDangerousSyntax(files);
 failures += scanMojibake(files);
+failures += scanCommentLanguage(files);
+failures += scanRawHtmlUsage(files);
+failures += scanBlankTargetLinks(files);
+failures += scanLocaleRoutes();
+failures += scanRemovedArtifacts();
 failures += scanGitignore();
 failures += scanHeaders();
 failures += scanRobots();
 failures += scanBuiltSeo();
+failures += scanDefaultEnglishSeo();
 failures += scanReadmes();
 
 if (failures > 0) {

@@ -4,12 +4,20 @@ test.describe('layout regression checks', () => {
   test('home page renders localized cards without markdown leakage', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.locator('html')).toHaveAttribute('lang', 'zh-TW');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.locator('h1.intro-title')).toBeVisible();
 
     const firstCard = page.locator('.post-card').first();
     await expect(firstCard).toBeVisible();
     await expect(firstCard.locator('.post-card-desc')).not.toContainText(/`|>\s*-/);
+  });
+
+  test('traditional chinese locale remains available under zh-tw', async ({ page }) => {
+    await page.goto('/zh-tw/');
+
+    await expect(page.locator('html')).toHaveAttribute('lang', 'zh-TW');
+    await expect(page.locator('h1.intro-title')).toBeVisible();
+    await expect(page.locator('.post-card').first()).toBeVisible();
   });
 
   test('posts pagination keeps enhanced button styling', async ({ page }) => {

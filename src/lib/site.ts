@@ -24,8 +24,8 @@ export function getLocalizedUrl(
   site?: URL | string | null
 ): string {
   const cleanPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
-  if (lang === 'zh-tw') return getCanonicalUrl(cleanPath, site);
+  if (lang === 'en') return getCanonicalUrl(cleanPath.replace(/^\/(en|zh-tw|zh-cn)(?=\/|$)/, '') || '/', site);
 
-  const pathWithoutLocale = cleanPath.replace(/^\/(en|zh-cn)(?=\/|$)/, '');
+  const pathWithoutLocale = cleanPath.replace(/^\/(en|zh-tw|zh-cn)(?=\/|$)/, '');
   return getCanonicalUrl(`/${lang}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`, site);
 }

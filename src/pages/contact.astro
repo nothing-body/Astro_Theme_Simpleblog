@@ -1,5 +1,5 @@
 ﻿---
-// src/pages/contact.astro — 聯絡我們（繁體中文）
+// src/pages/en/contact.astro — Contact Us (English)
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AboutSidebar from '../components/AboutSidebar.astro';
 import { getCanonicalUrl, getContactEmail } from '../lib/site';
@@ -7,32 +7,32 @@ import { safeJsonStringify } from '../lib/utils';
 
 const currentPath = Astro.url.pathname;
 const pageUrl = getCanonicalUrl(currentPath, Astro.site);
-// 聯絡信箱透過環境變數注入，不硬編碼
 const contactEmail = getContactEmail();
 
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
-  name: '聯絡我們',
+  name: 'Contact Us',
   url: pageUrl,
-  description: '聯絡本站作者的方式。',
+  description: 'How to contact the author of this site.',
   publisher: { '@type': 'Person', name: 'Astro Blog Template' },
 };
 ---
 
-<BaseLayout title="聯絡我們" description="聯絡本站作者的方式。">
+<BaseLayout title="Contact Us" description="How to contact the author of this site.">
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
   <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
     <div class="content-wrapper">
-      <AboutSidebar lang="zh-tw" currentPath={currentPath} />
+      <AboutSidebar lang="en" currentPath={currentPath} />
       <main id="main-content" class="main-content">
         <article class="glass-card" style="padding: 2.5rem;">
           <div class="article-entry">
-            <h1>聯絡我們</h1>
-            <p>若您對本站內容有任何疑問、建議或版權相關問題，歡迎透過以下方式與我聯繫。</p>
+            <h1>Contact Us</h1>
             <p>
-              Email：<a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+              If you have any questions, suggestions, or copyright-related inquiries about this
+              site, feel free to reach out.
             </p>
+            <p>Email: <a href={`mailto:${contactEmail}`}>{contactEmail}</a></p>
           </div>
         </article>
       </main>

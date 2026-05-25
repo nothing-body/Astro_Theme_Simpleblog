@@ -1,5 +1,5 @@
 ﻿---
-// src/layouts/BlogPostLayout.astro — 部落格文章版面 (modular enhancements)
+
 import BaseLayout from './BaseLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import PostCopyright from '../components/PostCopyright.astro';
@@ -12,7 +12,7 @@ import {
 import { formatDate, safeJsonStringify, summarizePlainText } from '../lib/utils';
 import { getSiteUrl } from '../lib/site';
 import '../styles/markdown.css';
-import '../assets/css/blog-enhancements.css'; // 新增樣式檔
+import '../assets/css/blog-enhancements.css';
 
 export interface Props {
   frontmatter: {
@@ -40,7 +40,6 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
 const siteUrl = getSiteUrl(Astro.site);
 const articleDescription = summarizePlainText(frontmatter.description ?? frontmatter.title, 180);
 
-// 麵包屑資料：包含 首頁 > 所有文章 > 文章分類 > 文章標題
 const breadcrumbs = [
   { label: t('breadcrumb.home'), href: translatePath('/') },
   { label: t('breadcrumb.posts'), href: translatePath('/posts') },
@@ -182,47 +181,44 @@ const breadcrumbs = [
       let lastPath = sessionStorage.getItem('bb-last-list');
       const currentPath = window.location.pathname;
 
-      // 嚴格驗證路徑：必須以 / 開頭且第二字元非 /（防止 open redirect）
       if (!lastPath || lastPath === currentPath || !/^\/[^/]/.test(lastPath)) return;
 
-      // 取得給定路徑的語系類型
       const getPathLang = path => {
-        if (path.startsWith('/en/') || path === '/en') return 'en';
+        if (path.startsWith('/zh-tw/') || path === '/zh-tw') return 'zh-tw';
         if (path.startsWith('/zh-cn/') || path === '/zh-cn') return 'zh-cn';
-        return 'zh-tw';
+        return 'en';
       };
 
       const lastLang = getPathLang(lastPath);
 
-      // 語系不同時換算路徑，支援 zh-tw / en / zh-cn 三語系互轉
       if (lastLang !== lang) {
         const parts = lastPath.split('/').filter(Boolean);
-        const hasPrefix = parts[0] === 'en' || parts[0] === 'zh-cn';
+        const hasPrefix = parts[0] === 'zh-tw' || parts[0] === 'zh-cn';
 
         if (lastPath.includes('/categories/')) {
           const catName = decodeURIComponent(parts[hasPrefix ? 2 : 1] ?? '');
           const targetCat = categoryMapping[catName] ?? currentCategory;
           const catPath = `/categories/${encodeURIComponent(targetCat)}/1`;
-          lastPath = lang === 'zh-tw' ? catPath : `/${lang}${catPath}`;
+          lastPath = lang === 'en' ? catPath : `/${lang}${catPath}`;
         } else if (lastPath.includes('/tags/')) {
           const tagName = decodeURIComponent(parts[hasPrefix ? 2 : 1] ?? '');
           const tagPath = `/tags/${encodeURIComponent(tagName)}/1`;
-          lastPath = lang === 'zh-tw' ? tagPath : `/${lang}${tagPath}`;
+          lastPath = lang === 'en' ? tagPath : `/${lang}${tagPath}`;
         } else {
-          lastPath = lang === 'zh-tw' ? '/posts' : `/${lang}/posts`;
+          lastPath = lang === 'en' ? '/posts' : `/${lang}/posts`;
         }
       }
 
       backLink.href = lastPath;
     } catch {
-      // 靜默失敗（隱私模式可能無法讀取 sessionStorage）
+
     }
   });
 </script>
 
 <style is:global>
   .immersion-read-container {
-    max-width: 1100px; /* 放寬容器限制，讓卡片可以變得更寬 */
+    max-width: 1100px;
     margin: 1.5rem auto 5rem;
     padding: 0 1.5rem;
   }
@@ -345,7 +341,6 @@ const breadcrumbs = [
     gap: 0.5rem;
   }
 
-  /* ---------- 手機版自適應 ---------- */
   @media (max-width: 768px) {
     .immersion-read-container {
       padding: 0 0.75rem;

@@ -1,5 +1,5 @@
 ﻿---
-// src/pages/404.astro — 自定義 404 頁面
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getLangFromUrl, useTranslations, useTranslatedPath } from '../i18n/utils';
 
@@ -23,7 +23,6 @@ const translatePath = useTranslatedPath(lang);
       </div>
     </main>
   </div>
-
 
 <style is:global>
   .error-code {

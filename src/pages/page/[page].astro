@@ -1,5 +1,5 @@
 ﻿---
-// src/pages/page/[page].astro — zh-tw 分頁列表
+// src/pages/en/page/[page].astro — English paginated posts
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Sidebar from '../../components/Sidebar.astro';
@@ -12,11 +12,10 @@ export async function getStaticPaths() {
   const PAGE_SIZE = 5;
   const allPosts = await getCollection(
     'blog',
-    ({ id, data }) => id.startsWith('zh-tw/') && !data.draft
+    ({ id, data }) => id.startsWith('en/') && !data.draft
   );
   const sorted = sortBlogPosts(allPosts);
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
-
   return Array.from({ length: totalPages }, (_, i) => ({
     params: { page: String(i + 1) },
     props: { totalPages, allPosts: sorted },
@@ -25,43 +24,35 @@ export async function getStaticPaths() {
 
 const { page } = Astro.params;
 const { totalPages, allPosts } = Astro.props;
-
-const t = useTranslations('zh-tw');
+const t = useTranslations('en');
 const PAGE_SIZE = 5;
 const currentPage = Number(page);
 const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-const getPageUrl = (n: number) => (n === 1 ? '/posts' : `/page/${n}`);
-const prevUrl = currentPage > 1 ? getPageUrl(currentPage - 1) : undefined;
-const nextUrl = currentPage < totalPages ? getPageUrl(currentPage + 1) : undefined;
+const getPageUrl = (n: number) => (n === 1 ? '/en/posts' : `/en/page/${n}`);
 ---
 
-<BaseLayout
-  title={`${t('posts.title')} — 第 ${currentPage} 頁`}
-  description={`所有文章列表第 ${currentPage} 頁`}
->
-  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+<BaseLayout title={`${t('posts.title')} — Page ${currentPage}`}>
+  <div class="page-container" style="padding-top:2rem; padding-bottom:4rem;">
     <div class="content-wrapper">
-      <Sidebar allPosts={allPosts} lang="zh-tw" />
+      <Sidebar allPosts={allPosts} lang="en" />
       <main id="main-content" class="main-content">
         <h1
           style="font-size:1.6rem; font-weight:800; color:var(--text-heading); margin-bottom:1.5rem;"
         >
           {t('posts.title')}
         </h1>
-        {posts.map(post => <PostCard post={post} lang="zh-tw" />)}
+        {posts.map(post => <PostCard post={post} lang="en" />)}
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
-          prevUrl={prevUrl}
-          nextUrl={nextUrl}
+          prevUrl={currentPage > 1 ? getPageUrl(currentPage - 1) : undefined}
+          nextUrl={currentPage < totalPages ? getPageUrl(currentPage + 1) : undefined}
           getPageUrl={getPageUrl}
-          lang="zh-tw"
+          lang="en"
         />
       </main>
     </div>
   </div>
-
 
 <script>
   try {

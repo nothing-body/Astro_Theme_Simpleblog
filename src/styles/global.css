@@ -1,87 +1,76 @@
-/* src/styles/global.css
-   護眼暖奶油色設計系統
-   使用 Tailwind CSS v4 + 自訂 CSS 變數
-*/
 
-/* === Tailwind CSS v4 核心匯入 === */
 @import 'tailwindcss';
 @plugin "@tailwindcss/typography";
 
-/* === 自托管字體（隱私優先，不使用 Google Fonts CDN）=== */
-/* 使用系統字體堆疊：macOS/iOS → PingFang TC, Windows → JhengHei, Android → Noto */
-
-/* === 設計 Token === */
 @theme {
-  /* 暖奶油色背景系列 */
+  
   --color-cream-50: #fdfcf8;
   --color-cream-100: #faf7f2;
   --color-cream-200: #f4ede3;
   --color-cream-300: #e8ddd0;
   --color-cream-400: #d4c4b0;
 
-  /* 暖棕色文字系列 */
+  
   --color-text-900: #2c2420;
   --color-text-700: #4a3f3a;
   --color-text-500: #7a6e68;
   --color-text-300: #b0a8a2;
 
-  /* 品牌色：暖赭色（護眼版，比純紅更柔和）*/
+  
   --color-primary: #c47a65;
   --color-primary-dark: #a86652;
   --color-primary-light: rgba(196, 122, 101, 0.12);
 
-  /* 功能色 */
+  
   --color-success: #5a8a6a;
   --color-warning: #c49a3a;
   --color-danger: #b85050;
   --color-info: #4a7aa8;
 
-  /* 字體 */
+  
   --font-family-sans:
     'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei UI', 'Microsoft JhengHei',
     'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-family-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
 
-  /* 間距 */
+  
   --spacing-nav: 70px;
 }
 
-/* === CSS 全域變數（供非 Tailwind 樣式使用）=== */
 :root {
-  /* 主要顏色 */
+  
   --primary-red: #c47a65;
   --primary-red-dark: #a86652;
   --primary-red-light: rgba(196, 122, 101, 0.12);
 
-  /* 背景 */
+  
   --bg-main: #f5f0e8;
   --bg-card: #ffffff;
   --bg-nav: rgba(255, 255, 255, 0.97);
 
-  /* 文字（明顯加深，確保與奶油底色有足夠對比）*/
+  
   --text-primary: #2a1f1a;
   --text-secondary: #4a3a32;
   --text-muted: #7a6e68;
   --text-heading: #1a1210;
 
-  /* 邊框 */
+  
   --border-color: #d8cfc4;
   --border-light: rgba(196, 122, 101, 0.2);
 
-  /* 陰影（更明顯，讓卡片浮出背景）*/
+  
   --shadow-sm: 0 2px 8px rgba(44, 32, 24, 0.09);
   --shadow-md: 0 4px 16px rgba(44, 32, 24, 0.13);
   --shadow-lg: 0 8px 30px rgba(44, 32, 24, 0.16);
   --shadow-card: 0 2px 14px rgba(44, 32, 24, 0.11);
   --shadow-card-hover: 0 6px 28px rgba(44, 32, 24, 0.18);
 
-  /* 玻璃效果（白色底，讓卡片在奶油背景上清晰可辨）*/
+  
   --glass-bg: rgba(255, 255, 255, 0.92);
   --glass-border: rgba(200, 185, 170, 0.7);
   --glass-blur: 20px;
 }
 
-/* === 基礎重置與全域樣式 === */
 *,
 *::before,
 *::after {
@@ -89,7 +78,7 @@
 }
 
 html {
-  /* 防止捲動時佈局偏移 */
+  
   scrollbar-gutter: stable;
   scroll-behavior: smooth;
 }
@@ -105,14 +94,13 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* 防止字體縮放影響佈局 */
+  
   text-size-adjust: 100%;
   min-height: 100vh;
-  /* 導覽列高度偏移 */
+  
   padding-top: var(--spacing-nav);
 }
 
-/* === 無障礙：Skip to Content === */
 .skip-link {
   position: absolute;
   left: -9999px;
@@ -140,14 +128,12 @@ body {
   box-shadow: var(--shadow-md);
 }
 
-/* === 焦點樣式（WCAG 2.1 AA 要求）=== */
 :focus-visible {
   outline: 2px solid var(--primary-red);
   outline-offset: 3px;
   border-radius: 4px;
 }
 
-/* === 連結基礎樣式 === */
 a {
   color: var(--primary-red);
   text-decoration: none;
@@ -158,13 +144,11 @@ a:hover {
   color: var(--primary-red-dark);
 }
 
-/* === 圖片 === */
 img {
   max-width: 100%;
   height: auto;
 }
 
-/* === 程式碼 === */
 code:not([class*='language-']) {
   font-family: var(--font-family-mono);
   font-size: 0.88em;
@@ -175,7 +159,6 @@ code:not([class*='language-']) {
   border: 1px solid rgba(168, 102, 82, 0.35);
 }
 
-/* === 通用版面元件 === */
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -193,7 +176,6 @@ code:not([class*='language-']) {
   min-width: 0;
 }
 
-/* === 玻璃卡片元件（白色底色對比奶油背景）=== */
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
@@ -210,7 +192,6 @@ code:not([class*='language-']) {
   box-shadow: var(--shadow-card-hover);
 }
 
-/* === 文章卡片 === */
 .post-card {
   display: block;
   height: 100%;
@@ -322,7 +303,6 @@ code:not([class*='language-']) {
   }
 }
 
-/* === 麵包屑 === */
 .breadcrumbs {
   margin-bottom: 1.5rem;
 }
@@ -398,7 +378,6 @@ code:not([class*='language-']) {
   }
 }
 
-/* === 分頁 === */
 .pagination {
   display: flex;
   align-items: center;
@@ -508,7 +487,6 @@ code:not([class*='language-']) {
   }
 }
 
-/* === 文章卡片連結 === */
 .post-container-link {
   display: block;
   padding: 1.5rem;
@@ -529,7 +507,6 @@ code:not([class*='language-']) {
   color: var(--primary-red);
 }
 
-/* === 側邊欄 === */
 .sidebar {
   width: 260px;
   flex-shrink: 0;
@@ -537,13 +514,11 @@ code:not([class*='language-']) {
   top: calc(var(--spacing-nav) + 1.5rem);
 }
 
-/* 側邊欄 Widget 內賦 */
 .sidebar-widget {
   padding: 1.2rem 1.3rem;
   margin-bottom: 1.2rem;
 }
 
-/* === Widget 標題 === */
 .widget-title {
   font-size: 0.8rem;
   font-weight: 800;
@@ -563,7 +538,6 @@ code:not([class*='language-']) {
   background: var(--border-color);
 }
 
-/* === 分類連結 === */
 .category-list {
   list-style: none;
   padding: 0;
@@ -591,7 +565,6 @@ code:not([class*='language-']) {
   font-weight: 700;
 }
 
-/* === 標籤雲 === */
 .tag-cloud {
   display: flex;
   flex-wrap: wrap;
@@ -617,7 +590,6 @@ code:not([class*='language-']) {
   border-color: var(--primary-red);
 }
 
-/* === 按鈕 === */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -664,7 +636,6 @@ code:not([class*='language-']) {
   transform: translateY(-2px);
 }
 
-/* === 一鍵回頂部按鈕 === */
 .back-to-top-btn {
   position: fixed;
   right: 2.75rem;
@@ -719,7 +690,6 @@ code:not([class*='language-']) {
   }
 }
 
-/* === 響應式：側邊欄摺疊 === */
 @media (max-width: 900px) {
   .content-wrapper {
     flex-direction: column;
@@ -730,7 +700,6 @@ code:not([class*='language-']) {
   }
 }
 
-/* === 列印樣式（隱藏非必要元素）=== */
 @media print {
   .nav-header,
   .site-footer,

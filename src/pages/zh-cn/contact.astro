@@ -1,5 +1,5 @@
 ﻿---
-// src/pages/zh-cn/contact.astro — 联系我们（简体中文）
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import AboutSidebar from '../../components/AboutSidebar.astro';
 import { getCanonicalUrl, getContactEmail } from '../../lib/site';
@@ -7,7 +7,7 @@ import { safeJsonStringify } from '../../lib/utils';
 
 const currentPath = Astro.url.pathname;
 const pageUrl = getCanonicalUrl(currentPath, Astro.site);
-// 联络信箱透过环境变数注入，不硬编码
+
 const contactEmail = getContactEmail();
 
 const jsonLd = {

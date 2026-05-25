@@ -25,7 +25,8 @@ const {
 } = Astro.props;
 
 const siteUrl = getSiteUrl(Astro.site);
-const currentUrl = canonicalUrl ?? new URL(Astro.url.pathname, siteUrl).href;
+const normalizedPath = Astro.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/';
+const currentUrl = canonicalUrl ?? new URL(normalizedPath, siteUrl).href;
 const fullTitle = title === SITE_NAME ? title : `${title} | ${SITE_NAME}`;
 const ogImageUrl = ogImage ? new URL(ogImage, siteUrl).href : `${siteUrl}/og-default.png`;
 const zhTwUrl = getLocalizedUrl(Astro.url.pathname, 'zh-tw', siteUrl);
@@ -48,7 +49,7 @@ const safeGa4Id =
 <link rel="alternate" hreflang="zh-TW" href={zhTwUrl} />
 <link rel="alternate" hreflang="zh-CN" href={zhCnUrl} />
 <link rel="alternate" hreflang="en" href={enUrl} />
-<link rel="alternate" hreflang="x-default" href={zhTwUrl} />
+<link rel="alternate" hreflang="x-default" href={enUrl} />
 
 <meta property="og:type" content={type} />
 <meta property="og:url" content={currentUrl} />

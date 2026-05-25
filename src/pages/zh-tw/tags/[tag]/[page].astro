@@ -1,0 +1,83 @@
+﻿---
+
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import Sidebar from '../../../../components/Sidebar.astro';
+import PostCard from '../../../../components/PostCard.astro';
+import Pagination from '../../../../components/Pagination.astro';
+import { sortBlogPosts } from '../../../../lib/posts';
+
+export async function getStaticPaths() {
+  const PAGE_SIZE = 5;
+  const allPosts = await getCollection(
+    'blog',
+    ({ id, data }) => id.startsWith('zh-tw/') && !data.draft
+  );
+
+  const tagMap = new Map<string, typeof allPosts>();
+  for (const post of allPosts) {
+    for (const tag of post.data.tags) {
+      if (!tagMap.has(tag)) tagMap.set(tag, []);
+      tagMap.get(tag)!.push(post);
+    }
+  }
+
+  const paths: {
+    params: { tag: string; page: string };
+    props: {
+      allPosts: typeof allPosts;
+      tagPosts: typeof allPosts;
+      currentTag: string;
+      totalPages: number;
+    };
+  }[] = [];
+
+  for (const [tag, tagPosts] of tagMap) {
+    const sorted = sortBlogPosts(tagPosts);
+    const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+    for (let i = 1; i <= totalPages; i++) {
+      paths.push({
+        params: { tag, page: String(i) },
+        props: { allPosts, tagPosts: sorted, currentTag: tag, totalPages },
+      });
+    }
+  }
+  return paths;
+}
+
+const { allPosts, tagPosts, currentTag, totalPages } = Astro.props;
+const PAGE_SIZE = 5;
+const currentPage = Number(Astro.params.page);
+const posts = tagPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+const getPageUrl = (n: number) => `/tags/${encodeURIComponent(currentTag)}/${n}`;
+---
+
+<BaseLayout title={`#${currentTag} — 標籤文章`}>
+  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+    <div class="content-wrapper">
+      <Sidebar allPosts={allPosts} lang="zh-tw" activeTag={currentTag} />
+      <main id="main-content" class="main-content">
+        <h1
+          style="font-size:1.6rem; font-weight:800; color:var(--text-heading); margin-bottom:1.5rem;"
+        >
+          標籤：#{currentTag}
+        </h1>
+        {posts.map(post => <PostCard post={post} lang="zh-tw" />)}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          prevUrl={currentPage > 1 ? getPageUrl(currentPage - 1) : undefined}
+          nextUrl={currentPage < totalPages ? getPageUrl(currentPage + 1) : undefined}
+          getPageUrl={getPageUrl}
+          lang="zh-tw"
+        />
+      </main>
+    </div>
+  </div>
+
+<script>
+  try {
+    sessionStorage.setItem('bb-last-list', window.location.pathname);
+  } catch {}
+</script>
+</BaseLayout>

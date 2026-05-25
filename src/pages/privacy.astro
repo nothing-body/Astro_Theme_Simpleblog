@@ -1,5 +1,5 @@
 ﻿---
-// src/pages/privacy.astro — 隱私權政策（繁體中文，含側邊欄）
+// src/pages/en/privacy.astro — Privacy Policy (English, with Sidebar)
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AboutSidebar from '../components/AboutSidebar.astro';
 import { getCanonicalUrl } from '../lib/site';
@@ -7,7 +7,7 @@ import { safeJsonStringify } from '../lib/utils';
 
 const currentPath = Astro.url.pathname;
 const pageUrl = getCanonicalUrl(currentPath, Astro.site);
-const today = new Date().toLocaleDateString('zh-TW', {
+const today = new Date().toLocaleDateString('en-GB', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
@@ -16,109 +16,85 @@ const today = new Date().toLocaleDateString('zh-TW', {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
-  name: '隱私權政策',
+  name: 'Privacy Policy',
   url: pageUrl,
-  description: '本站隱私權政策，說明資料收集與處理方式。',
+  description: 'Privacy policy for the Astro Blog Template blog.',
   publisher: { '@type': 'Person', name: 'Astro Blog Template' },
 };
 ---
 
-<BaseLayout title="隱私權政策" description="本站隱私權政策，說明資料收集與處理方式。">
+<BaseLayout title="Privacy Policy" description="Privacy policy for the Astro Blog Template blog.">
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
   <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
     <div class="content-wrapper">
-      <AboutSidebar lang="zh-tw" currentPath={currentPath} />
+      <AboutSidebar lang="en" currentPath={currentPath} />
       <main id="main-content" class="main-content">
         <article class="glass-card" style="padding: 2.5rem;">
           <div class="article-entry">
-            <h1>隱私權政策</h1>
-            <p style="color:var(--text-muted); font-size:0.88rem;">最後更新：{today}</p>
-            <p>本站承諾保護使用者的隱私。以下內容說明本站處理使用者資料的相關政策：</p>
+            <h1>Privacy Policy</h1>
+            <p style="color:var(--text-muted); font-size:0.88rem;">Last updated: {today}</p>
+            <p>
+              This site takes your privacy seriously. This policy explains how we collect and use
+              data.
+            </p>
 
-            <h2>資訊收集</h2>
+            <h2>1. Data Collection</h2>
             <ul>
               <li>
-                <strong>伺服器端：</strong>本站為採用 Astro
-                架構的靜態網站。我們不會在伺服器端主動收集、儲存或追蹤使用者的個人識別資訊、IP
-                位址或瀏覽紀錄。
+                <strong>Server-side:</strong> This is a static site. We do not actively collect, store,
+                or track personal data on our servers.
               </li>
               <li>
-                <strong>流量統計（Google Analytics）：</strong>本站使用 Google Analytics (GA4)
-                收集匿名流量資訊，以協助了解網站使用情況並優化內容。這些數據皆為匿名化處理，不包含個人可識別身分資訊。
+                <strong>Google Analytics (GA4):</strong> We use GA4 to collect anonymous traffic data.
+                You can choose whether to allow this in the panel below.
               </li>
               <li>
-                您可透過本頁下方的「您的隱私選擇」面板，自主選擇是否允許 Google Analytics
-                收集瀏覽數據。若您關閉此選項，GA4 追蹤碼將不會被載入。
-              </li>
-              <li>
-                <strong>時區檢測：</strong
-                >首頁時鐘使用瀏覽器內建的時區資訊，或用戶手動選擇時區。選擇的時區儲存在本地儲存中。
+                <strong>Timezone:</strong> The clock uses your browser's timezone, stored locally if you
+                allow it.
               </li>
             </ul>
 
-            <h2>本機儲存</h2>
+            <h2>2. Local Storage</h2>
             <ul>
               <li>
-                <strong>本機儲存與隱私設定：</strong>本站使用 LocalStorage
-                記住您選擇的時區設定。您可在下方隱私設定中選擇是否允許：
-                <ul>
-                  <li>
-                    <strong>允許記住時區設定：</strong
-                    >打開此選項後，您選擇的時區會儲存在本機，下次訪問時會自動載入。
-                  </li>
-                  <li>
-                    <strong>不允許記住時區設定：</strong
-                    >關閉此選項後，時區選擇不會被儲存，每次訪問時都會重置為預設值。
-                  </li>
-                </ul>
+                We use LocalStorage to remember your timezone preference. You can manage this below:
               </li>
             </ul>
 
-            <h2>您的隱私選擇</h2>
+            <h2>3. Your Privacy Choices</h2>
             <div class="privacy-inline-panel">
               <label class="privacy-toggle-row">
                 <input type="checkbox" id="remember-timezone-toggle" class="privacy-checkbox" />
-                <span>允許本站記住我選擇的時區設定</span>
+                <span>Allow this site to remember my timezone</span>
               </label>
               <label class="privacy-toggle-row">
                 <input type="checkbox" id="enable-analytics-toggle" class="privacy-checkbox" />
-                <span>允許 Google Analytics (GA4) 收集瀏覽數據進行網站分析</span>
+                <span>Allow Google Analytics (GA4) to collect anonymous browsing data</span>
               </label>
               <p style="font-size:0.88rem; color:var(--text-muted);">
-                您的設定會在按下「儲存設定」後生效。關閉 GA4 後將在頁面重新載入時生效。
+                Settings take effect after you click "Save". Disabling GA4 will reload the page.
               </p>
               <button
                 type="button"
                 id="privacy-save-inline"
                 class="btn-primary"
-                style="margin-top:0.5rem;">儲存設定</button
+                style="margin-top:0.5rem;">Save Settings</button
               >
             </div>
 
-            <h2>安全性</h2>
+            <h2>4. Security & Third Parties</h2>
             <p>
-              本站實施多項安全措施，包括 HTTP
-              嚴格傳輸安全（HSTS）、內容安全政策（CSP）、防點擊劫持標頭等，以保護您的瀏覽安全。
+              This site is hosted on <strong>Cloudflare Pages</strong>. We do not use third-party
+              font CDNs.
             </p>
 
-            <h2>第三方服務</h2>
-            <p>
-              本站部署於 <strong>Cloudflare Pages</strong>，Cloudflare
-              可能依其隱私政策收集基本存取日誌。詳情請參閱 <a
-                href="https://www.cloudflare.com/privacypolicy/"
-                rel="noopener noreferrer"
-                target="_blank">Cloudflare 隱私政策</a
-              >。本站<strong>不使用任何第三方字體 CDN</strong>，以保護您的隱私。
-            </p>
-
-            <h2>聯絡</h2>
-            <p>如對本隱私政策有疑問，歡迎透過<a href="/contact">聯絡我們</a>頁面與本站聯繫。</p>
+            <h2>5. Contact</h2>
+            <p>If you have questions, please use our <a href="/contact">Contact Us</a> page.</p>
           </div>
         </article>
       </main>
     </div>
   </div>
-
 
 <style is:global>
   .privacy-inline-panel {

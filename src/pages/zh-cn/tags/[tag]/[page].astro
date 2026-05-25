@@ -1,5 +1,5 @@
 ﻿---
-// src/pages/zh-cn/tags/[tag]/[page].astro — 简体中文标签分页页
+
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import Sidebar from '../../../../components/Sidebar.astro';
@@ -71,7 +71,6 @@ const getPageUrl = (n: number) => `/zh-cn/tags/${encodeURIComponent(currentTag)}
       </main>
     </div>
   </div>
-
 
 <script>
   try {

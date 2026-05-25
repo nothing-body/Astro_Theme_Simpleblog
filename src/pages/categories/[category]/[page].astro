@@ -1,28 +1,24 @@
 ﻿---
-// src/pages/categories/[category]/[page].astro — zh-tw 分類頁
+// src/pages/en/categories/[category]/[page].astro — English category pages
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Sidebar from '../../../components/Sidebar.astro';
 import PostCard from '../../../components/PostCard.astro';
 import Pagination from '../../../components/Pagination.astro';
-import { useTranslations } from '../../../i18n/utils';
 import { sortBlogPosts } from '../../../lib/posts';
 
 export async function getStaticPaths() {
-  // 必須在 getStaticPaths 內部定義（Astro 預渲染時 module 頂層變數不可用）
   const PAGE_SIZE = 5;
   const allPosts = await getCollection(
     'blog',
-    ({ id, data }) => id.startsWith('zh-tw/') && !data.draft
+    ({ id, data }) => id.startsWith('en/') && !data.draft
   );
-
   const categoryMap = new Map<string, typeof allPosts>();
   for (const post of allPosts) {
     const cat = post.data.category;
     if (!categoryMap.has(cat)) categoryMap.set(cat, []);
     categoryMap.get(cat)!.push(post);
   }
-
   const paths: {
     params: { category: string; page: string };
     props: {
@@ -32,7 +28,6 @@ export async function getStaticPaths() {
       totalPages: number;
     };
   }[] = [];
-
   for (const [cat, catPosts] of categoryMap) {
     const sorted = sortBlogPosts(catPosts);
     const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
@@ -46,40 +41,35 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { page } = Astro.params;
 const { allPosts, categoryPosts, currentCategory, totalPages } = Astro.props;
-const t = useTranslations('zh-tw');
-
 const PAGE_SIZE = 5;
-const currentPage = Number(page);
+const currentPage = Number(Astro.params.page);
 const posts = categoryPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-const getPageUrl = (n: number) => `/categories/${encodeURIComponent(currentCategory)}/${n}`;
+const getPageUrl = (n: number) => `/en/categories/${encodeURIComponent(currentCategory)}/${n}`;
 ---
 
-<BaseLayout title={`${currentCategory} — 分類文章`}>
-  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+<BaseLayout title={`${currentCategory} — Category`}>
+  <div class="page-container" style="padding-top:2rem; padding-bottom:4rem;">
     <div class="content-wrapper">
-      <Sidebar allPosts={allPosts} lang="zh-tw" activeCategory={currentCategory} />
+      <Sidebar allPosts={allPosts} lang="en" activeCategory={currentCategory} />
       <main id="main-content" class="main-content">
         <h1
           style="font-size:1.6rem; font-weight:800; color:var(--text-heading); margin-bottom:1.5rem;"
         >
-          {t('sidebar.categories')}：{currentCategory}
+          Category: {currentCategory}
         </h1>
-        {posts.map(post => <PostCard post={post} lang="zh-tw" />)}
+        {posts.map(post => <PostCard post={post} lang="en" />)}
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           prevUrl={currentPage > 1 ? getPageUrl(currentPage - 1) : undefined}
           nextUrl={currentPage < totalPages ? getPageUrl(currentPage + 1) : undefined}
           getPageUrl={getPageUrl}
-          lang="zh-tw"
+          lang="en"
         />
       </main>
     </div>
   </div>
-
 
 <script>
   try {

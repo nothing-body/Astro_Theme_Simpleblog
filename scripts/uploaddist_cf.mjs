@@ -212,18 +212,17 @@ function loadEnvFile(envFilePath) {
   }
 }
 
-// 從 wrangler.toml 中解析專案名稱，作為自動後備方案
 function readWranglerProjectName() {
   try {
     const tomlPath = path.resolve(process.cwd(), "wrangler.toml");
     if (fs.existsSync(tomlPath)) {
       const content = fs.readFileSync(tomlPath, "utf8");
-      // 使用正規表示式匹配 name = "專案名稱" 或 name = '專案名稱'
+
       const m = content.match(/^\s*name\s*=\s*["']([^"']+)["']/m);
       if (m) return m[1].trim();
     }
-  } catch {
-    // 忽略讀取錯誤，這只是一個後備機制
+  } catch (error) {
+    console.warn(`[deploy] Unable to read wrangler.toml project name: ${error.message}`);
   }
   return "";
 }
@@ -411,9 +410,6 @@ if (!fs.existsSync(distPath)) {
   fail(`${t("common.distMissing")}: '${options.dist}'.`);
 }
 
-// 針對 Windows 平台引入安全延時解鎖緩衝
-// 當 Astro 剛完成大量的 HTML 寫入時，Windows Defender 或即時掃描防毒軟體會鎖定剛生成的檔案進行掃描
-// 若 Wrangler 立刻發起讀取，會造成作業系統鎖定衝突（Lock Competition）而引發假性的 ENOENT/EACCES 錯誤
 if (process.platform === "win32") {
   info("==> Windows system detected. Waiting 2 seconds for file system locks to release...", "yellow");
   sleepSync(2000);

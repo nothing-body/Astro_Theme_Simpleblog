@@ -1,5 +1,5 @@
 ﻿---
-// src/components/AboutSidebar.astro — 關於相關頁面側邊欄
+
 export interface Props {
   lang?: 'zh-tw' | 'en' | 'zh-cn';
   currentPath: string;
@@ -30,7 +30,6 @@ const menuZhCn = [
 
 const menu = lang === 'en' ? menuEn : lang === 'zh-cn' ? menuZhCn : menuZh;
 
-// 比對當前路徑（容忍結尾斜線）
 const isActive = (menuPath: string) => currentPath === menuPath || currentPath === menuPath + '/';
 ---
 

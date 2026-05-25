@@ -1,0 +1,41 @@
+﻿---
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AboutSidebar from '../../components/AboutSidebar.astro';
+import { getCanonicalUrl, getContactEmail } from '../../lib/site';
+import { safeJsonStringify } from '../../lib/utils';
+
+const currentPath = Astro.url.pathname;
+const pageUrl = getCanonicalUrl(currentPath, Astro.site);
+
+const contactEmail = getContactEmail();
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: '聯絡我們',
+  url: pageUrl,
+  description: '聯絡本站作者的方式。',
+  publisher: { '@type': 'Person', name: 'Astro Blog Template' },
+};
+---
+
+<BaseLayout title="聯絡我們" description="聯絡本站作者的方式。">
+  <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
+  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+    <div class="content-wrapper">
+      <AboutSidebar lang="zh-tw" currentPath={currentPath} />
+      <main id="main-content" class="main-content">
+        <article class="glass-card" style="padding: 2.5rem;">
+          <div class="article-entry">
+            <h1>聯絡我們</h1>
+            <p>若您對本站內容有任何疑問、建議或版權相關問題，歡迎透過以下方式與我聯繫。</p>
+            <p>
+              Email：<a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+            </p>
+          </div>
+        </article>
+      </main>
+    </div>
+  </div>
+</BaseLayout>

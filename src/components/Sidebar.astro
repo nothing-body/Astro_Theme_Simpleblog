@@ -1,5 +1,5 @@
 ﻿---
-// src/components/Sidebar.astro — 文章列表側邊欄（分類 + 標籤）
+
 import type { CollectionEntry } from 'astro:content';
 
 export interface Props {
@@ -11,12 +11,11 @@ export interface Props {
 
 const { allPosts, lang = 'zh-tw', activeCategory, activeTag } = Astro.props;
 
-const pathPrefix = lang === 'zh-tw' ? '' : `/${lang}`;
+const pathPrefix = lang === 'en' ? '' : `/${lang}`;
 const postsHref = `${pathPrefix}/posts`;
 const categoryLabel = lang === 'en' ? 'Categories' : '文章分類';
 const tagLabel = lang === 'en' ? 'Tags' : '標籤';
 
-// 統計各分類數量
 const categoryMap = new Map<string, number>();
 for (const post of allPosts) {
   const cat = post.data.category;
@@ -24,7 +23,6 @@ for (const post of allPosts) {
 }
 const categoriesList = [...categoryMap.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 
-// 蒐集所有標籤（去重）
 const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
 ---
 

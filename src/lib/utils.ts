@@ -22,7 +22,7 @@ export function getCleanSlug(postId: string): string {
 
 export function getPostUrl(slug: string, lang: SupportedLang): string {
   const cleanSlug = slug.replace(/^(zh-tw|en|zh-cn)\//, '').replace(/\.mdx?$/, '');
-  return lang === 'zh-tw' ? `/posts/${cleanSlug}` : `/${lang}/posts/${cleanSlug}`;
+  return lang === 'en' ? `/posts/${cleanSlug}` : `/${lang}/posts/${cleanSlug}`;
 }
 
 export function stripMarkdown(value: string): string {

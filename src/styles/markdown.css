@@ -1,25 +1,18 @@
-/* src/styles/markdown.css
-   Markdown / 文章內容排版樣式
-   護眼暖奶油色系，長閱讀舒適設計
-*/
 
-/* === 文章主體容器 === */
 .article-entry {
   line-height: 1.9;
   font-size: 1.13rem;
   font-weight: 450;
   color: var(--text-primary);
-  /* 中英文混排自動間距 */
+  
   text-autospace: ideograph-alpha;
   overflow-wrap: break-word;
 }
 
-/* 段落間距 */
 .article-entry > * + * {
   margin-top: 1.8rem;
 }
 
-/* === 標題 === */
 .article-entry h2 {
   margin-top: 4rem !important;
   font-size: 1.75rem;
@@ -44,14 +37,12 @@
   color: var(--text-700);
 }
 
-/* 標題後的第一個元素縮小間距 */
 .article-entry h2 + *,
 .article-entry h3 + *,
 .article-entry h4 + * {
   margin-top: 0.8rem !important;
 }
 
-/* === 清單 === */
 .article-entry ul,
 .article-entry ol {
   padding-left: 1.8rem;
@@ -66,7 +57,6 @@
   margin-top: 0.2rem;
 }
 
-/* 任務清單 */
 .article-entry .task-list-item {
   list-style-type: none;
   padding-left: 0;
@@ -79,7 +69,6 @@
   vertical-align: middle;
 }
 
-/* === 引言區塊 === */
 .article-entry blockquote {
   padding: 0.8rem 1.5rem;
   border-left: 4px solid var(--primary-red);
@@ -90,10 +79,9 @@
   margin: 1.5rem 0;
 }
 
-/* === 表格 === */
 .article-entry table {
   width: 100%;
-  border-collapse: separate; /* 必須為 separate 才能單獨讓 cell 的邊角圓角生效 */
+  border-collapse: separate; 
   border-spacing: 0;
   margin: 2rem 0;
   font-size: 0.95rem;
@@ -103,7 +91,6 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* 確保表格四周角落的儲存格有漂亮的圓角 */
 .article-entry th:first-child {
   border-top-left-radius: 10px;
 }
@@ -156,14 +143,12 @@
   background: #f5e7e0;
 }
 
-/* === 程式碼區塊（由 expressive-code 渲染）=== */
 .article-entry pre {
   border-radius: 12px !important;
   margin: 1.5rem 0 !important;
   box-shadow: var(--shadow-md) !important;
 }
 
-/* === 圖片 === */
 .article-entry img {
   max-width: 100%;
   height: auto;
@@ -171,11 +156,10 @@
   margin: 2rem auto;
   border-radius: 14px;
   box-shadow: var(--shadow-md);
-  /* 護眼：略微降低亮度 */
+  
   filter: brightness(0.97);
 }
 
-/* === 水平線 === */
 .article-entry hr {
   border: none;
   height: 1px;
@@ -183,7 +167,6 @@
   margin: 3rem 0;
 }
 
-/* === Directive 提示區塊 === */
 .article-entry div[data-directive] {
   padding: 1rem 1.4rem;
   border-radius: 8px;
@@ -191,10 +174,10 @@
   position: relative;
   font-size: 0.95rem;
   color: var(--text-primary);
-  /* 增加背景不透明度，使其成為獨立區塊 */
+  
   background: rgba(250, 250, 250, 0.7);
 
-  /* 拆開簡寫，防止 border 覆寫 border-left */
+  
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   border-right: 1px solid rgba(0, 0, 0, 0.08);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
@@ -205,7 +188,6 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
-/* 深色模式下的微調 (如果有深色模式的話，這裡可以確保可讀性) */
 @media (prefers-color-scheme: dark) {
   .article-entry div[data-directive] {
     background: rgba(30, 30, 30, 0.7);
@@ -257,7 +239,6 @@
   white-space: pre-wrap;
 }
 
-/* ---------- 手機版自適應 ---------- */
 @media (max-width: 768px) {
   .article-entry {
     font-size: 1.02rem;
@@ -293,7 +274,7 @@
     margin: 1rem 0;
   }
 
-  /* 表格：確保可水平捲動 */
+  
   .article-entry table {
     font-size: 0.88rem;
     margin: 1.5rem 0;

@@ -1,8 +1,5 @@
 ﻿---
-// src/components/CookieConsent.astro — GDPR Cookie 同意面板
-// 注意：CSS class / ID 刻意避免使用 "cookie" 一詞，
-// 以防止 Brave Shield 等廣告過濾器（EasyList-Cookie）
-// 透過 cosmetic filtering 將面板強制隱藏。
+
 export interface Props {
   lang: 'zh-tw' | 'en' | 'zh-cn';
 }
@@ -78,7 +75,6 @@ const i = {
     var saveBtn = document.getElementById('privacy-cfg-save');
     var closeBtn = document.getElementById('privacy-cfg-dismiss');
 
-    /* 從 window.__privacySettings 讀取目前設定 */
     function getSettings() {
       return (
         window.__privacySettings || {
@@ -89,17 +85,15 @@ const i = {
       );
     }
 
-    /* 同步 checkbox 狀態 */
     function syncCheckboxes() {
       var s = getSettings();
       if (tzCheckbox) tzCheckbox.checked = s.rememberTimezone !== false;
       if (gaCheckbox) {
-        /* 首次進入時預設不勾選分析（GDPR opt-in）*/
+
         gaCheckbox.checked = s.hasSetCookies ? s.enableAnalytics !== false : false;
       }
     }
 
-    /* 開啟面板 */
     function openPanel() {
       panel.setAttribute('aria-hidden', 'false');
       panel.classList.add('is-visible');
@@ -107,27 +101,22 @@ const i = {
       if (saveBtn) saveBtn.focus();
     }
 
-    /* 關閉面板 */
     function closePanel() {
       panel.setAttribute('aria-hidden', 'true');
       panel.classList.remove('is-visible');
-      /* 將焦點還給頁腳觸發按鈕 */
+
       var trigger = document.getElementById('footer-privacy-trigger');
       if (trigger) trigger.focus();
     }
 
-    /* 監聽 Footer 發出的開啟事件 */
     document.addEventListener('toggle-privacy-cfg', openPanel);
 
-    /* 點擊遮罩關閉 */
     panel.addEventListener('click', function (e) {
       if (e.target === panel) closePanel();
     });
 
-    /* 關閉按鈕 */
     if (closeBtn) closeBtn.addEventListener('click', closePanel);
 
-    /* 儲存設定 */
     if (saveBtn) {
       saveBtn.addEventListener('click', function () {
         var updates = {
@@ -138,25 +127,23 @@ const i = {
         if (typeof window.updatePrivacySettings === 'function') {
           window.updatePrivacySettings(updates);
         }
-        /* 若不允許記住時區，清除 localStorage */
+
         if (!updates.rememberTimezone) {
           try {
             localStorage.removeItem('bb-tz');
           } catch (e) {}
         }
-        /* 重新載入以套用 GA4 設定 */
+
         window.location.reload();
       });
     }
 
-    /* Escape 鍵關閉 */
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && panel.classList.contains('is-visible')) {
         closePanel();
       }
     });
 
-    /* 延遲 600ms 後，若使用者未做過設定則自動顯示 */
     setTimeout(function () {
       if (!getSettings().hasSetCookies) openPanel();
     }, 600);

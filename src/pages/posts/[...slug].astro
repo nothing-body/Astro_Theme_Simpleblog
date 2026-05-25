@@ -1,14 +1,11 @@
 ﻿---
-// src/pages/posts/[...slug].astro — zh-tw 文章動態路由
+// src/pages/en/posts/[...slug].astro — English post dynamic routes
 import { getCollection, render } from 'astro:content';
 import BlogPostLayout from '../../layouts/BlogPostLayout.astro';
 import { getCleanSlug } from '../../lib/utils';
 
 export async function getStaticPaths() {
-  const posts = await getCollection(
-    'blog',
-    ({ id, data }) => id.startsWith('zh-tw/') && !data.draft
-  );
+  const posts = await getCollection('blog', ({ id, data }) => id.startsWith('en/') && !data.draft);
   return posts.map(post => ({
     params: { slug: getCleanSlug(post.id) },
     props: { post },

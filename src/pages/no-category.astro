@@ -1,9 +1,9 @@
 ﻿---
-// src/pages/no-category.astro — 無此分類/標籤提示頁（繁中）
+// src/pages/en/no-category.astro — No category/tag found (English)
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { useTranslations } from '../i18n/utils';
 
-const t = useTranslations('zh-tw');
+const t = useTranslations('en');
 ---
 
 <BaseLayout title={t('noCategory.title')}>
@@ -17,10 +17,7 @@ const t = useTranslations('zh-tw');
           {t('noCategory.title')}
         </h1>
         <p style="color:var(--text-secondary); margin-bottom:2rem;">{t('noCategory.message')}</p>
-        <p
-          style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;"
-          id="redirect-msg"
-        >
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
           {t('noCategory.redirecting')}
         </p>
         <a href="/posts" class="btn-primary">{t('noCategory.manual')}</a>
@@ -28,10 +25,9 @@ const t = useTranslations('zh-tw');
     </main>
   </div>
 
-
 <script>
   setTimeout(() => {
-    window.location.href = '/posts';
+    window.location.href = '/en/posts';
   }, 3000);
 </script>
 </BaseLayout>
