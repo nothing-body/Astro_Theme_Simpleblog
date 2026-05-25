@@ -1,14 +1,14 @@
-<table>
-  <tr>
-    <td align="center"><strong>繁體中文 README</strong><br><a href="./README.zh-TW.md">開啟繁體中文版本</a></td>
-  </tr>
-</table>
+<p align="center">
+  <a href="https://blog.ouoxo.com/en/">Live Demo</a>
+  ·
+  <a href="./README.md">English README</a>
+  ·
+  <a href="./README.zh-TW.md">繁體中文 README</a>
+</p>
 
 # Astro Multilingual Blog Template
 
 A public-safe multilingual Astro static blog template with deployment automation for Cloudflare Pages, VPS, and Vercel.
-
-[Live Demo](https://blog.ouoxo.com/)
 
 ## Guides
 

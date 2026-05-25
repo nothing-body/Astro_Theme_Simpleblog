@@ -12,6 +12,7 @@ export interface Props {
 const { allPosts, lang = 'zh-tw', activeCategory, activeTag } = Astro.props;
 
 const pathPrefix = lang === 'zh-tw' ? '' : `/${lang}`;
+const postsHref = `${pathPrefix}/posts`;
 const categoryLabel = lang === 'en' ? 'Categories' : '文章分類';
 const tagLabel = lang === 'en' ? 'Tags' : '標籤';
 
@@ -36,8 +37,12 @@ const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
         categoriesList.map(([cat, count]) => (
           <li role="listitem">
             <a
-              href={`${pathPrefix}/categories/${encodeURIComponent(cat)}/1`}
+              href={cat === activeCategory ? postsHref : `${pathPrefix}/categories/${encodeURIComponent(cat)}/1`}
               class:list={['cat-link', { 'cat-link--active': cat === activeCategory }]}
+              data-sidebar-filter-link
+              data-filter-kind="category"
+              data-filter-value={cat}
+              data-filter-active={cat === activeCategory ? 'true' : 'false'}
               aria-current={cat === activeCategory ? 'page' : undefined}
             >
               <span>{cat}</span>
@@ -56,8 +61,12 @@ const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
       {
         allTags.map(tag => (
           <a
-            href={`${pathPrefix}/tags/${encodeURIComponent(tag)}/1`}
+            href={tag === activeTag ? postsHref : `${pathPrefix}/tags/${encodeURIComponent(tag)}/1`}
             class:list={['tag-box', { 'tag-box--active': tag === activeTag }]}
+            data-sidebar-filter-link
+            data-filter-kind="tag"
+            data-filter-value={tag}
+            data-filter-active={tag === activeTag ? 'true' : 'false'}
             aria-current={tag === activeTag ? 'page' : undefined}
             role="listitem"
           >
@@ -68,6 +77,70 @@ const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
     </div>
   </div>
 </aside>
+
+<script>
+  (() => {
+    const prefetched = new Set<string>();
+
+    const links = Array.from(
+      document.querySelectorAll<HTMLAnchorElement>('[data-sidebar-filter-link]')
+    );
+
+    const isPlainLeftClick = (event: MouseEvent) =>
+      event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+
+    const markPending = (link: HTMLAnchorElement) => {
+      const kind = link.dataset.filterKind;
+      const returnsToAllPosts = link.dataset.filterActive === 'true';
+
+      for (const item of links) {
+        const itemKind = item.dataset.filterKind;
+        if (itemKind === 'category') {
+          item.classList.remove('cat-link--active');
+        }
+        if (itemKind === 'tag') {
+          item.classList.remove('tag-box--active');
+        }
+        item.removeAttribute('aria-current');
+      }
+
+      if (!returnsToAllPosts && kind === 'category') {
+        link.classList.add('cat-link--active');
+        link.setAttribute('aria-current', 'page');
+      }
+
+      if (!returnsToAllPosts && kind === 'tag') {
+        link.classList.add('tag-box--active');
+        link.setAttribute('aria-current', 'page');
+      }
+
+      document.querySelector('#main-content')?.setAttribute('aria-busy', 'true');
+    };
+
+    const prefetch = (link: HTMLAnchorElement) => {
+      const href = link.href;
+      if (!href || prefetched.has(href)) return;
+
+      const target = new URL(href, window.location.href);
+      if (target.origin !== window.location.origin) return;
+
+      const hint = document.createElement('link');
+      hint.rel = 'prefetch';
+      hint.href = target.href;
+      document.head.append(hint);
+      prefetched.add(href);
+    };
+
+    for (const link of links) {
+      link.addEventListener('click', event => {
+        if (!isPlainLeftClick(event)) return;
+        markPending(link);
+      });
+      link.addEventListener('pointerenter', () => prefetch(link), { passive: true });
+      link.addEventListener('focus', () => prefetch(link), { passive: true });
+    }
+  })();
+</script>
 
 <style is:global>
   .sidebar-widget {
