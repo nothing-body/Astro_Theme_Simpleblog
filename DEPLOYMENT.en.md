@@ -89,6 +89,44 @@ https://example.com/googlexxxxxxxxxxxxxxxx.html
 
 Then click Verify in Google Search Console.
 
+## Homepage Bookmarks
+
+The bookmark section under the homepage latest-posts block is managed by `src/components/BookmarkLinks.astro`. All three locale homepages reuse this component.
+
+Bookmark data lives in the `bookmarkRows` array. Each nested array is rendered as one visual row:
+
+```ts
+const bookmarkRows = [
+  [{ label: 'GitHub', href: 'https://github.com/' }],
+  [
+    { label: 'nodeseek', href: 'https://www.nodeseek.com/' },
+    { label: 'LowEndTalk', href: 'https://lowendtalk.com/' },
+  ],
+];
+```
+
+To add a bookmark, add a `{ label, href }` object to the row where you want it to appear:
+
+```ts
+{ label: 'ipaddress', href: 'https://ipaddress.my/' },
+```
+
+To remove a bookmark, delete its `{ label, href }` object.
+
+To add another row, add a new nested array inside `bookmarkRows`:
+
+```ts
+[
+  { label: 'Example', href: 'https://example.com/' },
+],
+```
+
+Notes:
+
+- External links use `target="_blank"` and `rel="noopener noreferrer"` so the new tab cannot access `window.opener`.
+- Prefer `https://` URLs and avoid untrusted links or links that redirect to unsafe destinations.
+- After editing bookmarks, run `pnpm check`, `pnpm lint`, and `pnpm build`.
+
 ## 5. Google Analytics
 
 GA4 is controlled by:

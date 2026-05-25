@@ -1,6 +1,7 @@
 ﻿---
 // src/pages/zh-cn/index.astro — 简体中文首页
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import BookmarkLinks from '../../components/BookmarkLinks.astro';
 import PostCard from '../../components/PostCard.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations } from '../../i18n/utils';
@@ -87,6 +88,7 @@ const jsonLd = {
     <div class="view-all">
       <a href="/zh-cn/posts" class="btn-primary">{t('nav.posts')}</a>
     </div>
+    <BookmarkLinks lang="zh-cn" />
   </section>
 
 

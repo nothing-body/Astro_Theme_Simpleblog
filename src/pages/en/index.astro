@@ -1,6 +1,7 @@
 ﻿---
 // src/pages/en/index.astro — English homepage
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import BookmarkLinks from '../../components/BookmarkLinks.astro';
 import PostCard from '../../components/PostCard.astro';
 import { getCollection } from 'astro:content';
 import { useTranslations } from '../../i18n/utils';
@@ -90,6 +91,7 @@ const jsonLd = {
     <div class="view-all">
       <a href="/en/posts" class="btn-primary">{t('nav.posts')}</a>
     </div>
+    <BookmarkLinks lang="en" />
   </section>
 
 
