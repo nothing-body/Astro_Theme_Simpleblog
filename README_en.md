@@ -1,12 +1,12 @@
 # Astro Multilingual Blog Template
 
+A public-safe multilingual Astro static blog template with deployment automation for Cloudflare Pages, VPS, and Vercel.
+
 <p align="center">
   <a href="https://blog.ouoxo.com/en/">Live Demo</a>
   ·
   <a href="./README.zh-TW.md">繁體中文 README</a>
 </p>
-
-A public-safe multilingual Astro static blog template with deployment automation for Cloudflare Pages, VPS, and Vercel.
 
 ## Guides
 
