@@ -7,6 +7,7 @@ import {
   useTranslations,
 } from '../i18n/utils';
 import { languages } from '../i18n/ui';
+import { SITE_NAME } from '../lib/site';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -23,22 +24,24 @@ const languagePaths = await Promise.all(
   }))
 );
 
+const copy = {
+  skip: t('a11y.skipToMain'),
+  nav: t('a11y.mainNavigation'),
+  selectLanguage: t('a11y.selectLanguage'),
+  languageSelector: t('a11y.languageSelector'),
+  openMenu: t('a11y.openMenu'),
+  mobileMenu: t('a11y.mobileMenu'),
+};
+
 const isActive = (path: string) => currentPath === path || currentPath === `${path}/`;
 ---
 
-<a href="#main-content" class="skip-link">
-  {lang === 'en' ? 'Skip to main content' : lang === 'zh-cn' ? '跳到主要内容' : '跳到主要內容'}
-</a>
+<a href="#main-content" class="skip-link">{copy.skip}</a>
 
-<nav
-  class="nav-header"
-  id="navbar"
-  role="navigation"
-  aria-label={lang === 'en' ? 'Main navigation' : lang === 'zh-cn' ? '主导航' : '主導覽'}
->
+<nav class="nav-header" id="navbar" role="navigation" aria-label={copy.nav}>
   <div class="nav-container">
-    <a href={translatePath('/')} class="nav-logo" aria-label="Astro Blog Template">
-      <span class="logo-text">Astro Blog Template</span>
+    <a href={translatePath('/')} class="nav-logo" aria-label={SITE_NAME}>
+      <span class="logo-text">{SITE_NAME}</span>
     </a>
 
     <div class="nav-right">
@@ -69,7 +72,7 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
         <button
           class="lang-trigger"
           id="lang-trigger-btn"
-          aria-label={lang === 'en' ? 'Select language' : lang === 'zh-cn' ? '选择语言' : '選擇語言'}
+          aria-label={copy.selectLanguage}
           aria-expanded="false"
           aria-haspopup="listbox"
           type="button"
@@ -97,7 +100,7 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
           class="lang-dropdown"
           id="lang-dropdown"
           role="listbox"
-          aria-label={lang === 'en' ? 'Language selector' : lang === 'zh-cn' ? '语言选择' : '語言選擇'}
+          aria-label={copy.languageSelector}
           aria-hidden="true"
         >
           {
@@ -119,7 +122,7 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
       <button
         class="mobile-toggle"
         id="mobile-toggle"
-        aria-label={lang === 'en' ? 'Open menu' : lang === 'zh-cn' ? '打开菜单' : '開啟選單'}
+        aria-label={copy.openMenu}
         aria-expanded="false"
         aria-controls="mobile-menu"
         type="button"
@@ -145,13 +148,7 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
   </div>
 </nav>
 
-<div
-  class="mobile-menu"
-  id="mobile-menu"
-  aria-hidden="true"
-  role="dialog"
-  aria-label={lang === 'en' ? 'Mobile menu' : lang === 'zh-cn' ? '移动菜单' : '行動選單'}
->
+<div class="mobile-menu" id="mobile-menu" aria-hidden="true" role="dialog" aria-label={copy.mobileMenu}>
   <nav class="mobile-links">
     <a href={translatePath('/')} class="mobile-item">{t('nav.home')}</a>
     <a href={translatePath('/posts')} class="mobile-item">{t('nav.posts')}</a>
@@ -189,7 +186,8 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
       navbar?.classList.toggle('nav-header--scrolled', scrollY > 10);
 
       if (!mobileMenu?.classList.contains('is-open') && navbar) {
-        navbar.style.transform = scrollY > lastScrollY && scrollY > 80 ? 'translateY(-100%)' : 'translateY(0)';
+        navbar.style.transform =
+          scrollY > lastScrollY && scrollY > 80 ? 'translateY(-100%)' : 'translateY(0)';
       }
 
       lastScrollY = Math.max(scrollY, 0);

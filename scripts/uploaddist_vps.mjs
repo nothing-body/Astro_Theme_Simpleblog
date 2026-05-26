@@ -7,7 +7,7 @@
  *   pnpm uploaddist:vps:node
  *
  * Required environment variables:
- *   VPS_HOST              e.g. xxx.xxx.xxx
+ *   VPS_HOST              e.g. 203.0.113.10
  *   VPS_USER              e.g. deploy
  *   VPS_TARGET_DIR        e.g. /var/www/example.com
  *

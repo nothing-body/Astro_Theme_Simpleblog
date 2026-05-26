@@ -44,8 +44,8 @@ const canonicalPage1 = new URL('/page/1', siteUrl).href;
               <Pagination
                 currentPage={1}
                 totalPages={totalPages}
-                nextUrl={totalPages > 1 ? '/en/page/2' : undefined}
-                getPageUrl={n => (n === 1 ? '/en/posts' : `/en/page/${n}`)}
+                nextUrl={totalPages > 1 ? '/page/2' : undefined}
+                getPageUrl={n => (n === 1 ? '/posts' : `/page/${n}`)}
                 lang="en"
               />
             </>
@@ -57,9 +57,9 @@ const canonicalPage1 = new URL('/page/1', siteUrl).href;
     </div>
   </div>
 
-<script>
-  try {
-    sessionStorage.setItem('bb-last-list', window.location.pathname);
-  } catch {}
-</script>
+  <script>
+    try {
+      sessionStorage.setItem('bb-last-list', window.location.pathname);
+    } catch {}
+  </script>
 </BaseLayout>

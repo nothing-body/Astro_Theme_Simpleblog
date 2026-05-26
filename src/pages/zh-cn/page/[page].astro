@@ -54,9 +54,9 @@ const getPageUrl = (n: number) => (n === 1 ? '/zh-cn/posts' : `/zh-cn/page/${n}`
     </div>
   </div>
 
-<script>
-  try {
-    sessionStorage.setItem('bb-last-list', window.location.pathname);
-  } catch {}
-</script>
+  <script>
+    try {
+      sessionStorage.setItem('bb-last-list', window.location.pathname);
+    } catch {}
+  </script>
 </BaseLayout>

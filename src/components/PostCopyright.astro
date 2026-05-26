@@ -1,4 +1,5 @@
-﻿---
+---
+import { DEFAULT_AUTHOR } from '../lib/site';
 
 export interface Props {
   canonicalUrl: string;
@@ -6,99 +7,66 @@ export interface Props {
   author?: string;
 }
 
-const { canonicalUrl, lang, author = 'Astro Blog Template' } = Astro.props;
+const { canonicalUrl, lang, author = DEFAULT_AUTHOR } = Astro.props;
 
 const i = {
-  author: lang === 'en' ? 'Author' : '作者',
-  canonical: lang === 'en' ? 'Canonical URL' : '原始連結',
+  title: lang === 'en' ? 'Copyright Notice' : lang === 'zh-cn' ? '\u7248\u6743\u58f0\u660e' : '\u7248\u6b0a\u8072\u660e',
+  author: lang === 'en' ? 'Author' : '\u4f5c\u8005',
+  canonical: lang === 'en' ? 'Canonical URL' : lang === 'zh-cn' ? '\u539f\u59cb\u94fe\u63a5' : '\u539f\u59cb\u9023\u7d50',
+  badge: 'CC BY-NC-SA 4.0',
   license:
     lang === 'en'
       ? 'This article is licensed under CC BY-NC-SA 4.0.'
-      : '本文採 CC BY-NC-SA 4.0 授權，轉載請保留出處與連結。',
+      : lang === 'zh-cn'
+        ? '\u672c\u6587\u91c7\u7528 CC BY-NC-SA 4.0 \u6388\u6743\uff0c\u8f6c\u8f7d\u8bf7\u6ce8\u660e\u4f5c\u8005\u4e0e\u539f\u59cb\u94fe\u63a5\u3002'
+        : '\u672c\u6587\u63a1\u7528 CC BY-NC-SA 4.0 \u6388\u6b0a\uff0c\u8f49\u8f09\u8acb\u8a3b\u660e\u4f5c\u8005\u8207\u539f\u59cb\u9023\u7d50\u3002',
   licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
 };
 ---
 
-<aside class="post-copyright" aria-label={lang === 'en' ? 'Copyright notice' : '版權聲明'}>
-  <dl class="copyright-body">
-    <div class="copyright-row">
-      <dt class="copyright-key">{i.author}</dt>
-      <dd class="copyright-val">{author}</dd>
+<aside
+  class="post-copyright"
+  aria-label={lang === 'en' ? 'Copyright notice' : lang === 'zh-cn' ? '\u7248\u6743\u58f0\u660e' : '\u7248\u6b0a\u8072\u660e'}
+>
+  <div class="copyright-head">
+    <div class="copyright-mark" aria-hidden="true">CC</div>
+    <div class="copyright-title-wrap">
+      <p class="copyright-title">{i.title}</p>
+      <p class="copyright-summary">{i.license}</p>
     </div>
-    <div class="copyright-row">
-      <dt class="copyright-key">{i.canonical}</dt>
-      <dd class="copyright-val">
-        <a href={canonicalUrl} rel="canonical" class="copyright-link">
-          {canonicalUrl}
-        </a>
+    <a
+      href={i.licenseUrl}
+      rel="license noopener noreferrer"
+      target="_blank"
+      class="copyright-badge"
+    >
+      {i.badge}
+    </a>
+  </div>
+
+  <dl class="copyright-meta">
+    <div class="copyright-meta-item">
+      <dt>{i.author}</dt>
+      <dd>{author}</dd>
+    </div>
+    <div class="copyright-meta-item">
+      <dt>{i.canonical}</dt>
+      <dd>
+        <a href={canonicalUrl} rel="canonical" class="copyright-link">{canonicalUrl}</a>
       </dd>
     </div>
-    <div class="copyright-row">
-      <dt class="copyright-key">License</dt>
-      <dd class="copyright-val">
+    <div class="copyright-meta-item">
+      <dt>License</dt>
+      <dd>
         <a
           href={i.licenseUrl}
           rel="license noopener noreferrer"
           target="_blank"
           class="copyright-link"
         >
-          {i.license}
+          Creative Commons Attribution-NonCommercial-ShareAlike 4.0
         </a>
       </dd>
     </div>
   </dl>
 </aside>
-
-<style>
-  .post-copyright {
-    margin-top: 3.5rem;
-    padding: 1.2rem 1.5rem;
-    border-left: 3px solid #6f7f99;
-    background: #eef2f8;
-    border: 1px solid rgba(111, 127, 153, 0.3);
-    border-radius: 0 10px 10px 0;
-    font-size: 0.88rem;
-  }
-
-  .copyright-body {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-
-  .copyright-row {
-    display: flex;
-    gap: 0.8rem;
-    align-items: baseline;
-    flex-wrap: wrap;
-  }
-
-  .copyright-key {
-    font-weight: 700;
-    color: #3b4e6a;
-    min-width: 80px;
-    flex-shrink: 0;
-    font-size: 0.82rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .copyright-val {
-    color: var(--text-secondary);
-    margin: 0;
-    word-break: break-all;
-  }
-
-  .copyright-link {
-    color: #2f4d75;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    word-break: break-all;
-    transition: opacity 0.2s;
-  }
-
-  .copyright-link:hover {
-    opacity: 0.75;
-  }
-</style>

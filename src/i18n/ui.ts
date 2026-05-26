@@ -15,11 +15,20 @@ export const ui = {
     'nav.backToPosts': 'Back to Posts',
     'nav.noCategory': 'No Such Category',
 
-    'welcome.title': 'Welcome to Astro Blog Template',
-    'welcome.detecting': 'Detecting your spacetime...',
+    'a11y.skipToMain': 'Skip to main content',
+    'a11y.mainNavigation': 'Main navigation',
+    'a11y.selectLanguage': 'Select language',
+    'a11y.languageSelector': 'Language selector',
+    'a11y.openMenu': 'Open menu',
+    'a11y.mobileMenu': 'Mobile menu',
+    'sidebar.label': 'Sidebar',
+    'post.pinned': 'Pinned',
+
+    'welcome.title': "Welcome to Astro Blog Template",
+    'welcome.detecting': 'Detecting your timezone...',
     'welcome.from': 'Welcome, visitor from',
-    'welcome.visitor': ', to Astro Blog Template',
-    'welcome.fallback': 'Welcome to my personal notebook',
+    'welcome.visitor': ", to Astro Blog Template",
+    'welcome.fallback': 'Welcome to this multilingual blog template',
 
     'posts.title': 'All Posts',
     'posts.readMore': 'Read More',
@@ -76,11 +85,20 @@ export const ui = {
     'nav.backToPosts': '返回文章列表',
     'nav.noCategory': '沒有這個分類',
 
-    'welcome.title': '歡迎來到 Astro Blog Template',
+    'a11y.skipToMain': '跳到主要內容',
+    'a11y.mainNavigation': '主導覽',
+    'a11y.selectLanguage': '選擇語言',
+    'a11y.languageSelector': '語言選擇器',
+    'a11y.openMenu': '開啟選單',
+    'a11y.mobileMenu': '行動選單',
+    'sidebar.label': '側邊欄',
+    'post.pinned': '置頂',
+
+    'welcome.title': "歡迎來到 Astro Blog Template",
     'welcome.detecting': '正在偵測你的時區...',
     'welcome.from': '歡迎來自',
-    'welcome.visitor': '的訪客來到 Astro Blog Template',
-    'welcome.fallback': '歡迎來到我的個人筆記',
+    'welcome.visitor': "的訪客來到 Astro Blog Template",
+    'welcome.fallback': '歡迎來到這個多語系部落格模板',
 
     'posts.title': '所有文章',
     'posts.readMore': '閱讀更多',
@@ -112,7 +130,7 @@ export const ui = {
 
     'noCategory.title': '目前沒有相關內容',
     'noCategory.message': '抱歉，這個語系目前沒有此分類或標籤的文章。',
-    'noCategory.redirecting': '正在導向所有文章...',
+    'noCategory.redirecting': '正在帶你前往所有文章...',
     'noCategory.manual': '點此立即前往',
 
     'breadcrumb.home': '首頁',
@@ -136,11 +154,20 @@ export const ui = {
     'nav.backToPosts': '返回文章列表',
     'nav.noCategory': '没有这个分类',
 
-    'welcome.title': '欢迎来到 Astro Blog Template',
+    'a11y.skipToMain': '跳到主要内容',
+    'a11y.mainNavigation': '主导航',
+    'a11y.selectLanguage': '选择语言',
+    'a11y.languageSelector': '语言选择器',
+    'a11y.openMenu': '打开菜单',
+    'a11y.mobileMenu': '移动菜单',
+    'sidebar.label': '侧边栏',
+    'post.pinned': '置顶',
+
+    'welcome.title': "欢迎来到 Astro Blog Template",
     'welcome.detecting': '正在检测你的时区...',
     'welcome.from': '欢迎来自',
-    'welcome.visitor': '的访客来到 Astro Blog Template',
-    'welcome.fallback': '欢迎来到我的个人笔记',
+    'welcome.visitor': "的访客来到 Astro Blog Template",
+    'welcome.fallback': '欢迎来到这个多语言博客模板',
 
     'posts.title': '所有文章',
     'posts.readMore': '阅读更多',
@@ -172,7 +199,7 @@ export const ui = {
 
     'noCategory.title': '目前没有相关内容',
     'noCategory.message': '抱歉，这个语系目前没有此分类或标签的文章。',
-    'noCategory.redirecting': '正在跳转到所有文章...',
+    'noCategory.redirecting': '正在带你前往所有文章...',
     'noCategory.manual': '点击这里立即前往',
 
     'breadcrumb.home': '首页',

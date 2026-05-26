@@ -45,7 +45,7 @@ const { allPosts, categoryPosts, currentCategory, totalPages } = Astro.props;
 const PAGE_SIZE = 5;
 const currentPage = Number(Astro.params.page);
 const posts = categoryPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-const getPageUrl = (n: number) => `/en/categories/${encodeURIComponent(currentCategory)}/${n}`;
+const getPageUrl = (n: number) => `/categories/${encodeURIComponent(currentCategory)}/${n}`;
 ---
 
 <BaseLayout title={`${currentCategory} — Category`}>
@@ -71,9 +71,9 @@ const getPageUrl = (n: number) => `/en/categories/${encodeURIComponent(currentCa
     </div>
   </div>
 
-<script>
-  try {
-    sessionStorage.setItem('bb-last-list', window.location.pathname);
-  } catch {}
-</script>
+  <script>
+    try {
+      sessionStorage.setItem('bb-last-list', window.location.pathname);
+    } catch {}
+  </script>
 </BaseLayout>

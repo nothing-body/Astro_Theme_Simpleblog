@@ -214,7 +214,7 @@ const bookmarkRows = [
     max-height: min(42vh, 22rem);
     overflow-y: auto;
     padding-right: 0.25rem;
-    overscroll-behavior: contain;
+    overscroll-behavior: auto;
     scrollbar-gutter: stable;
   }
 
@@ -248,7 +248,7 @@ const bookmarkRows = [
     align-items: center;
     max-height: 6.4rem;
     overflow-y: auto;
-    overscroll-behavior: contain;
+    overscroll-behavior: auto;
     scrollbar-width: thin;
   }
 
@@ -294,6 +294,19 @@ const bookmarkRows = [
     .bookmark-panel {
       margin-top: 2.2rem;
       padding: 1.1rem 0.95rem 1.2rem;
+      contain: layout paint;
+    }
+
+    .bookmark-rows,
+    .bookmark-link-list {
+      max-height: none;
+      overflow: visible;
+      overscroll-behavior: auto;
+      scrollbar-gutter: auto;
+    }
+
+    .scroll-arrow {
+      display: none;
     }
 
     .bookmark-row {

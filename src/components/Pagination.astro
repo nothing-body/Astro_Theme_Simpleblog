@@ -47,7 +47,11 @@ const pageNums = getPageNums(currentPage, totalPages);
           <span class="nav-text-short">←</span>
         </a>
       ) : (
-        <span class="page-btn page-btn--nav page-btn--disabled" aria-disabled="true" aria-label={prevLabel}>
+        <span
+          class="page-btn page-btn--nav page-btn--disabled"
+          aria-disabled="true"
+          aria-label={prevLabel}
+        >
           <span class="nav-text-full">{prevLabel}</span>
           <span class="nav-text-short">←</span>
         </span>
@@ -79,7 +83,11 @@ const pageNums = getPageNums(currentPage, totalPages);
           <span class="nav-text-short">→</span>
         </a>
       ) : (
-        <span class="page-btn page-btn--nav page-btn--disabled" aria-disabled="true" aria-label={nextLabel}>
+        <span
+          class="page-btn page-btn--nav page-btn--disabled"
+          aria-disabled="true"
+          aria-label={nextLabel}
+        >
           <span class="nav-text-full">{nextLabel}</span>
           <span class="nav-text-short">→</span>
         </span>
@@ -165,7 +173,7 @@ const pageNums = getPageNums(currentPage, totalPages);
     .nav-text-full {
       display: none;
     }
-    
+
     .nav-text-short {
       display: inline;
     }

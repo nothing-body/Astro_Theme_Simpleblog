@@ -10,7 +10,7 @@ module.exports = {
     'block-no-empty': true,
     'property-no-unknown': [true, { ignoreProperties: ['composes'] }],
     'no-descending-specificity': null,
-    // 自訂規則
+    // Keep component and page styles readable.
     'max-nesting-depth': 3,
   },
 };

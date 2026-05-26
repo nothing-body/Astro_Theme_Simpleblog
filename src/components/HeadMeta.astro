@@ -7,7 +7,6 @@ import {
   getLocalizedUrl,
   getSiteUrl,
 } from '../lib/site';
-import { safeJsonStringify } from '../lib/utils';
 
 const {
   title,
@@ -57,7 +56,10 @@ const safeGa4Id =
 <meta property="og:description" content={description} />
 <meta property="og:image" content={ogImageUrl} />
 <meta property="og:site_name" content={SITE_NAME} />
-<meta property="og:locale" content={lang === 'en' ? 'en_US' : lang === 'zh-cn' ? 'zh_CN' : 'zh_TW'} />
+<meta
+  property="og:locale"
+  content={lang === 'en' ? 'en_US' : lang === 'zh-cn' ? 'zh_CN' : 'zh_TW'}
+/>
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={fullTitle} />
@@ -108,8 +110,8 @@ const safeGa4Id =
 
 {
   safeGa4Id && (
-    <script is:inline set:html={`(function () {
-      var ga4Id = ${safeJsonStringify(safeGa4Id)};
+    <script is:inline define:vars={{ ga4Id: safeGa4Id }}>
+      (function () {
       if (window.__privacySettings && window.__privacySettings.enableAnalytics) {
         var s = document.createElement('script');
         s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(ga4Id);
@@ -124,6 +126,7 @@ const safeGa4Id =
           allow_ad_personalization_signals: false
         });
       }
-    })();`} />
+    })();
+    </script>
   )
 }

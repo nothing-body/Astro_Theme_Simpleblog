@@ -9,9 +9,10 @@ export interface BreadcrumbItem {
 
 export interface Props {
   items: BreadcrumbItem[];
+  ariaLabel?: string;
 }
 
-const { items } = Astro.props;
+const { items, ariaLabel = 'Breadcrumb navigation' } = Astro.props;
 
 const siteUrl = getSiteUrl(Astro.site);
 
@@ -27,10 +28,10 @@ const jsonLd = {
 };
 ---
 
-<!-- BreadcrumbList 結構化資料 -->
+<!-- BreadcrumbList structured data -->
 <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
 
-<nav class="breadcrumbs" aria-label="麵包屑導航">
+<nav class="breadcrumbs" aria-label={ariaLabel}>
   <ol class="breadcrumb-list" role="list">
     {
       items.map((item, index) => {

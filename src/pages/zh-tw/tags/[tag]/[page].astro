@@ -75,9 +75,9 @@ const getPageUrl = (n: number) => `/tags/${encodeURIComponent(currentTag)}/${n}`
     </div>
   </div>
 
-<script>
-  try {
-    sessionStorage.setItem('bb-last-list', window.location.pathname);
-  } catch {}
-</script>
+  <script>
+    try {
+      sessionStorage.setItem('bb-last-list', window.location.pathname);
+    } catch {}
+  </script>
 </BaseLayout>

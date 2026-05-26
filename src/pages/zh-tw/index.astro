@@ -42,12 +42,12 @@ const websiteJsonLd = {
   <!-- Blog JSON-LD -->
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(websiteJsonLd)} />
 
-  <!-- ===== Hero 區塊 ===== -->
+  <!-- Hero section -->
   <section class="hero-section" aria-label="歡迎">
     <div class="hero-bg-pattern" aria-hidden="true"></div>
     <div class="hero-content">
       <div class="hero-card glass-card">
-        <!-- 時鐘區 -->
+        <!-- Clock section -->
         <div class="clock-section">
           <div class="clock-display" aria-live="polite" aria-atomic="true">
             <div class="clock-date" id="clock-date" aria-label="日期">--/--/----</div>
@@ -64,10 +64,10 @@ const websiteJsonLd = {
           <p id="location-msg" class="location-msg" aria-live="polite">歡迎來到我的個人隨筆空間</p>
         </div>
 
-        <!-- 分隔線 -->
+        <!-- Divider -->
         <div class="hero-divider" aria-hidden="true"></div>
 
-        <!-- 簡介區 -->
+        <!-- Intro section -->
         <div class="intro-section">
           <h1 class="intro-title">{t('welcome.title')}</h1>
           <p class="intro-text-primary">
@@ -87,7 +87,7 @@ const websiteJsonLd = {
     </div>
   </section>
 
-  <!-- ===== 最新文章 ===== -->
+  <!-- Latest posts -->
   <section class="latest-section page-container" aria-label="最新文章">
     <h2 class="section-title">
       <span>{t('posts.latestPosts')}</span>
@@ -112,7 +112,7 @@ const websiteJsonLd = {
     <BookmarkLinks lang="zh-tw" />
   </section>
 
-<!-- 時鐘腳本 -->
+<!-- Clock script -->
 <script>
   let tzValue = 'auto';
   let clockTimer: ReturnType<typeof setInterval> | null = null;

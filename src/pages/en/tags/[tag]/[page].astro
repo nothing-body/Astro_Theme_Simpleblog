@@ -72,9 +72,9 @@ const getPageUrl = (n: number) => `/en/tags/${encodeURIComponent(currentTag)}/${
     </div>
   </div>
 
-<script>
-  try {
-    sessionStorage.setItem('bb-last-list', window.location.pathname);
-  } catch {}
-</script>
+  <script>
+    try {
+      sessionStorage.setItem('bb-last-list', window.location.pathname);
+    } catch {}
+  </script>
 </BaseLayout>

@@ -28,7 +28,7 @@ const t = useTranslations('en');
 const PAGE_SIZE = 5;
 const currentPage = Number(page);
 const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-const getPageUrl = (n: number) => (n === 1 ? '/en/posts' : `/en/page/${n}`);
+const getPageUrl = (n: number) => (n === 1 ? '/posts' : `/page/${n}`);
 ---
 
 <BaseLayout title={`${t('posts.title')} — Page ${currentPage}`}>
@@ -54,9 +54,9 @@ const getPageUrl = (n: number) => (n === 1 ? '/en/posts' : `/en/page/${n}`);
     </div>
   </div>
 
-<script>
-  try {
-    sessionStorage.setItem('bb-last-list', window.location.pathname);
-  } catch {}
-</script>
+  <script>
+    try {
+      sessionStorage.setItem('bb-last-list', window.location.pathname);
+    } catch {}
+  </script>
 </BaseLayout>

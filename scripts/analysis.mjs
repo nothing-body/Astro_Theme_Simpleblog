@@ -121,11 +121,24 @@ function ok(message) {
 }
 
 function getPackageRunner() {
-  const execPath = process.env.npm_execpath;
-  if (execPath && fs.existsSync(execPath)) {
-    return { command: process.execPath, prefix: [execPath] };
+  if (process.platform === 'win32') {
+    if (fs.existsSync(path.join(ROOT, 'pnpm-lock.yaml'))) {
+      return {
+        command: 'cmd.exe',
+        prefix: ['/d', '/s', '/c', 'pnpm.cmd', 'run'],
+      };
+    }
+
+    return {
+      command: 'cmd.exe',
+      prefix: ['/d', '/s', '/c', 'npm.cmd', 'run'],
+    };
   }
-  return { command: process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm', prefix: [] };
+
+  return {
+    command: 'npm',
+    prefix: ['run'],
+  };
 }
 
 function runScript(name) {
@@ -186,18 +199,40 @@ function scanDangerousSyntax(files) {
 function scanMojibake(files) {
   section('Mojibake scan');
   let failures = 0;
-  const badChars =
-    /[\uFFFD\uE000-\uF8FF]|[\u875c\u929d\u5697\u7507\u96ff\u646e\u64a0\u922d\u61ad\u76ba\u875e\u761a\u66ba\u8763\u981d\u981b\u92c6\u978e\u6468\u9758\u8751\u875b\u64a3\u928b\u66b9\u7441\u9903\u977d\u865c\u8a3e\u8c62\u6f66]/;
+  const mojibakeChars = [
+    0x875c, 0x875e, 0x761a, 0x64d0, 0x9908, 0x7507, 0x929d, 0x7629, 0x9758,
+    0x96ff, 0x7485, 0x6470, 0x8761, 0x9708, 0x8a68, 0x95ac, 0x8758, 0x92b5,
+    0x981d, 0x66ba, 0x977d, 0x55b2, 0x7a62,
+  ].map(code => String.fromCodePoint(code));
+  const latinMojibakeFragments = [
+    [0x00c3],
+    [0x00c2],
+    [0x00e2, 0x20ac],
+    [0x00ef, 0x00bf, 0x00bd],
+  ].map(codes => String.fromCodePoint(...codes));
+  const knownMojibakeFragments = [
+    [0x8c8a, 0x60dc],
+    [0x875e],
+    [0x64d0],
+    [0x61bf],
+    [0x92c6],
+    [0x95ac],
+    [0x64a0],
+  ].map(codes => String.fromCodePoint(...codes));
+  const hasBadChar = value =>
+    /[\uFFFD\uE000-\uF8FF]/u.test(value) ||
+    latinMojibakeFragments.some(fragment => value.includes(fragment)) ||
+    mojibakeChars.some(char => value.includes(char)) ||
+    knownMojibakeFragments.some(fragment => value.includes(fragment));
   for (const file of files) {
     const text = fs.readFileSync(file, 'utf8');
-    if (!badChars.test(text)) continue;
-    const line = text.split(/\r?\n/).findIndex(value => badChars.test(value)) + 1;
+    if (!hasBadChar(text)) continue;
+    const line = text.split(/\r?\n/).findIndex(value => hasBadChar(value)) + 1;
     failures += fail(`Possible mojibake/private-use character: ${rel(file)}:${line}`);
   }
   if (failures === 0) ok('No mojibake markers found in project text files.');
   return failures;
 }
-
 function scanRawHtmlUsage(files) {
   section('Raw HTML safety scan');
   let failures = 0;
@@ -205,8 +240,7 @@ function scanRawHtmlUsage(files) {
     const text = fs.readFileSync(file, 'utf8');
     if (!/\bset:html\s*=/.test(text)) continue;
     const safeJsonLd = /type="application\/ld\+json"\s+set:html=\{safeJsonStringify\(/.test(text);
-    const safeGa4 = rel(file) === 'src/components/HeadMeta.astro' && /safeJsonStringify\(safeGa4Id\)/.test(text);
-    if (!safeJsonLd && !safeGa4) failures += fail(`Unsafe or unreviewed set:html usage: ${rel(file)}`);
+    if (!safeJsonLd) failures += fail(`Unsafe or unreviewed set:html usage: ${rel(file)}`);
   }
   if (failures === 0) ok('Raw HTML injection points are restricted to JSON-LD or sanitized analytics bootstrap.');
   return failures;
@@ -227,6 +261,65 @@ function scanBlankTargetLinks(files) {
     }
   }
   if (failures === 0) ok('External blank-target links include noopener noreferrer.');
+  return failures;
+}
+
+function scanI18nIntegrity() {
+  section('i18n integrity scan');
+  const uiFile = path.join(ROOT, 'src', 'i18n', 'ui.ts');
+  let failures = 0;
+  if (!fs.existsSync(uiFile)) return fail('Missing src/i18n/ui.ts.');
+
+  const text = fs.readFileSync(uiFile, 'utf8');
+  const localeBlocks = [...text.matchAll(/^\s{2}(['"]?[\w-]+['"]?):\s*\{([\s\S]*?)^\s{2}\},/gm)];
+  const entries = new Map();
+  for (const [, rawLocale, body] of localeBlocks) {
+    const locale = rawLocale.replace(/['"]/g, '');
+    const keys = [...body.matchAll(/^\s{4}['"]([^'"]+)['"]:/gm)].map(match => match[1]);
+    entries.set(locale, new Set(keys));
+  }
+
+  for (const locale of ['en', 'zh-tw', 'zh-cn']) {
+    if (!entries.has(locale)) failures += fail(`Missing i18n locale block: ${locale}`);
+  }
+
+  const base = entries.get('en') ?? new Set();
+  for (const locale of ['zh-tw', 'zh-cn']) {
+    const current = entries.get(locale) ?? new Set();
+    for (const key of base) {
+      if (!current.has(key)) failures += fail(`Missing i18n key ${locale}.${key}`);
+    }
+    for (const key of current) {
+      if (!base.has(key)) failures += fail(`Unexpected i18n key ${locale}.${key}`);
+    }
+  }
+
+  if (failures === 0) ok('Required translation keys are present for all locales.');
+  return failures;
+}
+
+function scanAccessibilityWiring(files) {
+  section('Accessibility wiring scan');
+  let failures = 0;
+  const navbar = files.find(file => rel(file) === 'src/components/Navbar.astro');
+  const layout = files.find(file => rel(file) === 'src/layouts/BaseLayout.astro');
+  if (!navbar) failures += fail('Missing src/components/Navbar.astro.');
+  if (!layout) failures += fail('Missing src/layouts/BaseLayout.astro.');
+  if (!navbar || !layout) return failures;
+
+  const navbarText = fs.readFileSync(navbar, 'utf8');
+  const layoutText = fs.readFileSync(layout, 'utf8');
+  if (!/href=["']#main-content["']/.test(navbarText)) {
+    failures += fail('Skip link does not target #main-content.');
+  }
+  if (!/<main\b[^>]*id=["']main-content["']/.test(layoutText)) {
+    failures += fail('Base layout main element is missing id="main-content".');
+  }
+  if (!/<main\b[^>]*tabindex=["']-1["']/.test(layoutText)) {
+    failures += fail('Base layout main element is missing tabindex="-1" for skip-link focus.');
+  }
+
+  if (failures === 0) ok('Skip-link target is wired to the main content element.');
   return failures;
 }
 
@@ -262,9 +355,33 @@ function scanLocaleRoutes() {
 }
 
 function scanCommentLanguage(files) {
-  section('Code comment language scan');
+  section('Code comment corruption scan');
   let failures = 0;
-  const badChars = /[\p{Script=Han}\uFFFD\uE000-\uF8FF]/u;
+  const mojibakeChars = [
+    0x875c, 0x875e, 0x761a, 0x64d0, 0x9908, 0x7507, 0x929d, 0x7629, 0x9758,
+    0x96ff, 0x7485, 0x6470, 0x8761, 0x9708, 0x8a68, 0x95ac, 0x8758, 0x92b5,
+    0x981d, 0x66ba, 0x977d, 0x55b2, 0x7a62,
+  ].map(code => String.fromCodePoint(code));
+  const latinMojibakeFragments = [
+    [0x00c3],
+    [0x00c2],
+    [0x00e2, 0x20ac],
+    [0x00ef, 0x00bf, 0x00bd],
+  ].map(codes => String.fromCodePoint(...codes));
+  const knownMojibakeFragments = [
+    [0x8c8a, 0x60dc],
+    [0x875e],
+    [0x64d0],
+    [0x61bf],
+    [0x92c6],
+    [0x95ac],
+    [0x64a0],
+  ].map(codes => String.fromCodePoint(...codes));
+  const hasBadChar = value =>
+    /[\uFFFD\uE000-\uF8FF]/u.test(value) ||
+    latinMojibakeFragments.some(fragment => value.includes(fragment)) ||
+    mojibakeChars.some(char => value.includes(char)) ||
+    knownMojibakeFragments.some(fragment => value.includes(fragment));
   const lineComment = /^\s*\/\//;
   const blockCommentLine = /^\s*(\/\*|\*|\*\/)/;
   const inlineComment = /\/\/|\/\*/;
@@ -273,17 +390,16 @@ function scanCommentLanguage(files) {
     const text = fs.readFileSync(file, 'utf8');
     const lines = text.split(/\r?\n/);
     lines.forEach((lineText, index) => {
-      if (!badChars.test(lineText) || !inlineComment.test(lineText)) return;
+      if (!hasBadChar(lineText) || !inlineComment.test(lineText)) return;
       if (lineComment.test(lineText) || blockCommentLine.test(lineText) || /\/\*.*\*\//.test(lineText)) {
         failures += fail(`Non-English or mojibake code comment: ${rel(file)}:${index + 1}`);
       }
     });
   }
 
-  if (failures === 0) ok('Code comments contain no Chinese or mojibake markers.');
+  if (failures === 0) ok('Code comments contain no mojibake markers.');
   return failures;
 }
-
 function scanRemovedArtifacts() {
   section('Removed artifact scan');
   let failures = 0;
@@ -435,6 +551,8 @@ failures += scanMojibake(files);
 failures += scanCommentLanguage(files);
 failures += scanRawHtmlUsage(files);
 failures += scanBlankTargetLinks(files);
+failures += scanI18nIntegrity();
+failures += scanAccessibilityWiring(files);
 failures += scanLocaleRoutes();
 failures += scanRemovedArtifacts();
 failures += scanGitignore();

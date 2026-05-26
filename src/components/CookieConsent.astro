@@ -13,7 +13,7 @@ const i = {
       ? 'This site uses cookies and local storage to enhance your experience.'
       : '本站使用 Cookie 與本機儲存以提供更好的瀏覽體驗。',
   privacyText: lang === 'en' ? 'Privacy Policy' : '隱私政策',
-  privacyUrl: lang === 'en' ? '/en/privacy' : '/privacy',
+  privacyUrl: lang === 'en' ? '/privacy' : lang === 'zh-cn' ? '/zh-cn/privacy' : '/zh-tw/privacy',
   settingsTitle: lang === 'en' ? 'Cookie / Local Storage Settings' : 'Cookie / 本機儲存設定',
   rememberTz:
     lang === 'en'
@@ -74,6 +74,7 @@ const i = {
     var gaCheckbox = document.getElementById('toggle-analytics');
     var saveBtn = document.getElementById('privacy-cfg-save');
     var closeBtn = document.getElementById('privacy-cfg-dismiss');
+    var lastTriggerId = '';
 
     function getSettings() {
       return (
@@ -94,19 +95,31 @@ const i = {
       }
     }
 
-    function openPanel() {
+    function focusWithoutScroll(element) {
+      if (!element || typeof element.focus !== 'function') return;
+      try {
+        element.focus({ preventScroll: true });
+      } catch (e) {
+        element.focus();
+      }
+    }
+
+    function openPanel(event) {
+      lastTriggerId = event && event.detail && event.detail.triggerId ? event.detail.triggerId : '';
       panel.setAttribute('aria-hidden', 'false');
       panel.classList.add('is-visible');
       syncCheckboxes();
-      if (saveBtn) saveBtn.focus();
+      focusWithoutScroll(saveBtn);
     }
 
     function closePanel() {
       panel.setAttribute('aria-hidden', 'true');
       panel.classList.remove('is-visible');
 
-      var trigger = document.getElementById('footer-privacy-trigger');
-      if (trigger) trigger.focus();
+      if (!lastTriggerId) return;
+      var trigger = document.getElementById(lastTriggerId);
+      focusWithoutScroll(trigger);
+      lastTriggerId = '';
     }
 
     document.addEventListener('toggle-privacy-cfg', openPanel);

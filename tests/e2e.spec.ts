@@ -66,4 +66,33 @@ test.describe('layout regression checks', () => {
     await expect(page.locator('#mobile-menu')).toHaveClass(/is-open/);
     await expect(page.locator('#mobile-toggle')).toHaveAttribute('aria-expanded', 'true');
   });
+
+  test('mobile bookmark panel does not trap page scrolling at the bottom', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'bb-privacy-v1',
+        JSON.stringify({
+          hasSetCookies: true,
+          rememberTimezone: false,
+          enableAnalytics: false,
+        })
+      );
+    });
+
+    await page.goto('/');
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+
+    const before = await page.evaluate(() => window.scrollY);
+    const panel = page.locator('.bookmark-panel');
+    const box = await panel.boundingBox();
+    expect(box).toBeTruthy();
+
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + Math.min(box!.height / 2, box!.height - 24));
+    await page.mouse.wheel(0, -520);
+
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY), { timeout: 2000 })
+      .toBeLessThan(before - 80);
+  });
 });

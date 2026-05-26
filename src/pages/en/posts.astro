@@ -18,7 +18,7 @@ const totalPages = Math.max(1, Math.ceil(sortedPosts.length / PAGE_SIZE));
 const posts = sortedPosts.slice(0, PAGE_SIZE);
 
 const siteUrl = getSiteUrl(Astro.site);
-const canonicalPage1 = new URL('/en/page/1', siteUrl).href;
+const canonicalPage1 = new URL('/page/1', siteUrl).href;
 ---
 
 <BaseLayout
@@ -57,9 +57,9 @@ const canonicalPage1 = new URL('/en/page/1', siteUrl).href;
     </div>
   </div>
 
-<script>
-  try {
-    sessionStorage.setItem('bb-last-list', window.location.pathname);
-  } catch {}
-</script>
+  <script>
+    try {
+      sessionStorage.setItem('bb-last-list', window.location.pathname);
+    } catch {}
+  </script>
 </BaseLayout>

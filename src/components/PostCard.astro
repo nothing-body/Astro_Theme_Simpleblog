@@ -1,4 +1,4 @@
-﻿---
+---
 import type { CollectionEntry } from 'astro:content';
 import type { Lang } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
@@ -14,7 +14,7 @@ const t = useTranslations(lang);
 const postUrl = getPostUrl(post.id, lang);
 const formattedDate = formatDate(post.data.pubDate, lang);
 const description = post.data.description ? summarizePlainText(post.data.description, 96) : '';
-const pinnedLabel = lang === 'en' ? 'Pinned' : lang === 'zh-cn' ? '置顶' : '置頂';
+const pinnedLabel = t('post.pinned');
 ---
 
 <article class="post-card glass-card">
@@ -33,7 +33,7 @@ const pinnedLabel = lang === 'en' ? 'Pinned' : lang === 'zh-cn' ? '置顶' : '�
 
     <div class="post-card-footer">
       <div class="post-card-tags" aria-label={t('sidebar.tags')}>
-        {post.data.tags.slice(0, 3).map((tag: string) => <span class="post-card-tag">#{tag}</span>)}
+        {post.data.tags.slice(0, 8).map((tag: string) => <span class="post-card-tag">#{tag}</span>)}
       </div>
       <span class="post-card-read" aria-hidden="true">
         {t('posts.readMore')}
@@ -45,15 +45,18 @@ const pinnedLabel = lang === 'en' ? 'Pinned' : lang === 'zh-cn' ? '置顶' : '�
 <style>
   .post-card {
     display: block;
-    transition:
-      transform 0.22s ease,
-      box-shadow 0.22s ease;
     height: 100%;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 180px;
+    transition:
+      transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @media (hover: hover) {
     .post-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-5px) scale(1.01);
+      box-shadow: var(--shadow-card-hover);
     }
   }
 
@@ -61,10 +64,10 @@ const pinnedLabel = lang === 'en' ? 'Pinned' : lang === 'zh-cn' ? '置顶' : '�
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    height: 100%;
     padding: 1.5rem;
     color: inherit;
     text-decoration: none;
-    height: 100%;
   }
 
   .post-card-meta {
@@ -75,17 +78,17 @@ const pinnedLabel = lang === 'en' ? 'Pinned' : lang === 'zh-cn' ? '置顶' : '�
   }
 
   .post-card-category {
+    color: var(--primary-red);
     font-size: 0.78rem;
     font-weight: 800;
-    color: var(--primary-red);
-    text-transform: uppercase;
     letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 
   .post-card-pinned {
     display: inline-flex;
-    align-items: center;
     flex: 0 0 auto;
+    align-items: center;
     min-height: 1.45rem;
     padding: 0.16rem 0.5rem;
     border: 1px solid color-mix(in srgb, var(--primary-red) 42%, transparent);
@@ -99,18 +102,18 @@ const pinnedLabel = lang === 'en' ? 'Pinned' : lang === 'zh-cn' ? '置顶' : '�
   }
 
   .post-card-date {
-    font-size: 0.82rem;
     color: var(--text-muted);
+    font-size: 0.82rem;
     font-weight: 500;
   }
 
   .post-card-title {
-    font-size: 1.12rem;
-    font-weight: 700;
-    color: var(--text-heading);
-    line-height: 1.45;
     margin: 0;
-    transition: color 0.2s ease;
+    color: var(--text-heading);
+    font-size: 1.12rem;
+    font-weight: 750;
+    line-height: 1.45;
+    transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @media (hover: hover) {
@@ -120,23 +123,23 @@ const pinnedLabel = lang === 'en' ? 'Pinned' : lang === 'zh-cn' ? '置顶' : '�
   }
 
   .post-card-desc {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    line-height: 1.55;
-    margin: 0;
     display: -webkit-box;
     max-height: 4.65em;
-    line-clamp: 3;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
+    margin: 0;
     overflow: hidden;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    line-clamp: 3;
     overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
   }
 
   .post-card-footer {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     gap: 1rem;
     margin-top: auto;
     padding-top: 0.8rem;
@@ -145,32 +148,63 @@ const pinnedLabel = lang === 'en' ? 'Pinned' : lang === 'zh-cn' ? '置顶' : '�
 
   .post-card-tags {
     display: flex;
-    gap: 0.4rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    width: 100%;
     min-width: 0;
+    overflow-x: auto;
+    padding-bottom: 3px;
+    scrollbar-width: none;
+    mask-image: linear-gradient(to right, black 86%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black 86%, transparent 100%);
+  }
+
+  .post-card-tags::-webkit-scrollbar {
+    display: none;
   }
 
   .post-card-tag {
-    font-size: 0.78rem;
     color: var(--primary-red);
-    opacity: 0.8;
+    font-size: 0.78rem;
     font-weight: 600;
+    opacity: 0.8;
+    white-space: nowrap;
+    transition:
+      opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .post-card-tag:hover {
+    opacity: 1;
+    transform: scale(1.05);
   }
 
   .post-card-read {
+    color: var(--primary-red);
     font-size: 0.82rem;
     font-weight: 700;
-    color: var(--primary-red);
+    opacity: 0.8;
+    transform: translateX(-2px);
     white-space: nowrap;
-    opacity: 0;
-    transform: translateX(-4px);
-    transition: all 0.22s ease;
+    transition:
+      opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .post-card-read::after {
+    content: ' ->';
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @media (hover: hover) {
     .post-card:hover .post-card-read {
       opacity: 1;
       transform: translateX(0);
+    }
+
+    .post-card:hover .post-card-read::after {
+      transform: translateX(4px);
     }
   }
 

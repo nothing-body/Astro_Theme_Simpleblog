@@ -1,6 +1,6 @@
-﻿---
-
+---
 import type { CollectionEntry } from 'astro:content';
+import { useTranslations } from '../i18n/utils';
 
 export interface Props {
   allPosts: CollectionEntry<'blog'>[];
@@ -10,11 +10,13 @@ export interface Props {
 }
 
 const { allPosts, lang = 'zh-tw', activeCategory, activeTag } = Astro.props;
+const t = useTranslations(lang);
 
 const pathPrefix = lang === 'en' ? '' : `/${lang}`;
 const postsHref = `${pathPrefix}/posts`;
-const categoryLabel = lang === 'en' ? 'Categories' : '文章分類';
-const tagLabel = lang === 'en' ? 'Tags' : '標籤';
+const categoryLabel = t('sidebar.categories');
+const tagLabel = t('sidebar.tags');
+const sidebarLabel = t('sidebar.label');
 
 const categoryMap = new Map<string, number>();
 for (const post of allPosts) {
@@ -26,8 +28,7 @@ const categoriesList = [...categoryMap.entries()].sort((a, b) => a[0].localeComp
 const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
 ---
 
-<aside class="sidebar" aria-label={lang === 'en' ? 'Sidebar' : '側邊欄'}>
-  <!-- 分類列表 -->
+<aside class="sidebar" aria-label={sidebarLabel}>
   <div class="glass-card sidebar-widget">
     <h3 class="widget-title">{categoryLabel}</h3>
     <ul class="category-list" role="list">
@@ -35,7 +36,11 @@ const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
         categoriesList.map(([cat, count]) => (
           <li role="listitem">
             <a
-              href={cat === activeCategory ? postsHref : `${pathPrefix}/categories/${encodeURIComponent(cat)}/1`}
+              href={
+                cat === activeCategory
+                  ? postsHref
+                  : `${pathPrefix}/categories/${encodeURIComponent(cat)}/1`
+              }
               class:list={['cat-link', { 'cat-link--active': cat === activeCategory }]}
               data-sidebar-filter-link
               data-filter-kind="category"
@@ -52,8 +57,7 @@ const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
     </ul>
   </div>
 
-  <!-- 標籤雲 -->
-  <div class="glass-card sidebar-widget">
+  <div class="glass-card sidebar-widget tags-widget">
     <h3 class="widget-title">{tagLabel}</h3>
     <div class="tag-cloud" role="list">
       {
@@ -79,7 +83,6 @@ const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
 <script>
   (() => {
     const prefetched = new Set<string>();
-
     const links = Array.from(
       document.querySelectorAll<HTMLAnchorElement>('[data-sidebar-filter-link]')
     );
@@ -93,12 +96,8 @@ const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
 
       for (const item of links) {
         const itemKind = item.dataset.filterKind;
-        if (itemKind === 'category') {
-          item.classList.remove('cat-link--active');
-        }
-        if (itemKind === 'tag') {
-          item.classList.remove('tag-box--active');
-        }
+        if (itemKind === 'category') item.classList.remove('cat-link--active');
+        if (itemKind === 'tag') item.classList.remove('tag-box--active');
         item.removeAttribute('aria-current');
       }
 
@@ -145,18 +144,19 @@ const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
     padding: 1.2rem 1.3rem;
     margin-bottom: 1.2rem;
   }
+
   .sidebar-widget:last-child {
     margin-bottom: 0;
   }
 
   .cat-count {
+    min-width: 1.4rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 99px;
     background: var(--primary-red-light);
     color: var(--primary-red);
     font-size: 0.75rem;
     font-weight: 700;
-    padding: 0.1rem 0.4rem;
-    border-radius: 99px;
-    min-width: 1.4rem;
     text-align: center;
   }
 </style>

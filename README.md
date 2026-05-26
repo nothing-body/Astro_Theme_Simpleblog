@@ -3,7 +3,7 @@
 A public-safe multilingual Astro static blog template with deployment automation for Cloudflare Pages, VPS, and Vercel.
 
 <p align="center">
-  <a href="https://blog.ouoxo.com/en/">Live Demo</a>
+  <a href="https://blog.ouoxo.com/">Live Demo</a>
   &middot;
   <a href="./README.zh-TW.md">繁體中文 README</a>
 </p>
@@ -23,7 +23,7 @@ A public-safe multilingual Astro static blog template with deployment automation
 .
 |-- public/
 |   |-- _headers
-|   |-- google6985a4c1e557f41b.html
+|   |-- google-site-verification-example.html
 |   `-- images/
 |-- scripts/
 |   |-- deploy_menu.mjs
