@@ -106,10 +106,11 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
           {
             languagePaths.map(item => (
               <a
-                href={lang === item.code ? '#' : item.path}
+                href={lang === item.code ? currentPath : item.path}
                 class:list={['lang-option', { 'lang-option--active': lang === item.code }]}
                 role="option"
                 aria-selected={lang === item.code}
+                aria-disabled={lang === item.code ? 'true' : undefined}
                 hreflang={item.hreflang}
               >
                 {item.label}
@@ -157,8 +158,9 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
     {
       languagePaths.map(item => (
         <a
-          href={lang === item.code ? '#' : item.path}
+          href={lang === item.code ? currentPath : item.path}
           class:list={['mobile-lang', { active: lang === item.code }]}
+          aria-disabled={lang === item.code ? 'true' : undefined}
           hreflang={item.hreflang}
         >
           {item.label}
@@ -389,10 +391,15 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
     white-space: nowrap;
   }
 
-  .lang-option:hover,
+  .lang-option:hover {
+    color: var(--primary-red);
+    background: var(--primary-red-light);
+  }
+
   .lang-option--active {
     color: var(--primary-red);
     background: var(--primary-red-light);
+    pointer-events: none;
   }
 
   .mobile-toggle {

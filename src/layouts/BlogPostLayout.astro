@@ -32,8 +32,7 @@ const t = useTranslations(lang);
 const translatePath = useTranslatedPath(lang);
 
 const categoryMapping = await getDynamicCategoryMapping();
-const uncategorized =
-  lang === 'en' ? 'Uncategorized' : lang === 'zh-cn' ? '\u672a\u5206\u7c7b' : '\u672a\u5206\u985e';
+const uncategorized = t('post.uncategorized');
 const currentCategory = frontmatter.category ?? uncategorized;
 
 const publishedDate = new Date(frontmatter.pubDate);
@@ -42,12 +41,10 @@ const formattedDate = formatDate(publishedDate, lang);
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
 const siteUrl = getSiteUrl(Astro.site);
 const articleDescription = summarizePlainText(frontmatter.description ?? frontmatter.title, 180);
-const updatedLabel = lang === 'en' ? 'Updated: ' : lang === 'zh-cn' ? '\u66f4\u65b0\uff1a' : '\u66f4\u65b0\uff1a';
-const tagsLabel = lang === 'en' ? 'Post tags' : lang === 'zh-cn' ? '\u6587\u7ae0\u6807\u7b7e' : '\u6587\u7ae0\u6a19\u7c64';
-const backNavLabel =
-  lang === 'en' ? 'Post navigation' : lang === 'zh-cn' ? '\u6587\u7ae0\u5bfc\u822a' : '\u6587\u7ae0\u5c0e\u89bd';
-const breadcrumbLabel =
-  lang === 'en' ? 'Breadcrumb navigation' : lang === 'zh-cn' ? '\u9762\u5305\u5c51\u5bfc\u822a' : '\u9eb5\u5305\u5c51\u5c0e\u89bd';
+const updatedLabel = t('post.updatedLabel');
+const tagsLabel = t('post.tagsLabel');
+const backNavLabel = t('post.backNavLabel');
+const breadcrumbLabel = t('post.breadcrumbLabel');
 
 const breadcrumbs = [
   { label: t('breadcrumb.home'), href: translatePath('/') },
@@ -277,20 +274,7 @@ const breadcrumbs = [
     word-break: break-word;
   }
 
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 
-  .be-article-wrapper {
-    animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
 
   .post-tags-row {
     display: flex;

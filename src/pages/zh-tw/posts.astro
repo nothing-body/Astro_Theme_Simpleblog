@@ -49,8 +49,8 @@ const canonicalPage1 = new URL('/zh-tw/page/1', siteUrl).href;
               <Pagination
                 currentPage={1}
                 totalPages={totalPages}
-                nextUrl={totalPages > 1 ? '/page/2' : undefined}
-                getPageUrl={n => (n === 1 ? '/posts' : `/page/${n}`)}
+                nextUrl={totalPages > 1 ? '/zh-tw/page/2' : undefined}
+                getPageUrl={n => (n === 1 ? '/zh-tw/posts' : `/zh-tw/page/${n}`)}
                 lang="zh-tw"
               />
             </>

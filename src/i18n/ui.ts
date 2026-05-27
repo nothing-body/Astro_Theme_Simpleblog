@@ -23,6 +23,11 @@ export const ui = {
     'a11y.mobileMenu': 'Mobile menu',
     'sidebar.label': 'Sidebar',
     'post.pinned': 'Pinned',
+    'post.uncategorized': 'Uncategorized',
+    'post.updatedLabel': 'Updated: ',
+    'post.tagsLabel': 'Post tags',
+    'post.backNavLabel': 'Post navigation',
+    'post.breadcrumbLabel': 'Breadcrumb navigation',
 
     'welcome.title': "Welcome to Astro Blog Template",
     'welcome.detecting': 'Detecting your timezone...',
@@ -94,6 +99,12 @@ export const ui = {
     'sidebar.label': '側邊欄',
     'post.pinned': '置頂',
 
+    'post.uncategorized': '\u672a\u5206\u985e',
+    'post.updatedLabel': '\u66f4\u65b0\uff1a',
+    'post.tagsLabel': '\u6587\u7ae0\u6a19\u7c64',
+    'post.backNavLabel': '\u6587\u7ae0\u5c0e\u89bd',
+    'post.breadcrumbLabel': '\u9eb5\u5305\u5c51\u5c0e\u89bd',
+
     'welcome.title': "歡迎來到 Astro Blog Template",
     'welcome.detecting': '正在偵測你的時區...',
     'welcome.from': '歡迎來自',
@@ -162,6 +173,12 @@ export const ui = {
     'a11y.mobileMenu': '移动菜单',
     'sidebar.label': '侧边栏',
     'post.pinned': '置顶',
+
+    'post.uncategorized': '\u672a\u5206\u7c7b',
+    'post.updatedLabel': '\u66f4\u65b0\uff1a',
+    'post.tagsLabel': '\u6587\u7ae0\u6807\u7b7e',
+    'post.backNavLabel': '\u6587\u7ae0\u5bfc\u822a',
+    'post.breadcrumbLabel': '\u9762\u5305\u5c51\u5bfc\u822a',
 
     'welcome.title': "欢迎来到 Astro Blog Template",
     'welcome.detecting': '正在检测你的时区...',

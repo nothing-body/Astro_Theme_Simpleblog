@@ -35,6 +35,11 @@ const allowedCrawlers = [
   'Slurp',
   'facebookexternalhit',
   'Twitterbot',
+  'LinkedInBot',
+  'WhatsApp',
+  'Slackbot',
+  'TelegramBot',
+  'Discordbot',
 ] as const;
 
 function renderUserAgentRules(agents: readonly string[], directive: 'Allow' | 'Disallow'): string {

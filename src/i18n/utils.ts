@@ -27,9 +27,9 @@ export function useTranslatedPath(lang: Lang) {
   };
 }
 
-export async function getDynamicCategoryMapping(): Promise<Record<string, string>> {
+export async function getDynamicCategoryMapping(): Promise<Record<string, Record<string, string>>> {
   const allPosts = await getCollection('blog');
-  const mapping: Record<string, string> = {};
+  const mapping: Record<string, Record<string, string>> = {};
   const postsByPath: Record<string, Record<string, string>> = {};
 
   for (const post of allPosts) {
@@ -47,13 +47,10 @@ export async function getDynamicCategoryMapping(): Promise<Record<string, string
   }
 
   for (const categoriesByLang of Object.values(postsByPath)) {
-    const entries = Object.entries(categoriesByLang);
-    for (let i = 0; i < entries.length; i++) {
-      for (let j = 0; j < entries.length; j++) {
-        if (i === j) continue;
-        const [, catA] = entries[i];
-        const [, catB] = entries[j];
-        if (catA && catB) mapping[catA] = catB;
+    for (const [, catA] of Object.entries(categoriesByLang)) {
+      mapping[catA] ??= {};
+      for (const [langB, catB] of Object.entries(categoriesByLang)) {
+        mapping[catA][langB] = catB;
       }
     }
   }
@@ -64,7 +61,7 @@ export async function getDynamicCategoryMapping(): Promise<Record<string, string
 export async function getTargetLangPath(
   currentUrl: URL,
   targetLang: Lang,
-  categoryMapping: Record<string, string>
+  categoryMapping: Record<string, Record<string, string>>
 ): Promise<string> {
   const allPosts = await getCollection('blog');
   const targetPosts = allPosts.filter(p => p.id.startsWith(`${targetLang}/`));
@@ -76,7 +73,7 @@ export async function getTargetLangPath(
 
   if (parts[0] === 'categories' && parts[1]) {
     const currentCat = decodeURIComponent(parts[1]);
-    const targetCat = categoryMapping[currentCat];
+    const targetCat = categoryMapping[currentCat]?.[targetLang];
 
     if (targetCat) {
       const hasPosts = targetPosts.some(p => p.data.category === targetCat);
