@@ -3,7 +3,7 @@
 這是一個可公開上傳 GitHub 的 Astro 靜態部落格模板，內建繁體中文、英文、簡體中文頁面，並提供 Cloudflare Pages、VPS、Vercel 的自動部署腳本。
 
 <p align="center">
-  <a href="https://blog.ouoxo.com/">Live Demo</a>
+  <a href="https://blog.gkbb.de/">Live Demo</a>
   &middot;
   <a href="./README.md">English README</a>
 </p>
