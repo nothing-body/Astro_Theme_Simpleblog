@@ -1,0 +1,4 @@
+# Consolidate duplicate English locale URLs (/en/* -> /*) for SEO.
+/en    /    301
+/en/   /    301
+/en/*  /:splat  301

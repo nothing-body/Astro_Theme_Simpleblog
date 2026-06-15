@@ -1,0 +1,9 @@
+(function () {
+  var path = window.location.pathname;
+  if (path.indexOf('/zh-tw/') === 0 && path !== '/zh-tw/404') {
+    window.location.replace('/zh-tw/404');
+  }
+  if (path.indexOf('/zh-cn/') === 0 && path !== '/zh-cn/404') {
+    window.location.replace('/zh-cn/404');
+  }
+})();

@@ -80,71 +80,9 @@ const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
   </div>
 </aside>
 
-<script>
-  (() => {
-    const prefetched = new Set<string>();
-    const links = Array.from(
-      document.querySelectorAll<HTMLAnchorElement>('[data-sidebar-filter-link]')
-    );
-
-    const isPlainLeftClick = (event: MouseEvent) =>
-      event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
-
-    const markPending = (link: HTMLAnchorElement) => {
-      const kind = link.dataset.filterKind;
-      const returnsToAllPosts = link.dataset.filterActive === 'true';
-
-      for (const item of links) {
-        const itemKind = item.dataset.filterKind;
-        if (itemKind === 'category') item.classList.remove('cat-link--active');
-        if (itemKind === 'tag') item.classList.remove('tag-box--active');
-        item.removeAttribute('aria-current');
-      }
-
-      if (!returnsToAllPosts && kind === 'category') {
-        link.classList.add('cat-link--active');
-        link.setAttribute('aria-current', 'page');
-      }
-
-      if (!returnsToAllPosts && kind === 'tag') {
-        link.classList.add('tag-box--active');
-        link.setAttribute('aria-current', 'page');
-      }
-
-      document.querySelector('#main-content')?.setAttribute('aria-busy', 'true');
-    };
-
-    const prefetch = (link: HTMLAnchorElement) => {
-      const href = link.href;
-      if (!href || prefetched.has(href)) return;
-
-      const target = new URL(href, window.location.href);
-      if (target.origin !== window.location.origin) return;
-
-      const hint = document.createElement('link');
-      hint.rel = 'prefetch';
-      hint.href = target.href;
-      document.head.append(hint);
-      prefetched.add(href);
-    };
-
-    for (const link of links) {
-      link.addEventListener('click', event => {
-        if (!isPlainLeftClick(event)) return;
-        markPending(link);
-      });
-      link.addEventListener('pointerenter', () => prefetch(link), { passive: true });
-      link.addEventListener('focus', () => prefetch(link), { passive: true });
-    }
-  })();
-</script>
+<script is:inline src="/scripts/bb-sidebar.js" defer></script>
 
 <style is:global>
-  .sidebar-widget {
-    padding: 1.2rem 1.3rem;
-    margin-bottom: 1.2rem;
-  }
-
   .sidebar-widget:last-child {
     margin-bottom: 0;
   }

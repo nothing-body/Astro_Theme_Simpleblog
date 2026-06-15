@@ -1,4 +1,4 @@
-﻿---
+---
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { useTranslations } from '../../i18n/utils';
@@ -28,9 +28,5 @@ const t = useTranslations('zh-cn');
     </main>
   </div>
 
-  <script>
-    setTimeout(() => {
-      window.location.href = '/zh-cn/posts';
-    }, 3000);
-  </script>
+  <script is:inline src="/scripts/bb-no-category-redirect.js" data-redirect="/zh-cn/posts" defer></script>
 </BaseLayout>

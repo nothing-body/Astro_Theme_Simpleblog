@@ -1,15 +1,19 @@
 # Astro Multilingual Blog Template
 
-A public-safe multilingual Astro static blog template with deployment automation for Cloudflare Pages, VPS, and Vercel.
+A public-safe Astro static blog template with multilingual routes, SEO, privacy preferences, bookmarks, and deployment automation for Cloudflare Pages, VPS, and Vercel.
 
-<p align="center">
-  <a href="https://blog.gkbb.de/">Live Demo</a>
-  &middot;
-  <a href="./README.zh-TW.md">繁體中文 README</a>
-</p>
+## Features
+
+- English root routes with Traditional Chinese and Simplified Chinese locales
+- Markdown/MDX posts, categories, tags, pagination, and pinned posts
+- Responsive navigation, bookmarks, clock, cookie preferences, and accessibility support
+- Sitemap, robots.txt, canonical URLs, JSON-LD, Open Graph, and security headers
+- Cloudflare Pages deployment that detects the project's production branch automatically
+- Astro checks, ESLint, Stylelint, Jest, Playwright, and project self-analysis
 
 ## Guides
 
+- [Traditional Chinese README](./README.zh-TW.md)
 - [Markdown writing guide](./MARKDOWN_GUIDE.md)
 - [Bookmark guide](./BOOKMARKS_GUIDE.en.md)
 - [Traditional Chinese bookmark guide](./BOOKMARKS_GUIDE.zh-TW.md)
@@ -17,44 +21,17 @@ A public-safe multilingual Astro static blog template with deployment automation
 - [Traditional Chinese deployment guide](./部屬前須知.md)
 - [Scripts overview](./scripts/README.en.md)
 
-## Project Structure
+## Routes
+
+English is the default locale and uses the root route `/`. Traditional Chinese uses `/zh-tw/`, and Simplified Chinese uses `/zh-cn/`.
+
+Example posts are stored under:
 
 ```text
-.
-|-- public/
-|   |-- _headers
-|   |-- google-site-verification-example.html
-|   `-- images/
-|-- scripts/
-|   |-- deploy_menu.mjs
-|   |-- deploy_switch.mjs
-|   |-- deploy_lib.mjs
-|   |-- uploaddist_cf.mjs
-|   |-- uploaddist_vps.mjs
-|   |-- uploaddist_vercel.mjs
-|   |-- upgrade_astro.mjs
-|   `-- README.en.md
-|-- src/
-|   |-- components/
-|   |-- content/blog/
-|   |   |-- zh-tw/
-|   |   |-- en/
-|   |   `-- zh-cn/
-|   |-- i18n/
-|   |-- layouts/
-|   |-- lib/
-|   |-- pages/
-|   |   |-- en/
-|   |   |-- zh-cn/
-|   |   `-- index.astro
-|   `-- styles/
-|-- astro.config.mjs
-|-- package.json
-|-- DEPLOYMENT.en.md
-`-- 部屬前須知.md
+src/content/blog/en/
+src/content/blog/zh-tw/
+src/content/blog/zh-cn/
 ```
-
-Traditional Chinese is the default locale and uses the root route `/`. English uses `/en/`, and Simplified Chinese uses `/zh-cn/`.
 
 ## Quick Start
 
@@ -72,15 +49,27 @@ npm install
 npm run build
 ```
 
+## Configuration
+
+Copy `.env.example` to `.env` and set:
+
+```env
+PUBLIC_SITE_URL=https://example.com
+PUBLIC_CONTACT_EMAIL=hello@example.com
+PUBLIC_GA4_ID=
+```
+
+Do not commit real credentials or deployment environment files.
+
 ## Deployment
 
-Use the menu script for guided deployment:
+Use the guided menu:
 
 ```bash
 pnpm deploy:menu
 ```
 
-Direct deployment commands:
+Or deploy directly:
 
 ```bash
 pnpm deploy:cf:only
@@ -89,11 +78,14 @@ pnpm deploy:vercel:only
 pnpm deploy:all
 ```
 
-Read [DEPLOYMENT.en.md](./DEPLOYMENT.en.md) before deploying. Create local `.env` files from the example files and never commit secrets.
+Cloudflare deployment reads the configured Pages project's production branch automatically. Pass `--branch=<name>` only when an explicit override is required.
 
-## Maintenance
+## Verification
 
-- Run `pnpm selfcheck -- --quick` before publishing or deploying.
-- Run `pnpm upgrade:astro` to use the safe Astro upgrade workflow.
-- Keep code comments in English to avoid cross-platform encoding problems.
-- Do not re-add PurgeCSS unless there is a measured CSS-size issue and a complete visual test plan.
+```bash
+pnpm check
+pnpm lint
+pnpm lint:css
+pnpm test
+pnpm analyze
+```

@@ -28,6 +28,8 @@ const normalizedPath = Astro.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/';
 const currentUrl = canonicalUrl ?? new URL(normalizedPath, siteUrl).href;
 const fullTitle = title === SITE_NAME ? title : `${title} | ${SITE_NAME}`;
 const ogImageUrl = ogImage ? new URL(ogImage, siteUrl).href : `${siteUrl}/og-default.png`;
+const isDuplicateEnRoute =
+  Astro.url.pathname === '/en' || Astro.url.pathname.startsWith('/en/');
 const zhTwUrl = getLocalizedUrl(Astro.url.pathname, 'zh-tw', siteUrl);
 const enUrl = getLocalizedUrl(Astro.url.pathname, 'en', siteUrl);
 const zhCnUrl = getLocalizedUrl(Astro.url.pathname, 'zh-cn', siteUrl);
@@ -42,6 +44,7 @@ const safeGa4Id =
 
 <title>{fullTitle}</title>
 <meta name="description" content={description} />
+{isDuplicateEnRoute && <meta name="robots" content="noindex, follow" />}
 <link rel="canonical" href={currentUrl} />
 
 <link rel="alternate" hreflang="zh-TW" href={zhTwUrl} />
@@ -54,6 +57,8 @@ const safeGa4Id =
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={ogImageUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
 <meta property="og:site_name" content={SITE_NAME} />
 <meta
   property="og:locale"
@@ -82,50 +87,9 @@ const safeGa4Id =
 <meta name="referrer" content="strict-origin-when-cross-origin" />
 <link rel="icon" type="image/x-icon" href="/logo.ico" />
 
-<script is:inline>
-  (function () {
-    var KEY = 'bb-privacy-v1';
-    var raw = null;
-    try {
-      raw = localStorage.getItem(KEY);
-    } catch (_e) {}
-    var settings = { hasSetCookies: false, rememberTimezone: false, enableAnalytics: false };
-    if (raw) {
-      try {
-        settings = Object.assign(settings, JSON.parse(raw));
-      } catch (_e) {}
-    }
-    window.__privacySettings = settings;
-    window.updatePrivacySettings = function (updates) {
-      var next = Object.assign({}, settings, updates);
-      try {
-        localStorage.setItem(KEY, JSON.stringify(next));
-      } catch (_e) {}
-      window.__privacySettings = next;
-      settings = next;
-    };
-  })();
-</script>
-
+<script is:inline src="/scripts/bb-settings-bootstrap.js"></script>
 {
   safeGa4Id && (
-    <script is:inline define:vars={{ ga4Id: safeGa4Id }}>
-      (function () {
-      if (window.__privacySettings && window.__privacySettings.enableAnalytics) {
-        var s = document.createElement('script');
-        s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(ga4Id);
-        s.async = true;
-        document.head.appendChild(s);
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){window.dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', ga4Id, {
-          anonymize_ip: true,
-          allow_google_signals: false,
-          allow_ad_personalization_signals: false
-        });
-      }
-    })();
-    </script>
+    <script is:inline src="/scripts/bb-ga4.js" data-ga4-id={safeGa4Id} defer></script>
   )
 }

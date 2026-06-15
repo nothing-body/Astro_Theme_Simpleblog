@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { spawn, spawnSync } from 'node:child_process';
 import http from 'node:http';
+import os from 'node:os';
+import path from 'node:path';
 import process from 'node:process';
 import { setTimeout } from 'node:timers';
 import { fileURLToPath } from 'node:url';
@@ -11,6 +13,7 @@ const playwrightCli = fileURLToPath(new URL('../node_modules/playwright/cli.js',
 const host = '127.0.0.1';
 const port = 4321;
 const baseUrl = `http://${host}:${port}`;
+const outputDir = path.join(os.tmpdir(), `astro-playwright-${process.pid}`);
 
 function waitForServer(url, timeoutMs = 30000) {
   const deadline = Date.now() + timeoutMs;
@@ -67,7 +70,11 @@ const preview = spawn(process.execPath, [astroCli, 'preview', '--host', host, '-
 try {
   await waitForServer(baseUrl);
   const code = await run(process.execPath, [playwrightCli, 'test', '--reporter=list'], {
-    env: { ...process.env, PLAYWRIGHT_BASE_URL: baseUrl },
+    env: {
+      ...process.env,
+      PLAYWRIGHT_BASE_URL: baseUrl,
+      PLAYWRIGHT_OUTPUT_DIR: outputDir,
+    },
   });
   process.exitCode = code;
 } catch (error) {

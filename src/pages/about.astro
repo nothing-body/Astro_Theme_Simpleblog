@@ -1,5 +1,5 @@
-﻿---
-// src/pages/en/about.astro — About page (English)
+---
+// src/pages/en/about.astro ??About page (English)
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AboutSidebar from '../components/AboutSidebar.astro';
 import { getCanonicalUrl } from '../lib/site';
@@ -13,8 +13,8 @@ const jsonLd = {
   '@type': 'WebPage',
   name: 'About This Site',
   url: pageUrl,
-  description: 'About the Astro Blog Template blog and its author.',
-  publisher: { '@type': 'Person', name: 'Astro Blog Template' },
+  description: "About the Astro Blog Template blog and its author.",
+  publisher: { '@type': 'Person', name: "Astro Blog Template" },
 };
 ---
 
@@ -24,7 +24,7 @@ const jsonLd = {
     <div class="content-wrapper">
       <AboutSidebar lang="en" currentPath={currentPath} />
       <main id="main-content" class="main-content">
-        <article class="glass-card" style="padding:2.5rem;">
+        <article class="glass-card be-article-wrapper" style="padding:2.5rem;">
           <div class="article-entry">
             <h1>About This Site</h1>
             <p>
@@ -35,8 +35,7 @@ const jsonLd = {
 
             <h2>Why did I build this site?</h2>
             <p>
-              This site is built with the Astro framework. For me, it's not just a writing space —
-              it's a technical memo to prevent myself from forgetting operational details.
+              This site is built with the Astro framework. For me, it's not just a writing space ??              it's a technical memo to prevent myself from forgetting operational details.
             </p>
 
             <h2>What's recorded here?</h2>
@@ -59,7 +58,7 @@ const jsonLd = {
 
             <h2>About content accuracy</h2>
             <p>
-              Every article here is a casual note — a product of spontaneous recording and thinking.<br
+              Every article here is a casual note ??a product of spontaneous recording and thinking.<br
               />
               While the content is informal, it's primarily meant for my future self to look back on.
               If it also helps you, that's a wonderful bonus.

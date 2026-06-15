@@ -1,0 +1,9 @@
+---
+export interface Props {
+  dateLocale?: string;
+}
+
+const { dateLocale = 'en-GB' } = Astro.props;
+---
+
+<script is:inline src="/scripts/bb-home-clock.js" data-date-locale={dateLocale} defer></script>

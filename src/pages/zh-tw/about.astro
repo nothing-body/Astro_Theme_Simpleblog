@@ -1,5 +1,4 @@
-﻿---
-
+---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import AboutSidebar from '../../components/AboutSidebar.astro';
 import { getCanonicalUrl } from '../../lib/site';
@@ -11,53 +10,37 @@ const pageUrl = getCanonicalUrl(currentPath, Astro.site);
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
-  name: '關於本站',
+  name: '\u95dc\u65bc\u672c\u7ad9',
   url: pageUrl,
-  description: '關於Astro Blog Template部落格及其作者的介紹。',
-  publisher: { '@type': 'Person', name: 'Astro Blog Template' },
+  description: "About Astro Blog Template, a personal notebook for software notes, VPS setup, and daily writing.",
+  publisher: { '@type': 'Person', name: "Astro Blog Template" },
 };
 ---
 
-<BaseLayout title="關於本站" description="關於Astro Blog Template部落格及其作者的介紹。">
+<BaseLayout
+  title="\u95dc\u65bc\u672c\u7ad9"
+  description="Astro Blog Template \u7684\u95dc\u65bc\u9801\uff0c\u8a18\u9304\u7db2\u7ad9\u5b9a\u4f4d\u3001\u5167\u5bb9\u985e\u578b\u8207\u7dad\u8b77\u539f\u5247\u3002"
+>
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
   <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
     <div class="content-wrapper">
       <AboutSidebar lang="zh-tw" currentPath={currentPath} />
       <main id="main-content" class="main-content">
-        <article class="glass-card" style="padding: 2.5rem;">
+        <article class="glass-card be-article-wrapper" style="padding: 2.5rem;">
           <div class="article-entry">
-            <h1>關於本站 (About)</h1>
+            <h1>\u95dc\u65bc\u672c\u7ad9</h1>
             <p>
-              歡迎來到我的個人部落格！<br />
-              這裡並非一個高度精雕細琢的專業入口網站，而是我個人在數位世界中的一塊自留地。
+              \u6b61\u8fce\u4f86\u5230 Astro Blog Template\u3002\u9019\u662f\u4e00\u500b\u500b\u4eba\u6578\u4f4d\u7b46\u8a18\u7a7a\u9593\uff0c\u4e3b\u8981\u8a18\u9304\u8edf\u9ad4\u4f7f\u7528\u5fc3\u5f97\u3001VPS
+              \u8a2d\u5b9a\u3001\u7db2\u7ad9\u5efa\u7f6e\u8207\u65e5\u5e38\u96a8\u7b46\u3002
             </p>
-
-            <h2>為什麼建立這個網站？</h2>
+            <h2>\u5167\u5bb9\u65b9\u5411</h2>
             <p>
-              本站採用 Astro 現代化網頁框架構建。對我來說，這不僅是一個記錄空間，
-              更是技術實踐後的備忘錄，用來防止自己遺忘操作細節。
+              \u672c\u7ad9\u504f\u5411\u5be6\u7528\u578b\u8a18\u9304\uff1a\u628a\u5be6\u969b\u64cd\u4f5c\u904e\u7684\u6b65\u9a5f\u3001\u9047\u5230\u7684\u554f\u984c\u3001\u6709\u50f9\u503c\u7684\u89e3\u6cd5\u7d71\u4e00\u6574\u7406\uff0c\u8b93\u672a\u4f86\u56de\u982d\u67e5\u627e\u6642\u66f4\u5bb9\u6613\u3002
             </p>
-
-            <h2>這裡記錄了什麼？</h2>
+            <h2>\u7db2\u7ad9\u6280\u8853</h2>
             <p>
-              本站內容主要圍繞著我在網上衝浪時發現的有趣軟體、技術，以及平時的日常隨手小記（有時可能發點宗教意味的文章）。你可以將其視為一份公開的「數位筆記本」，範疇包括：
-            </p>
-            <ul>
-              <li><strong>技術隨筆：</strong>配置服務成功運行後的隨手紀錄。</li>
-              <li><strong>工具心得：</strong>軟體使用後的個人心得，或發現有趣軟體時的想法分享。</li>
-              <li><strong>生活小記：</strong>那些不經意間產生的靈感、生活瑣事與個人思考。</li>
-            </ul>
-
-            <h2>關於內容的真實性</h2>
-            <p>
-              這裡的每一篇文章都是我的隨手小記，是隨性記錄與思考的產物。<br />
-              雖然內容較為隨興，但這份筆記首先是為了讓我未來的自己能回頭查閱； 若能同時對來到這裡的你有所幫助，那便是額外的收穫。
-            </p>
-
-            <h2>關於英文翻譯</h2>
-            <p>
-              本站的英文文章內容均由 AI 模型從中文原文翻譯而成。<br />
-              雖然已盡力保持語意精確，但仍可能存在表達較生硬或不準確之處，敬請見諒。
+              \u672c\u7ad9\u4f7f\u7528 Astro \u5efa\u7f6e\u70ba\u975c\u614b\u7db2\u7ad9\uff0c\u76e1\u91cf\u964d\u4f4e\u5ba2\u6236\u7aef JavaScript
+              \u8207\u4e0d\u5fc5\u8981\u7684\u57f7\u884c\u6210\u672c\uff0c\u540c\u6642\u4fdd\u7559 SEO\u3001\u591a\u8a9e\u7cfb\u8207\u5167\u5bb9\u7dad\u8b77\u7684\u5f48\u6027\u3002
             </p>
           </div>
         </article>

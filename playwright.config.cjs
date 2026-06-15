@@ -1,6 +1,7 @@
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
   testDir: './tests',
+  outputDir: process.env.PLAYWRIGHT_OUTPUT_DIR || 'test-results',
   timeout: 30000,
   use: {
     headless: true,

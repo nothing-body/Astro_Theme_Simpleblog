@@ -10,7 +10,6 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 const translatePath = useTranslatedPath(lang);
 
-// Use centralised i18n keys instead of hardcoded strings
 const i = {
   title: t('cookie.title'),
   desc: t('cookie.description'),
@@ -25,160 +24,67 @@ const i = {
 ---
 
 <div
-  id="privacy-cfg"
-  class="privacy-cfg"
+  id="site-prefs-layer"
+  class="site-prefs-layer"
   role="dialog"
   aria-modal="true"
-  aria-labelledby="privacy-cfg-title"
+  aria-labelledby="site-prefs-title"
   aria-hidden="true"
+  hidden
 >
-  <div class="privacy-cfg-body">
-    <h3 id="privacy-cfg-title">{i.title}</h3>
+  <div class="site-prefs-card">
+    <h3 id="site-prefs-title">{i.title}</h3>
     <p>
       {i.desc}
       {' '}
-      <a href={i.privacyUrl} rel="noopener noreferrer" class="privacy-cfg-link">
+      <a href={i.privacyUrl} rel="noopener noreferrer" class="site-prefs-link">
         {i.privacyText}
       </a>
     </p>
 
     <h4>{i.settingsTitle}</h4>
 
-    <label class="privacy-cfg-toggle">
-      <input type="checkbox" id="toggle-timezone" />
+    <label class="site-prefs-row">
+      <input type="checkbox" id="pref-remember-tz" />
       <span>{i.rememberTz}</span>
     </label>
 
-    <label class="privacy-cfg-toggle">
-      <input type="checkbox" id="toggle-analytics" />
+    <label class="site-prefs-row">
+      <input type="checkbox" id="pref-enable-stats" />
       <span>{i.analytics}</span>
     </label>
 
-    <div class="privacy-cfg-actions">
-      <button type="button" class="btn-save" id="privacy-cfg-save">{i.save}</button>
-      <button type="button" class="btn-dismiss" id="privacy-cfg-dismiss">{i.close}</button>
+    <div class="site-prefs-actions">
+      <button type="button" class="btn-save" id="site-prefs-save">{i.save}</button>
+      <button type="button" class="btn-dismiss" id="site-prefs-close">{i.close}</button>
     </div>
   </div>
 </div>
 
-<script is:inline>
-  (function () {
-    var panel = document.getElementById('privacy-cfg');
-    if (!panel) return;
-
-    var tzCheckbox = document.getElementById('toggle-timezone');
-    var gaCheckbox = document.getElementById('toggle-analytics');
-    var saveBtn = document.getElementById('privacy-cfg-save');
-    var closeBtn = document.getElementById('privacy-cfg-dismiss');
-    var lastTriggerId = '';
-
-    function getSettings() {
-      return (
-        window.__privacySettings || {
-          hasSetCookies: false,
-          rememberTimezone: false,
-          enableAnalytics: false,
-        }
-      );
-    }
-
-    function syncCheckboxes() {
-      var s = getSettings();
-      if (tzCheckbox) tzCheckbox.checked = s.rememberTimezone !== false;
-      if (gaCheckbox) {
-
-        gaCheckbox.checked = s.hasSetCookies ? s.enableAnalytics !== false : false;
-      }
-    }
-
-    function focusWithoutScroll(element) {
-      if (!element || typeof element.focus !== 'function') return;
-      try {
-        element.focus({ preventScroll: true });
-      } catch (e) {
-        element.focus();
-      }
-    }
-
-    function openPanel(event) {
-      lastTriggerId = event && event.detail && event.detail.triggerId ? event.detail.triggerId : '';
-      panel.setAttribute('aria-hidden', 'false');
-      panel.classList.add('is-visible');
-      syncCheckboxes();
-      focusWithoutScroll(saveBtn);
-    }
-
-    function closePanel() {
-      panel.setAttribute('aria-hidden', 'true');
-      panel.classList.remove('is-visible');
-
-      if (!lastTriggerId) return;
-      var trigger = document.getElementById(lastTriggerId);
-      focusWithoutScroll(trigger);
-      lastTriggerId = '';
-    }
-
-    document.addEventListener('toggle-privacy-cfg', openPanel);
-
-    panel.addEventListener('click', function (e) {
-      if (e.target === panel) closePanel();
-    });
-
-    if (closeBtn) closeBtn.addEventListener('click', closePanel);
-
-    if (saveBtn) {
-      saveBtn.addEventListener('click', function () {
-        var updates = {
-          hasSetCookies: true,
-          rememberTimezone: !!(tzCheckbox && tzCheckbox.checked),
-          enableAnalytics: !!(gaCheckbox && gaCheckbox.checked),
-        };
-        if (typeof window.updatePrivacySettings === 'function') {
-          window.updatePrivacySettings(updates);
-        }
-
-        if (!updates.rememberTimezone) {
-          try {
-            localStorage.removeItem('bb-tz');
-          } catch (e) {}
-        }
-
-        window.location.reload();
-      });
-    }
-
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && panel.classList.contains('is-visible')) {
-        closePanel();
-      }
-    });
-
-    setTimeout(function () {
-      if (!getSettings().hasSetCookies) openPanel();
-    }, 600);
-  })();
-</script>
+<script is:inline src="/scripts/bb-prefs-modal.js" defer></script>
 
 <style is:global>
-  .privacy-cfg {
+  .site-prefs-layer {
     position: fixed;
     inset: 0;
     background: rgba(44, 36, 32, 0.45);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 3000;
+    z-index: 2147483000;
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.22s ease;
+    transition: opacity 0.22s ease, visibility 0.22s ease;
   }
 
-  .privacy-cfg.is-visible {
+  .site-prefs-layer.is-visible {
     opacity: 1;
+    visibility: visible;
     pointer-events: auto;
   }
 
-  .privacy-cfg-body {
+  .site-prefs-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 18px;
@@ -189,28 +95,30 @@ const i = {
     font-size: 0.92rem;
     line-height: 1.7;
     color: var(--text-primary);
+    position: relative;
+    z-index: 2147483001;
   }
 
-  .privacy-cfg-body h3 {
+  .site-prefs-card h3 {
     margin-top: 0;
     font-size: 1.1rem;
     font-weight: 800;
     color: var(--text-heading);
   }
 
-  .privacy-cfg-body h4 {
+  .site-prefs-card h4 {
     margin-top: 1.3rem;
     font-size: 0.9rem;
     font-weight: 700;
     color: var(--text-heading);
   }
 
-  .privacy-cfg-link {
+  .site-prefs-link {
     color: var(--primary-red);
     text-decoration: underline;
   }
 
-  .privacy-cfg-toggle {
+  .site-prefs-row {
     display: flex;
     align-items: flex-start;
     gap: 0.6rem;
@@ -219,7 +127,7 @@ const i = {
     line-height: 1.5;
   }
 
-  .privacy-cfg-toggle input[type='checkbox'] {
+  .site-prefs-row input[type='checkbox'] {
     width: 16px;
     height: 16px;
     margin-top: 2px;
@@ -228,14 +136,14 @@ const i = {
     cursor: pointer;
   }
 
-  .privacy-cfg-actions {
+  .site-prefs-actions {
     display: flex;
     gap: 0.8rem;
     margin-top: 1.5rem;
     flex-wrap: wrap;
   }
 
-  .privacy-cfg .btn-save {
+  .site-prefs-layer .btn-save {
     padding: 0.45rem 1.3rem;
     border-radius: 99px;
     border: none;
@@ -247,12 +155,12 @@ const i = {
     transition: all 0.25s ease;
   }
 
-  .privacy-cfg .btn-save:hover {
+  .site-prefs-layer .btn-save:hover {
     background: var(--primary-red-dark);
     transform: translateY(-2px);
   }
 
-  .privacy-cfg .btn-dismiss {
+  .site-prefs-layer .btn-dismiss {
     padding: 0.45rem 1.3rem;
     border-radius: 99px;
     border: 1px solid var(--border-color);
@@ -264,7 +172,7 @@ const i = {
     transition: all 0.25s ease;
   }
 
-  .privacy-cfg .btn-dismiss:hover {
+  .site-prefs-layer .btn-dismiss:hover {
     background: var(--cream-200, #f4ede3);
     transform: translateY(-2px);
   }

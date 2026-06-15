@@ -56,7 +56,16 @@ export default defineConfig({
       plugins: [pluginCollapsibleSections(), pluginLineNumbers()],
     }),
     sitemap({
-      filter: page => !page.includes('/404') && !page.includes('/no-category'),
+      filter: page => {
+        const path = page.replace(/^https?:\/\/[^/]+/, '');
+        return (
+          !path.includes('/404') &&
+          !path.includes('/no-category') &&
+          path !== '/en' &&
+          path !== '/en/' &&
+          !path.startsWith('/en/')
+        );
+      },
     }),
     mdx(),
   ],

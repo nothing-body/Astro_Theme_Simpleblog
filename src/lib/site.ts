@@ -1,5 +1,5 @@
 export const DEFAULT_SITE_URL = 'https://example.com';
-export const SITE_NAME = 'Astro Multilingual Blog Template';
+export const SITE_NAME = 'Astro Blog Template';
 export const DEFAULT_AUTHOR = SITE_NAME;
 export const DEFAULT_CONTACT_EMAIL = 'hello@example.com';
 export const DEFAULT_DESCRIPTION =

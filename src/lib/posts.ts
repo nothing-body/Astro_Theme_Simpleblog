@@ -1,8 +1,18 @@
+import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 
 export type BlogPost = CollectionEntry<'blog'>;
+export type BlogLang = 'en' | 'zh-tw' | 'zh-cn';
 
 const DEFAULT_PIN_ORDER = 9999;
+
+export async function getRecentPostsForLang(lang: BlogLang, limit = 3): Promise<BlogPost[]> {
+  const allPosts = await getCollection(
+    'blog',
+    ({ id, data }) => id.startsWith(`${lang}/`) && !data.draft
+  );
+  return sortBlogPosts(allPosts).slice(0, limit);
+}
 
 export function sortBlogPosts(posts: BlogPost[]): BlogPost[] {
   return [...posts].sort((a, b) => {

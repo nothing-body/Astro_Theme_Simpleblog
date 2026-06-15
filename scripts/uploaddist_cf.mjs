@@ -15,7 +15,7 @@
  *
  * Options:
  * --project=<name>        Target Cloudflare Pages project name
- * --branch=main           Deploy to target branch (preview / production control)
+ * --branch=main           Override the Cloudflare Pages production branch
  * --dist=dist             Build output folder to upload
  * --env=.env.cloudflare   Env file for CLOUDFLARE_API_TOKEN / ACCOUNT_ID
  * --skip-clean            Do NOT delete dist/ before build
@@ -249,6 +249,50 @@ function readPackageProjectName() {
   }
 }
 
+function readCurrentGitBranch() {
+  const result = spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+    stdio: "pipe",
+    encoding: "utf8",
+  });
+  return result.status === 0 ? String(result.stdout || "").trim() : "";
+}
+
+async function getPagesProductionBranch(projectName) {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const token = process.env.CLOUDFLARE_API_TOKEN;
+  const url =
+    `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}` +
+    `/pages/projects/${encodeURIComponent(projectName)}`;
+
+  let response;
+  try {
+    response = await globalThis.fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+  } catch (error) {
+    fail(`Unable to read the Cloudflare Pages production branch: ${error.message}`);
+  }
+
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    fail("Cloudflare returned an unreadable response while checking the production branch.");
+  }
+
+  const branch = String(payload?.result?.production_branch || "").trim();
+  if (!response.ok || payload?.success === false || !branch) {
+    fail(
+      `Unable to determine the production branch for Cloudflare Pages project '${projectName}'. ` +
+        "Pass --branch=<production-branch> explicitly or check the API token permissions."
+    );
+  }
+  return branch;
+}
+
 function assertSafeDistPath(distPath) {
   const cwd = process.cwd();
   const relative = path.relative(cwd, distPath);
@@ -301,7 +345,7 @@ function updateEnvValue(envFilePath, key, value) {
 }
 
 function createPagesProject(projectName, env) {
-  const productionBranch = options.branch || "main";
+  const productionBranch = options.branch || readCurrentGitBranch() || "main";
   info(`==> ${t("cf.create")}: '${projectName}'`, "yellow");
   const wrangler = packageExecCommand("wrangler", [
     "pages",
@@ -395,6 +439,8 @@ const wranglerEnv = {
   XDG_CONFIG_HOME: wranglerConfigHome,
 };
 ensurePagesProject(projectName, wranglerEnv);
+const deploymentBranch = options.branch || (await getPagesProductionBranch(projectName));
+info(`==> Cloudflare Pages production branch: ${deploymentBranch}`);
 
 const distPath = path.resolve(process.cwd(), options.dist);
 assertSafeDistPath(distPath);
@@ -424,9 +470,7 @@ const deployArgs = [
   "--project-name",
   projectName,
 ];
-if (options.branch) {
-  deployArgs.push("--branch", options.branch);
-}
+deployArgs.push("--branch", deploymentBranch);
 const wranglerDeploy = packageExecCommand("wrangler", deployArgs);
 run(wranglerDeploy.command, wranglerDeploy.args, "Wrangler deploy failed.", wranglerEnv);
 

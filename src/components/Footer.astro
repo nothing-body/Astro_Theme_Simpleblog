@@ -16,7 +16,7 @@ const year = new Date().getFullYear();
   <div class="footer-inner">
     <!-- Copyright text -->
     <div class="footer-copyright">
-      © {year} All Rights Reserved
+      {t('footer.copyright').replace('{year}', String(year))}
     </div>
 
     <!-- Footer navigation links -->
@@ -26,7 +26,7 @@ const year = new Date().getFullYear();
       </a>
       <span class="footer-sep" aria-hidden="true">|</span>
       <a href={translatePath('/contact')}>
-        {lang === 'en' ? 'Contact Us' : '聯絡我們'}
+        {t('footer.contact')}
       </a>
       <span class="footer-sep" aria-hidden="true">|</span>
       <a href={translatePath('/privacy')}>
@@ -34,15 +34,15 @@ const year = new Date().getFullYear();
       </a>
       <span class="footer-sep" aria-hidden="true">|</span>
       <a href={translatePath('/disclaimer')}>
-        {lang === 'en' ? 'Disclaimer' : '免責聲明'}
+        {t('footer.disclaimer')}
       </a>
     </nav>
 
     <!-- Privacy settings trigger; keep the class name neutral for common filter lists. -->
     <button
       type="button"
-      class="privacy-trigger-btn"
-      id="footer-privacy-trigger"
+      class="site-prefs-trigger"
+      id="footer-prefs-trigger"
       aria-label={t('footer.cookieSettings')}
     >
       🍪 {t('footer.cookieSettings')}
@@ -50,14 +50,7 @@ const year = new Date().getFullYear();
   </div>
 </footer>
 
-<script is:inline>
-  var btn = document.getElementById('footer-privacy-trigger');
-  if (btn) {
-    btn.addEventListener('click', function () {
-      document.dispatchEvent(new CustomEvent('toggle-privacy-cfg', { detail: { triggerId: btn.id } }));
-    });
-  }
-</script>
+<script is:inline src="/scripts/bb-footer-prefs.js" defer></script>
 
 <style is:global>
   .site-footer {
@@ -112,7 +105,7 @@ const year = new Date().getFullYear();
     flex-shrink: 0;
   }
 
-  .privacy-trigger-btn {
+  .site-prefs-trigger {
     background: none;
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
@@ -128,7 +121,7 @@ const year = new Date().getFullYear();
     white-space: nowrap;
   }
 
-  .privacy-trigger-btn:hover {
+  .site-prefs-trigger:hover {
     background: var(--primary-red);
     border-color: var(--primary-red);
     color: white;

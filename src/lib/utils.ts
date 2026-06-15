@@ -1,12 +1,5 @@
 export type SupportedLang = 'zh-tw' | 'en' | 'zh-cn';
 
-export function estimateReadingTime(content: string, lang: SupportedLang = 'zh-tw'): number {
-  const wordsPerMinute = lang === 'en' ? 200 : 300;
-  const plainText = stripMarkdown(content);
-
-  return Math.max(1, Math.ceil(plainText.length / wordsPerMinute));
-}
-
 export function formatDate(date: Date, lang: SupportedLang = 'zh-tw'): string {
   const locale = lang === 'en' ? 'en-GB' : lang === 'zh-cn' ? 'zh-CN' : 'zh-TW';
   return date.toLocaleDateString(locale, {

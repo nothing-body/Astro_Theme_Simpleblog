@@ -56,6 +56,17 @@ test.describe('layout regression checks', () => {
   test('navbar language and mobile controls stay interactive after initialization', async ({
     page,
   }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'bb-privacy-v1',
+        JSON.stringify({
+          hasSetCookies: true,
+          rememberTimezone: false,
+          enableAnalytics: false,
+        })
+      );
+    });
+
     await page.goto('/');
 
     await page.locator('#lang-trigger-btn').click();
@@ -65,6 +76,44 @@ test.describe('layout regression checks', () => {
     await page.locator('#mobile-toggle').click();
     await expect(page.locator('#mobile-menu')).toHaveClass(/is-open/);
     await expect(page.locator('#mobile-toggle')).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  test('first-visit cookie save closes panel without navigation on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(() => {
+      localStorage.removeItem('bb-privacy-v1');
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#site-prefs-layer')).toHaveClass(/is-visible/);
+
+    const urlBefore = page.url();
+    await page.locator('#site-prefs-save').click();
+
+    await expect(page).toHaveURL(urlBefore);
+    await expect(page.locator('#site-prefs-layer')).not.toHaveClass(/is-visible/);
+    await expect(page.locator('#site-prefs-layer')).toHaveAttribute('aria-hidden', 'true');
+
+    const settings = await page.evaluate(() => localStorage.getItem('bb-privacy-v1'));
+    expect(settings).toContain('"hasSetCookies":true');
+  });
+
+  test('footer settings trigger opens the site preferences layer', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'bb-privacy-v1',
+        JSON.stringify({
+          hasSetCookies: true,
+          rememberTimezone: false,
+          enableAnalytics: false,
+        })
+      );
+    });
+
+    await page.goto('/');
+    await page.locator('#footer-prefs-trigger').click();
+    await expect(page.locator('#site-prefs-layer')).toHaveClass(/is-visible/);
+    await expect(page.locator('#site-prefs-layer')).toHaveAttribute('aria-hidden', 'false');
   });
 
   test('mobile bookmark panel does not trap page scrolling at the bottom', async ({ page }) => {

@@ -6,13 +6,6 @@ export interface BreadcrumbItem {
   href?: string;
 }
 
-export interface PaginationInfo {
-  currentPage: number;
-  totalPages: number;
-  prevUrl?: string;
-  nextUrl?: string;
-}
-
 export interface PrivacySettings {
   hasSetCookies: boolean;
   rememberTimezone: boolean;

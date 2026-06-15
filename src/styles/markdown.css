@@ -1,3 +1,10 @@
+:root {
+  --markdown-blockquote-bg: #f8e6df;
+  --markdown-blockquote-color: #3a2a24;
+  --markdown-td-bg: #fffdf9;
+  --markdown-tr-even-bg: #faf1ec;
+  --markdown-tr-hover-bg: #f5e7e0;
+}
 
 .article-entry {
   line-height: 1.9;
@@ -77,10 +84,10 @@
 .article-entry blockquote {
   padding: 0.8rem 1.5rem;
   border-left: 4px solid var(--primary-red);
-  background: #f8e6df;
+  background: var(--markdown-blockquote-bg);
   border-radius: 0 8px 8px 0;
   font-style: italic;
-  color: #3a2a24;
+  color: var(--markdown-blockquote-color);
   margin: 1.5rem 0;
 }
 
@@ -93,7 +100,6 @@
   box-shadow: var(--shadow-sm);
   display: block;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .article-entry th:first-child {
@@ -128,7 +134,7 @@
   border-left: 1px solid var(--cream-200, #f4ede3);
   vertical-align: middle;
   overflow-wrap: break-word;
-  background: #fffdf9;
+  background: var(--markdown-td-bg);
 }
 
 .article-entry td:last-child {
@@ -141,11 +147,11 @@
 }
 
 .article-entry tr:nth-child(even) {
-  background: #faf1ec;
+  background: var(--markdown-tr-even-bg);
 }
 
 .article-entry tr:hover {
-  background: #f5e7e0;
+  background: var(--markdown-tr-hover-bg);
 }
 
 .article-entry pre {

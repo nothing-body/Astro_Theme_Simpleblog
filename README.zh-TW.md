@@ -1,60 +1,37 @@
-# Astro 多語部落格模板
+# Astro 多語系部落格範本
 
-這是一個可公開上傳 GitHub 的 Astro 靜態部落格模板，內建繁體中文、英文、簡體中文頁面，並提供 Cloudflare Pages、VPS、Vercel 的自動部署腳本。
+這是一套可安全公開的 Astro 靜態部落格範本，包含多語系路由、SEO、隱私偏好、書籤功能，以及 Cloudflare Pages、VPS 和 Vercel 部署工具。
 
-<p align="center">
-  <a href="https://blog.gkbb.de/">Live Demo</a>
-  &middot;
-  <a href="./README.md">English README</a>
-</p>
+## 功能
 
-## 指南
+- 英文根路由，以及繁體中文、簡體中文語系
+- Markdown/MDX 文章、分類、標籤、分頁與置頂文章
+- 響應式導覽列、書籤、時鐘、Cookie 偏好與無障礙支援
+- Sitemap、robots.txt、Canonical URL、JSON-LD、Open Graph 與安全標頭
+- 自動讀取 Cloudflare Pages Production 分支的部署流程
+- Astro、ESLint、Stylelint、Jest、Playwright 與專案自檢
 
+## 說明文件
+
+- [English README](./README.md)
 - [Markdown 寫作指南](./MARKDOWN_GUIDE.md)
-- [英文書籤區維護指南](./BOOKMARKS_GUIDE.en.md)
-- [書籤區維護指南](./BOOKMARKS_GUIDE.zh-TW.md)
+- [英文書籤指南](./BOOKMARKS_GUIDE.en.md)
+- [繁體中文書籤指南](./BOOKMARKS_GUIDE.zh-TW.md)
 - [英文部署指南](./DEPLOYMENT.en.md)
 - [繁體中文部署指南](./部屬前須知.md)
-- [腳本總覽](./scripts/README.en.md)
+- [部署腳本說明](./scripts/README.en.md)
 
-## 專案架構
+## 路由
+
+英文是預設語系並使用根路由 `/`；繁體中文使用 `/zh-tw/`；簡體中文使用 `/zh-cn/`。
+
+三語系範例文章位於：
 
 ```text
-.
-|-- public/
-|   |-- _headers
-|   |-- google-site-verification-example.html
-|   `-- images/
-|-- scripts/
-|   |-- deploy_menu.mjs
-|   |-- deploy_switch.mjs
-|   |-- deploy_lib.mjs
-|   |-- uploaddist_cf.mjs
-|   |-- uploaddist_vps.mjs
-|   |-- uploaddist_vercel.mjs
-|   |-- upgrade_astro.mjs
-|   `-- README.en.md
-|-- src/
-|   |-- components/
-|   |-- content/blog/
-|   |   |-- zh-tw/
-|   |   |-- en/
-|   |   `-- zh-cn/
-|   |-- i18n/
-|   |-- layouts/
-|   |-- lib/
-|   |-- pages/
-|   |   |-- en/
-|   |   |-- zh-cn/
-|   |   `-- index.astro
-|   `-- styles/
-|-- astro.config.mjs
-|-- package.json
-|-- DEPLOYMENT.en.md
-`-- 部屬前須知.md
+src/content/blog/en/
+src/content/blog/zh-tw/
+src/content/blog/zh-cn/
 ```
-
-繁體中文是預設語系，網址使用根路徑 `/`。英文使用 `/en/`，簡體中文使用 `/zh-cn/`。
 
 ## 快速開始
 
@@ -65,22 +42,34 @@ pnpm build
 pnpm dev
 ```
 
-也可以使用 npm：
+也可使用 npm：
 
 ```bash
 npm install
 npm run build
 ```
 
+## 設定
+
+將 `.env.example` 複製為 `.env`，並設定：
+
+```env
+PUBLIC_SITE_URL=https://example.com
+PUBLIC_CONTACT_EMAIL=hello@example.com
+PUBLIC_GA4_ID=
+```
+
+請勿提交真實憑證或部署環境檔。
+
 ## 部署
 
-使用互動選單：
+使用互動式部署選單：
 
 ```bash
 pnpm deploy:menu
 ```
 
-常用直接部署指令：
+或直接部署：
 
 ```bash
 pnpm deploy:cf:only
@@ -89,11 +78,14 @@ pnpm deploy:vercel:only
 pnpm deploy:all
 ```
 
-部署前請先閱讀 [部屬前須知.md](./部屬前須知.md)。請從範例檔建立自己的 `.env` 設定，並確認不要把金鑰或私密設定提交到公開倉庫。
+Cloudflare 部署腳本會自動讀取 Pages 專案設定的 Production 分支；只有需要明確覆寫時才傳入 `--branch=<分支名稱>`。
 
-## 維護
+## 驗證
 
-- 發布或部署前執行 `pnpm selfcheck -- --quick`。
-- 更新 Astro 時執行 `pnpm upgrade:astro`，走安全升級流程。
-- 程式碼註解請使用英文，避免跨平台編碼問題。
-- 除非真的量測到 CSS 體積問題並準備好完整視覺測試，否則不要重新加入 PurgeCSS。
+```bash
+pnpm check
+pnpm lint
+pnpm lint:css
+pnpm test
+pnpm analyze
+```

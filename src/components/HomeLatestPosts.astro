@@ -1,0 +1,80 @@
+---
+import type { BlogPost } from '../lib/posts';
+import BookmarkLinks from './BookmarkLinks.astro';
+import PostCard from './PostCard.astro';
+import { useTranslatedPath, useTranslations } from '../i18n/utils';
+
+export interface Props {
+  lang: 'en' | 'zh-tw' | 'zh-cn';
+  posts: BlogPost[];
+}
+
+const { lang, posts } = Astro.props;
+const t = useTranslations(lang);
+const translatePath = useTranslatedPath(lang);
+---
+
+<section class="latest-section page-container" aria-label={t('posts.latestPosts')}>
+  <h2 class="section-title"><span>{t('posts.latestPosts')}</span></h2>
+  {
+    posts.length > 0 ? (
+      <div class="posts-grid">
+        {posts.map(post => (
+          <PostCard post={post} lang={lang} />
+        ))}
+      </div>
+    ) : (
+      <p class="no-posts">{t('posts.noPost')}</p>
+    )
+  }
+  <div class="view-all">
+    <a href={translatePath('/posts')} class="btn-primary">{t('nav.posts')}</a>
+  </div>
+  <BookmarkLinks lang={lang} />
+</section>
+
+<style is:global>
+  .latest-section {
+    padding-top: 1rem;
+    padding-bottom: 5rem;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-heading);
+    text-align: center;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .section-title::before,
+  .section-title::after {
+    content: '';
+    flex: 1;
+    max-width: 80px;
+    height: 1px;
+    background: var(--border-color);
+  }
+
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+
+  .no-posts {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 3rem 0;
+  }
+
+  .view-all {
+    text-align: center;
+    margin-top: 2.5rem;
+  }
+</style>

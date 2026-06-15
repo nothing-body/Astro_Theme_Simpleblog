@@ -1,4 +1,4 @@
-﻿---
+---
 
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
@@ -75,9 +75,5 @@ const getPageUrl = (n: number) => `/tags/${encodeURIComponent(currentTag)}/${n}`
     </div>
   </div>
 
-  <script>
-    try {
-      sessionStorage.setItem('bb-last-list', window.location.pathname);
-    } catch {}
-  </script>
+  <script is:inline src="/scripts/bb-last-list.js" defer></script>
 </BaseLayout>

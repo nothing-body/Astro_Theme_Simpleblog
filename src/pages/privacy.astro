@@ -1,7 +1,8 @@
-﻿---
+---
 // src/pages/en/privacy.astro — Privacy Policy (English, with Sidebar)
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AboutSidebar from '../components/AboutSidebar.astro';
+import SiteSettingsInline from '../components/SiteSettingsInline.astro';
 import { getCanonicalUrl } from '../lib/site';
 import { safeJsonStringify } from '../lib/utils';
 
@@ -18,8 +19,8 @@ const jsonLd = {
   '@type': 'WebPage',
   name: 'Privacy Policy',
   url: pageUrl,
-  description: 'Privacy policy for the Astro Blog Template blog.',
-  publisher: { '@type': 'Person', name: 'Astro Blog Template' },
+  description: "Privacy policy for the Astro Blog Template blog.",
+  publisher: { '@type': 'Person', name: "Astro Blog Template" },
 };
 ---
 
@@ -62,25 +63,7 @@ const jsonLd = {
             </ul>
 
             <h2>3. Your Privacy Choices</h2>
-            <div class="privacy-inline-panel">
-              <label class="privacy-toggle-row">
-                <input type="checkbox" id="remember-timezone-toggle" class="privacy-checkbox" />
-                <span>Allow this site to remember my timezone</span>
-              </label>
-              <label class="privacy-toggle-row">
-                <input type="checkbox" id="enable-analytics-toggle" class="privacy-checkbox" />
-                <span>Allow Google Analytics (GA4) to collect anonymous browsing data</span>
-              </label>
-              <p style="font-size:0.88rem; color:var(--text-muted);">
-                Settings take effect after you click "Save". Disabling GA4 will reload the page.
-              </p>
-              <button
-                type="button"
-                id="privacy-save-inline"
-                class="btn-primary"
-                style="margin-top:0.5rem;">Save Settings</button
-              >
-            </div>
+            <SiteSettingsInline lang="en" />
 
             <h2>4. Security & Third Parties</h2>
             <p>
@@ -96,65 +79,4 @@ const jsonLd = {
     </div>
   </div>
 
-<style is:global>
-  .privacy-inline-panel {
-    border: 1.5px solid var(--border-color);
-    padding: 1.5rem;
-    border-radius: 12px;
-    background: rgba(245, 240, 232, 0.5);
-    margin: 1rem 0 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-  .privacy-toggle-row {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    cursor: pointer;
-    font-size: 0.95rem;
-    color: var(--text-primary);
-  }
-  .privacy-checkbox {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: var(--primary-red);
-    flex-shrink: 0;
-  }
-</style>
-
-<script is:inline>
-  (function () {
-    var settings = window.__privacySettings || {
-      rememberTimezone: true,
-      enableAnalytics: true,
-      hasSetCookies: false,
-    };
-    var tzToggle = document.getElementById('remember-timezone-toggle');
-    var gaToggle = document.getElementById('enable-analytics-toggle');
-    var saveBtn = document.getElementById('privacy-save-inline');
-    if (tzToggle)
-      tzToggle.checked = settings.hasSetCookies ? settings.rememberTimezone !== false : true;
-    if (gaToggle)
-      gaToggle.checked = settings.hasSetCookies ? settings.enableAnalytics !== false : true;
-    if (saveBtn) {
-      saveBtn.addEventListener('click', function () {
-        if (typeof window.updatePrivacySettings === 'function') {
-          window.updatePrivacySettings({
-            hasSetCookies: true,
-            rememberTimezone: tzToggle ? tzToggle.checked : true,
-            enableAnalytics: gaToggle ? gaToggle.checked : true,
-          });
-          if (tzToggle && !tzToggle.checked) {
-            try {
-              localStorage.removeItem('bb-tz');
-            } catch (e) {}
-          }
-          window.location.reload();
-        }
-      });
-    }
-  })();
-</script>
 </BaseLayout>

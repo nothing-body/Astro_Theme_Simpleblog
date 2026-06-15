@@ -1,4 +1,4 @@
-﻿---
+---
 // src/pages/en/categories/[category]/[page].astro — English category pages
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
@@ -71,9 +71,5 @@ const getPageUrl = (n: number) => `/categories/${encodeURIComponent(currentCateg
     </div>
   </div>
 
-  <script>
-    try {
-      sessionStorage.setItem('bb-last-list', window.location.pathname);
-    } catch {}
-  </script>
+  <script is:inline src="/scripts/bb-last-list.js" defer></script>
 </BaseLayout>

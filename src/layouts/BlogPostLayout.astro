@@ -163,47 +163,13 @@ const breadcrumbs = [
   </div>
 </BaseLayout>
 
-<script is:inline define:vars={{ lang, categoryMapping, currentCategory }}>
-  window.addEventListener('DOMContentLoaded', () => {
-    try {
-      const backLink = document.getElementById('post-back-link');
-      if (!(backLink instanceof HTMLAnchorElement)) return;
-
-      let lastPath = sessionStorage.getItem('bb-last-list');
-      const currentPath = window.location.pathname;
-
-      if (!lastPath || lastPath === currentPath || !/^\/[^/]/.test(lastPath)) return;
-
-      const getPathLang = path => {
-        if (path.startsWith('/zh-tw/') || path === '/zh-tw') return 'zh-tw';
-        if (path.startsWith('/zh-cn/') || path === '/zh-cn') return 'zh-cn';
-        return 'en';
-      };
-
-      const lastLang = getPathLang(lastPath);
-
-      if (lastLang !== lang) {
-        const parts = lastPath.split('/').filter(Boolean);
-        const hasPrefix = parts[0] === 'zh-tw' || parts[0] === 'zh-cn';
-
-        if (lastPath.includes('/categories/')) {
-          const catName = decodeURIComponent(parts[hasPrefix ? 2 : 1] ?? '');
-          const targetCat = categoryMapping[catName] ?? currentCategory;
-          const catPath = `/categories/${encodeURIComponent(targetCat)}/1`;
-          lastPath = lang === 'en' ? catPath : `/${lang}${catPath}`;
-        } else if (lastPath.includes('/tags/')) {
-          const tagName = decodeURIComponent(parts[hasPrefix ? 2 : 1] ?? '');
-          const tagPath = `/tags/${encodeURIComponent(tagName)}/1`;
-          lastPath = lang === 'en' ? tagPath : `/${lang}${tagPath}`;
-        } else {
-          lastPath = lang === 'en' ? '/posts' : `/${lang}/posts`;
-        }
-      }
-
-      backLink.href = lastPath;
-    } catch {}
-  });
-</script>
+<script
+  is:inline
+  type="application/json"
+  id="bb-post-back-config"
+  set:html={safeJsonStringify({ lang, categoryMapping, currentCategory })}
+/>
+<script is:inline src="/scripts/bb-post-back.js" defer></script>
 
 <style is:global>
   .immersion-read-container {

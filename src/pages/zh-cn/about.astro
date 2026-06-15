@@ -1,4 +1,4 @@
-﻿---
+---
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import AboutSidebar from '../../components/AboutSidebar.astro';
@@ -13,8 +13,8 @@ const jsonLd = {
   '@type': 'WebPage',
   name: '关于本站',
   url: pageUrl,
-  description: '关于Astro Blog Template博客及其作者的介绍。',
-  publisher: { '@type': 'Person', name: 'Astro Blog Template' },
+  description: "关于Astro Blog Template博客及其作者的介绍。",
+  publisher: { '@type': 'Person', name: "Astro Blog Template" },
 };
 ---
 
@@ -24,7 +24,7 @@ const jsonLd = {
     <div class="content-wrapper">
       <AboutSidebar lang="zh-cn" currentPath={currentPath} />
       <main id="main-content" class="main-content">
-        <article class="glass-card" style="padding: 2.5rem;">
+        <article class="glass-card be-article-wrapper" style="padding: 2.5rem;">
           <div class="article-entry">
             <h1>关于本站 (About)</h1>
             <p>
