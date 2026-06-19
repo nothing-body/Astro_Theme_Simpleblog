@@ -19,12 +19,12 @@ const jsonLd = {
   '@type': 'WebPage',
   name: 'Privacy Policy',
   url: pageUrl,
-  description: "Privacy policy for the Astro Blog Template blog.",
-  publisher: { '@type': 'Person', name: "Astro Blog Template" },
+  description: "Privacy policy for the Tena's Blog blog.",
+  publisher: { '@type': 'Person', name: "Tena's Blog" },
 };
 ---
 
-<BaseLayout title="Privacy Policy" description="Privacy policy for the Astro Blog Template blog.">
+<BaseLayout title="Privacy Policy" description="Privacy policy for the Tena's Blog blog.">
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
   <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
     <div class="content-wrapper">

@@ -2,12 +2,14 @@
 title: '如何置頂文章'
 description: '說明如何在這個 Astro 靜態部落格中使用 pinned 與 pinOrder 置頂一篇或多篇文章。'
 pubDate: 2026-05-24
-category: '網站設定'
+category: '網站'
 tags: ['Astro', '置頂文章', '網站設定']
-author: 'Astro Blog Template'
+author: 'Tena'
 pinned: true
 pinOrder: 1
 ---
+
+公開版 GitHub 倉庫：[nothing-body/Astro_Theme_Simpleblog](https://github.com/nothing-body/Astro_Theme_Simpleblog)。
 
 這篇文章本身就是一篇置頂文章範例。
 
@@ -30,6 +32,8 @@ pinOrder: 1
 
 ## 多篇文章置頂
 
+如果有多篇文章都設定 `pinned: true`，可以用不同的 `pinOrder` 排序：
+
 ```yaml
 pinned: true
 pinOrder: 1
@@ -50,4 +54,8 @@ pinOrder: 2
 pinned: false
 ```
 
-新增或修改置頂文章後，重新執行建置並部署 `dist` 即可更新網站。
+## 維護注意事項
+
+`pinOrder` 建議使用簡單整數，例如 `1`、`2`、`3`。不要把它當成日期、權重公式或複雜設定。
+
+這個功能只讀取文章 frontmatter，不執行文章內的任意程式碼，也不接收訪客輸入。新增或修改置頂文章後，重新執行建置並部署 `dist` 即可更新網站。

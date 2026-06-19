@@ -1,8 +1,12 @@
 # Bookmark Section Guide
 
-The homepage bookmark section is maintained in [src/components/BookmarkLinks.astro](E:/Astro/Astro_Theme_Simpleblog/src/components/BookmarkLinks.astro).
+The homepage bookmark section is maintained in:
 
-This guide is separate from the deployment guide because bookmarks are site content, not deployment configuration.
+```text
+src/components/BookmarkLinks.astro
+```
+
+Bookmarks are site content, not deployment configuration. Do not put API keys, tokens, private dashboard URLs, or private server addresses in this file.
 
 ## Add a New Group
 
@@ -10,8 +14,8 @@ Add a translated group label to `groupLabels`:
 
 ```ts
 const groupLabels = {
-  code: lang === 'en' ? 'Code' : lang === 'zh-cn' ? '\u4ee3\u7801' : '\u7a0b\u5f0f\u78bc',
-  shopping: lang === 'en' ? 'Shopping' : lang === 'zh-cn' ? '\u8d2d\u7269\u7f51\u7ad9' : '\u8cfc\u7269\u7db2\u7ad9',
+  code: lang === 'en' ? 'Code' : lang === 'zh-cn' ? '代码' : '程式碼',
+  shopping: lang === 'en' ? 'Shopping' : lang === 'zh-cn' ? '购物网站' : '購物網站',
 };
 ```
 
@@ -41,10 +45,27 @@ Find the target row in `bookmarkRows` and append an item:
 },
 ```
 
+## Link Behavior
+
+Bookmark links are rendered as external links with:
+
+```html
+target="_blank" rel="noopener noreferrer"
+```
+
+The global Markdown external-link warning rewrite does not change this component automatically, because these links are written directly in Astro component markup. If you want bookmark clicks to go through the leaving notice page, set the `href` manually:
+
+```ts
+{ label: 'Example', href: `/leaving?to=${encodeURIComponent('https://example.com/')}` }
+```
+
+For Traditional Chinese and Simplified Chinese bookmark variants, use `/zh-tw/leaving?to=` or `/zh-cn/leaving?to=`.
+
 ## Safety Notes
 
 - Prefer `https://` URLs.
 - Keep external links using `target="_blank"` and `rel="noopener noreferrer"`.
 - Do not insert visitor input, API responses, or other untrusted values into `href`.
+- Do not add private control panels, private IPs, internal hostnames, API tokens, or personal account URLs to a public template.
 - The bookmark panel has bounded scrolling so many groups or links will not stretch the homepage indefinitely.
-- After editing, run `pnpm check`, `pnpm lint`, `pnpm lint:css`, and `pnpm build`.
+- After editing, run `pnpm check`, `pnpm lint`, `pnpm lint:css`, `pnpm build`, and `pnpm selfcheck -- --quick`.

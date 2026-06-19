@@ -21,6 +21,8 @@ const {
   category,
   author = DEFAULT_AUTHOR,
   ga4Id,
+  robots,
+  alternates = true,
 } = Astro.props;
 
 const siteUrl = getSiteUrl(Astro.site);
@@ -28,8 +30,7 @@ const normalizedPath = Astro.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/';
 const currentUrl = canonicalUrl ?? new URL(normalizedPath, siteUrl).href;
 const fullTitle = title === SITE_NAME ? title : `${title} | ${SITE_NAME}`;
 const ogImageUrl = ogImage ? new URL(ogImage, siteUrl).href : `${siteUrl}/og-default.png`;
-const isDuplicateEnRoute =
-  Astro.url.pathname === '/en' || Astro.url.pathname.startsWith('/en/');
+const isDuplicateEnRoute = Astro.url.pathname === '/en' || Astro.url.pathname.startsWith('/en/');
 const zhTwUrl = getLocalizedUrl(Astro.url.pathname, 'zh-tw', siteUrl);
 const enUrl = getLocalizedUrl(Astro.url.pathname, 'en', siteUrl);
 const zhCnUrl = getLocalizedUrl(Astro.url.pathname, 'zh-cn', siteUrl);
@@ -44,13 +45,25 @@ const safeGa4Id =
 
 <title>{fullTitle}</title>
 <meta name="description" content={description} />
-{isDuplicateEnRoute && <meta name="robots" content="noindex, follow" />}
+{
+  robots ? (
+    <meta name="robots" content={robots} />
+  ) : (
+    isDuplicateEnRoute && <meta name="robots" content="noindex, follow" />
+  )
+}
 <link rel="canonical" href={currentUrl} />
 
-<link rel="alternate" hreflang="zh-TW" href={zhTwUrl} />
-<link rel="alternate" hreflang="zh-CN" href={zhCnUrl} />
-<link rel="alternate" hreflang="en" href={enUrl} />
-<link rel="alternate" hreflang="x-default" href={enUrl} />
+{
+  alternates && (
+    <>
+      <link rel="alternate" hreflang="zh-TW" href={zhTwUrl} />
+      <link rel="alternate" hreflang="zh-CN" href={zhCnUrl} />
+      <link rel="alternate" hreflang="en" href={enUrl} />
+      <link rel="alternate" hreflang="x-default" href={enUrl} />
+    </>
+  )
+}
 
 <meta property="og:type" content={type} />
 <meta property="og:url" content={currentUrl} />
@@ -88,8 +101,4 @@ const safeGa4Id =
 <link rel="icon" type="image/x-icon" href="/logo.ico" />
 
 <script is:inline src="/scripts/bb-settings-bootstrap.js"></script>
-{
-  safeGa4Id && (
-    <script is:inline src="/scripts/bb-ga4.js" data-ga4-id={safeGa4Id} defer></script>
-  )
-}
+{safeGa4Id && <script is:inline src="/scripts/bb-ga4.js" data-ga4-id={safeGa4Id} defer />}

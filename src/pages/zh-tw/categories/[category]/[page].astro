@@ -1,5 +1,4 @@
 ---
-
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import Sidebar from '../../../../components/Sidebar.astro';
@@ -9,7 +8,6 @@ import { useTranslations } from '../../../../i18n/utils';
 import { sortBlogPosts } from '../../../../lib/posts';
 
 export async function getStaticPaths() {
-
   const PAGE_SIZE = 5;
   const allPosts = await getCollection(
     'blog',
@@ -54,7 +52,7 @@ const PAGE_SIZE = 5;
 const currentPage = Number(page);
 const posts = categoryPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-const getPageUrl = (n: number) => `/categories/${encodeURIComponent(currentCategory)}/${n}`;
+const getPageUrl = (n: number) => `/zh-tw/categories/${encodeURIComponent(currentCategory)}/${n}`;
 ---
 
 <BaseLayout title={`${currentCategory} — 分類文章`}>

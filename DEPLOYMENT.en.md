@@ -21,6 +21,61 @@ corepack enable
 corepack prepare pnpm@latest --activate
 ```
 
+## 1.1 Files You Need
+
+Keep these files in the project root:
+
+```text
+.env.example                 committed public example
+.env.cloudflare.example      committed Cloudflare example
+.env.vps.example             committed VPS example
+.env.vercel.example          committed Vercel example
+.env                         local public site settings, not committed
+.env.cloudflare              local Cloudflare deploy settings, not committed
+.env.vps                     local VPS deploy settings, not committed
+.env.vercel                  local Vercel deploy settings, not committed
+.gitignore                   blocks secrets, build output, local state, and reports
+```
+
+Create real local files by copying the examples:
+
+```bash
+cp .env.example .env
+cp .env.cloudflare.example .env.cloudflare
+cp .env.vps.example .env.vps
+cp .env.vercel.example .env.vercel
+```
+
+Commit only the `.example` files. Never commit real tokens, private keys, account IDs, SSH passphrases, provider project IDs, or site verification files.
+
+Recommended `.gitignore` coverage:
+
+```text
+.env
+.env.local
+.env.production
+.env.*.local
+.env.cloudflare
+.env.vps
+.env.vercel
+.env*.secret
+.npmrc
+.yarnrc
+.pnpmrc
+.ssh/
+*.pem
+*.key
+id_rsa
+id_ed25519
+dist/
+.astro/
+node_modules/
+.wrangler/
+.vercel/
+playwright-report/
+test-results/
+```
+
 ## 2. Install, Check, Build
 
 pnpm:
@@ -89,7 +144,6 @@ https://example.com/googlexxxxxxxxxxxxxxxx.html
 
 Then click Verify in Google Search Console.
 
-
 ## 5. Google Analytics
 
 GA4 is controlled by:
@@ -124,6 +178,9 @@ PUBLIC_SITE_URL=https://example.com
 Notes:
 
 - `CLOUDFLARE_PAGES_PROJECT_NAME` is the Cloudflare Pages project name.
+- Create an API token at Cloudflare Dashboard > My Profile > API Tokens > Create Token.
+- Minimum permission for this template is Cloudflare Pages edit access on the target account.
+- Find the Account ID in the Cloudflare dashboard account sidebar.
 - If the project does not exist, the script creates it, writes the name back to `.env.cloudflare`, and continues.
 - Review `public/_headers` before production deployment.
 
@@ -182,6 +239,9 @@ VPS_SSH_PASSPHRASE=your_private_key_passphrase
 
 Notes:
 
+- Get `VPS_HOST`, `VPS_PORT`, and the SSH username from your VPS provider panel or server setup notes.
+- Generate an SSH key locally with `ssh-keygen` if you do not already have one, then add the public key to the server user's `~/.ssh/authorized_keys`.
+- `VPS_TARGET_DIR` must be the directory served by your web server, or a staging directory that you later sync into the web root.
 - `VPS_USER` is the SSH/rsync user used for upload. It may be `root`, `deploy`, `ubuntu`, or another account.
 - Prefer `ssh-agent` for passphrase-protected private keys.
 - `VPS_SSH_PASSPHRASE` must only live in a local uncommitted `.env.vps` or CI/CD secret.
@@ -209,6 +269,12 @@ VERCEL_TOKEN=your_vercel_token
 VERCEL_ORG_ID=your_org_or_user_id
 VERCEL_PROJECT_ID=your_project_id
 ```
+
+Notes:
+
+- Create a token in Vercel Account Settings > Tokens.
+- Get `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` after `vercel link`, or read them from `.vercel/project.json`.
+- Keep `.vercel/` out of git unless you intentionally want to commit project linkage.
 
 Deploy:
 
@@ -257,6 +323,58 @@ pnpm deploy:cf:vercel
 pnpm deploy:vps:vercel
 pnpm deploy:all
 ```
+
+## 11. Self-Check Scripts
+
+Fast audit:
+
+```bash
+pnpm selfcheck -- --quick
+```
+
+Full project analysis:
+
+```bash
+pnpm analyze
+```
+
+The analysis script checks common risky patterns, required component wiring, important public scripts, `.gitignore` coverage, and suspicious sensitive files. Run it before publishing a public template update.
+
+## 12. Bookmarks
+
+Bookmarks live in:
+
+```text
+src/components/BookmarkLinks.astro
+```
+
+Add translated group labels in `groupLabels`, then add links to `bookmarkRows`. Prefer `https://` URLs and keep external links using `target="_blank"` with `rel="noopener noreferrer"`.
+
+See [Bookmark guide](./BOOKMARKS_GUIDE.en.md) for examples.
+
+## 13. External-Link Notice Page
+
+Markdown HTTP/HTTPS links are rewritten at build time to a leaving notice page when they point to another origin.
+
+Routes:
+
+```text
+/leaving
+/zh-tw/leaving
+/zh-cn/leaving
+```
+
+Files:
+
+```text
+astro.config.mjs                         remark rewrite and post-build localization
+src/components/LeavingNotice.astro       page wording and validation
+src/pages/leaving.astro                  English route
+src/pages/zh-tw/leaving.astro            Traditional Chinese route
+src/pages/zh-cn/leaving.astro            Simplified Chinese route
+```
+
+To change the message, edit `src/components/LeavingNotice.astro`. To change route behavior or which links are rewritten, edit the helper functions in `astro.config.mjs`, then run `pnpm build` and check generated links in `dist/`.
 
 Dry run:
 
@@ -315,17 +433,17 @@ Safety behavior:
 
 Options:
 
-| Option | Meaning |
-| --- | --- |
-| `--lang=zh-tw` | Traditional Chinese output |
-| `--lang=en` | English output |
-| `--dry-run` | Preview only |
-| `--yes` | Skip confirmation |
-| `--allow-dirty` | Allow upgrading with a dirty git working tree |
+| Option            | Meaning                                                      |
+| ----------------- | ------------------------------------------------------------ |
+| `--lang=zh-tw`    | Traditional Chinese output                                   |
+| `--lang=en`       | English output                                               |
+| `--dry-run`       | Preview only                                                 |
+| `--yes`           | Skip confirmation                                            |
+| `--allow-dirty`   | Allow upgrading with a dirty git working tree                |
 | `--clean-install` | Remove `node_modules`, `.astro`, and `dist` before upgrading |
-| `--skip-check` | Skip `check` |
-| `--skip-lint` | Skip `lint` |
-| `--skip-build` | Skip `build` |
+| `--skip-check`    | Skip `check`                                                 |
+| `--skip-lint`     | Skip `lint`                                                  |
+| `--skip-build`    | Skip `build`                                                 |
 
 ## 14. Sensitive Files
 

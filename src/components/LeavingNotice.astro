@@ -1,0 +1,285 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import type { Lang } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+
+const copy = {
+  en: {
+    pageTitle: 'External Link Notice',
+    pageDescription: 'A safety notice shown before leaving this site for an external website.',
+    kicker: 'External link',
+    title: 'You are leaving this site',
+    body: 'The link below points to an external website. Its content, privacy policy, and security are not controlled by this site.',
+    destination: 'Destination',
+    checking: 'Checking link...',
+    invalid: 'Invalid or missing link',
+    warning: 'This destination could not be verified. Please return to the site.',
+    back: 'Back to site',
+    continue: 'Continue',
+    noScript: 'JavaScript is required to verify the destination on this static safety page.',
+    backHref: '/',
+  },
+  'zh-tw': {
+    pageTitle: '外部連結提示',
+    pageDescription: '離開本站前顯示的外部網站安全提示。',
+    kicker: '外部連結',
+    title: '你即將離開本站',
+    body: '下方連結會前往外部網站。該網站的內容、隱私政策與安全性不由本站控制，請確認目的地後再繼續。',
+    destination: '目的地',
+    checking: '正在檢查連結...',
+    invalid: '連結無效或缺少目的地',
+    warning: '無法驗證這個目的地，請返回本站。',
+    back: '返回本站',
+    continue: '繼續前往',
+    noScript: '這個靜態安全提示頁需要 JavaScript 才能驗證目的地。',
+    backHref: '/zh-tw',
+  },
+  'zh-cn': {
+    pageTitle: '外部链接提示',
+    pageDescription: '离开本站前显示的外部网站安全提示。',
+    kicker: '外部链接',
+    title: '你即将离开本站',
+    body: '下方链接会前往外部网站。该网站的内容、隐私政策与安全性不由本站控制，请确认目的地后再继续。',
+    destination: '目的地',
+    checking: '正在检查链接...',
+    invalid: '链接无效或缺少目的地',
+    warning: '无法验证这个目的地，请返回本站。',
+    back: '返回本站',
+    continue: '继续前往',
+    noScript: '这个静态安全提示页需要 JavaScript 才能验证目的地。',
+    backHref: '/zh-cn',
+  },
+}[lang];
+---
+
+<BaseLayout
+  title={copy.pageTitle}
+  description={copy.pageDescription}
+  robots="noindex, nofollow"
+  alternates={false}
+>
+  <section
+    class="leaving-page"
+    aria-labelledby="leaving-title"
+    data-leaving-notice
+    data-invalid-text={copy.invalid}
+    data-back-href={copy.backHref}
+  >
+    <div class="leaving-panel">
+      <p class="leaving-kicker">{copy.kicker}</p>
+      <h1 id="leaving-title">{copy.title}</h1>
+      <p class="leaving-copy">{copy.body}</p>
+
+      <div class="leaving-target" aria-live="polite">
+        <span class="leaving-label">{copy.destination}</span>
+        <strong id="leaving-host">{copy.checking}</strong>
+        <code id="leaving-url"></code>
+      </div>
+
+      <p class="leaving-warning" id="leaving-warning" hidden>{copy.warning}</p>
+
+      <div class="leaving-actions">
+        <a class="leaving-button leaving-button-secondary" href={copy.backHref}>{copy.back}</a>
+        <a
+          class="leaving-button leaving-button-primary"
+          id="leaving-continue"
+          href={copy.backHref}
+          rel="noopener noreferrer"
+          aria-disabled="true"
+        >
+          {copy.continue}
+        </a>
+      </div>
+
+      <noscript>
+        <p class="leaving-warning">{copy.noScript}</p>
+      </noscript>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+  (() => {
+    const root = document.querySelector('[data-leaving-notice]');
+    const params = new URLSearchParams(window.location.search);
+    const rawTarget = params.get('to') || '';
+    const hostEl = document.getElementById('leaving-host');
+    const urlEl = document.getElementById('leaving-url');
+    const warningEl = document.getElementById('leaving-warning');
+    const continueLink = document.getElementById('leaving-continue');
+    const invalidText = root?.getAttribute('data-invalid-text') || 'Invalid or missing link';
+    const backHref = root?.getAttribute('data-back-href') || '/';
+
+    const fail = () => {
+      if (hostEl) hostEl.textContent = invalidText;
+      if (urlEl) urlEl.textContent = '';
+      if (warningEl) warningEl.hidden = false;
+      if (continueLink) {
+        continueLink.setAttribute('href', backHref);
+        continueLink.setAttribute('aria-disabled', 'true');
+      }
+    };
+
+    try {
+      const target = new URL(rawTarget);
+      const allowedProtocol = target.protocol === 'http:' || target.protocol === 'https:';
+      const isCurrentSite = target.origin === window.location.origin;
+
+      if (!allowedProtocol || isCurrentSite) {
+        fail();
+        return;
+      }
+
+      if (hostEl) hostEl.textContent = target.hostname;
+      if (urlEl) urlEl.textContent = target.href;
+      if (continueLink) {
+        continueLink.setAttribute('href', target.href);
+        continueLink.removeAttribute('aria-disabled');
+      }
+    } catch {
+      fail();
+    }
+  })();
+</script>
+
+<style>
+  .leaving-page {
+    display: grid;
+    min-height: min(720px, calc(100vh - 180px));
+    place-items: center;
+    padding: 3rem 1rem 4rem;
+  }
+
+  .leaving-panel {
+    width: min(100%, 680px);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg);
+    padding: clamp(1.25rem, 4vw, 2.25rem);
+    box-shadow: var(--shadow-md);
+  }
+
+  .leaving-kicker {
+    margin: 0 0 0.6rem;
+    color: var(--primary-red);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .leaving-panel h1 {
+    margin: 0;
+    color: var(--text-heading);
+    font-size: clamp(1.8rem, 5vw, 2.55rem);
+    line-height: 1.15;
+  }
+
+  .leaving-copy {
+    margin: 1rem 0 1.5rem;
+    color: var(--text-muted);
+    line-height: 1.75;
+  }
+
+  .leaving-target {
+    display: grid;
+    gap: 0.35rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-color);
+    padding: 1rem;
+  }
+
+  .leaving-label {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .leaving-target strong {
+    color: var(--text-heading);
+    font-size: 1.08rem;
+    overflow-wrap: anywhere;
+  }
+
+  .leaving-target code {
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .leaving-warning {
+    margin: 1rem 0 0;
+    color: var(--primary-red-dark);
+    font-weight: 700;
+    line-height: 1.6;
+  }
+
+  .leaving-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  .leaving-button {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    padding: 0.72rem 1rem;
+    font-weight: 800;
+    text-decoration: none;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  .leaving-button-primary {
+    border: 1px solid var(--primary-red);
+    background: var(--primary-red);
+    color: white;
+  }
+
+  .leaving-button-secondary {
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-heading);
+  }
+
+  .leaving-button[aria-disabled='true'] {
+    pointer-events: none;
+    opacity: 0.55;
+  }
+
+  .leaving-button-primary:hover {
+    border-color: var(--primary-red-dark);
+    background: var(--primary-red-dark);
+  }
+
+  .leaving-button-secondary:hover {
+    border-color: var(--primary-red);
+    color: var(--primary-red);
+  }
+
+  @media (max-width: 520px) {
+    .leaving-actions {
+      flex-direction: column-reverse;
+    }
+
+    .leaving-button {
+      width: 100%;
+    }
+  }
+</style>

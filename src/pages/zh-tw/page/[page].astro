@@ -1,5 +1,4 @@
 ---
-
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Sidebar from '../../../components/Sidebar.astro';
@@ -31,7 +30,7 @@ const PAGE_SIZE = 5;
 const currentPage = Number(page);
 const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-const getPageUrl = (n: number) => (n === 1 ? '/posts' : `/page/${n}`);
+const getPageUrl = (n: number) => (n === 1 ? '/zh-tw/posts' : `/zh-tw/page/${n}`);
 const prevUrl = currentPage > 1 ? getPageUrl(currentPage - 1) : undefined;
 const nextUrl = currentPage < totalPages ? getPageUrl(currentPage + 1) : undefined;
 ---

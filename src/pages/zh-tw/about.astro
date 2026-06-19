@@ -10,16 +10,16 @@ const pageUrl = getCanonicalUrl(currentPath, Astro.site);
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
-  name: '\u95dc\u65bc\u672c\u7ad9',
+  name: '關於本站',
   url: pageUrl,
-  description: "About Astro Blog Template, a personal notebook for software notes, VPS setup, and daily writing.",
-  publisher: { '@type': 'Person', name: "Astro Blog Template" },
+  description: "Tena's Blog 的關於頁，記錄網站定位、內容類型與維護原則。",
+  publisher: { '@type': 'Person', name: "Tena's Blog" },
 };
 ---
 
 <BaseLayout
-  title="\u95dc\u65bc\u672c\u7ad9"
-  description="Astro Blog Template \u7684\u95dc\u65bc\u9801\uff0c\u8a18\u9304\u7db2\u7ad9\u5b9a\u4f4d\u3001\u5167\u5bb9\u985e\u578b\u8207\u7dad\u8b77\u539f\u5247\u3002"
+  title="關於本站"
+  description="Tena's Blog 的關於頁，記錄網站定位、內容類型與維護原則。"
 >
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
   <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
@@ -28,19 +28,19 @@ const jsonLd = {
       <main id="main-content" class="main-content">
         <article class="glass-card be-article-wrapper" style="padding: 2.5rem;">
           <div class="article-entry">
-            <h1>\u95dc\u65bc\u672c\u7ad9</h1>
+            <h1>關於本站</h1>
             <p>
-              \u6b61\u8fce\u4f86\u5230 Astro Blog Template\u3002\u9019\u662f\u4e00\u500b\u500b\u4eba\u6578\u4f4d\u7b46\u8a18\u7a7a\u9593\uff0c\u4e3b\u8981\u8a18\u9304\u8edf\u9ad4\u4f7f\u7528\u5fc3\u5f97\u3001VPS
-              \u8a2d\u5b9a\u3001\u7db2\u7ad9\u5efa\u7f6e\u8207\u65e5\u5e38\u96a8\u7b46\u3002
+              歡迎來到 Tena's Blog。這是一個個人數位筆記空間，主要記錄軟體使用心得、VPS
+              設定、網站建置與日常隨筆。
             </p>
-            <h2>\u5167\u5bb9\u65b9\u5411</h2>
+            <h2>內容方向</h2>
             <p>
-              \u672c\u7ad9\u504f\u5411\u5be6\u7528\u578b\u8a18\u9304\uff1a\u628a\u5be6\u969b\u64cd\u4f5c\u904e\u7684\u6b65\u9a5f\u3001\u9047\u5230\u7684\u554f\u984c\u3001\u6709\u50f9\u503c\u7684\u89e3\u6cd5\u7d71\u4e00\u6574\u7406\uff0c\u8b93\u672a\u4f86\u56de\u982d\u67e5\u627e\u6642\u66f4\u5bb9\u6613\u3002
+              本站偏向實用型記錄：把實際操作過的步驟、遇到的問題、有價值的解法統一整理，讓未來回頭查找時更容易。
             </p>
-            <h2>\u7db2\u7ad9\u6280\u8853</h2>
+            <h2>網站技術</h2>
             <p>
-              \u672c\u7ad9\u4f7f\u7528 Astro \u5efa\u7f6e\u70ba\u975c\u614b\u7db2\u7ad9\uff0c\u76e1\u91cf\u964d\u4f4e\u5ba2\u6236\u7aef JavaScript
-              \u8207\u4e0d\u5fc5\u8981\u7684\u57f7\u884c\u6210\u672c\uff0c\u540c\u6642\u4fdd\u7559 SEO\u3001\u591a\u8a9e\u7cfb\u8207\u5167\u5bb9\u7dad\u8b77\u7684\u5f48\u6027\u3002
+              本站使用 Astro 建置為靜態網站，盡量降低客戶端 JavaScript
+              與不必要的執行成本，同時保留 SEO、多語系與內容維護的彈性。
             </p>
           </div>
         </article>

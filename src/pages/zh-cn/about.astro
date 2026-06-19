@@ -13,12 +13,12 @@ const jsonLd = {
   '@type': 'WebPage',
   name: '关于本站',
   url: pageUrl,
-  description: "关于Astro Blog Template博客及其作者的介绍。",
-  publisher: { '@type': 'Person', name: "Astro Blog Template" },
+  description: "关于Tena's Blog博客及其作者的介绍。",
+  publisher: { '@type': 'Person', name: "Tena's Blog" },
 };
 ---
 
-<BaseLayout title="关于本站" description="关于Astro Blog Template博客及其作者的介绍。">
+<BaseLayout title="关于本站" description="关于Tena's Blog博客及其作者的介绍。">
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
   <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
     <div class="content-wrapper">

@@ -1,4 +1,4 @@
----
+﻿---
 // src/pages/en/about.astro ??About page (English)
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AboutSidebar from '../components/AboutSidebar.astro';
@@ -13,12 +13,12 @@ const jsonLd = {
   '@type': 'WebPage',
   name: 'About This Site',
   url: pageUrl,
-  description: "About the Astro Blog Template blog and its author.",
-  publisher: { '@type': 'Person', name: "Astro Blog Template" },
+  description: "About the Tena's Blog blog and its author.",
+  publisher: { '@type': 'Person', name: "Tena's Blog" },
 };
 ---
 
-<BaseLayout title="About This Site" description="About the Astro Blog Template blog and its author.">
+<BaseLayout title="About This Site" description="About the Tena's Blog blog and its author.">
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
   <div class="page-container" style="padding-top:2rem; padding-bottom:4rem;">
     <div class="content-wrapper">

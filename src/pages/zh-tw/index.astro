@@ -16,14 +16,14 @@ const pageUrl = new URL(Astro.url.pathname, siteUrl).href;
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Blog',
-  name: "Astro Blog Template",
+  name: "Tena's Blog",
   description,
   url: pageUrl,
-  publisher: { '@type': 'Person', name: "Astro Blog Template", '@id': siteUrl },
+  publisher: { '@type': 'Person', name: "Tena's Blog", '@id': siteUrl },
 };
 ---
 
-<BaseLayout title="Astro Blog Template" description={description}>
+<BaseLayout title="Tena's Blog" description={description}>
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
 
   <HomeHero lang="zh-tw" />

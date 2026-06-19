@@ -15,10 +15,67 @@ This directory contains cross-platform Node.js scripts for deployment, analysis,
 - `uploaddist_vercel.mjs`: builds/deploys through the Vercel CLI.
 - `upgrade_astro.mjs`: safely upgrades Astro-related packages, then runs the existing package `check`, `lint`, and `build` scripts.
 
+## Required Root Files
+
+Deployment scripts read environment files from the project root:
+
+```text
+.env                 shared public site settings
+.env.cloudflare      Cloudflare Pages deployment settings
+.env.vps             VPS SSH/rsync deployment settings
+.env.vercel          Vercel deployment settings
+```
+
+Create them from the committed examples:
+
+```bash
+cp .env.example .env
+cp .env.cloudflare.example .env.cloudflare
+cp .env.vps.example .env.vps
+cp .env.vercel.example .env.vercel
+```
+
+The real files must stay ignored by git. Keep only `.env.example`, `.env.cloudflare.example`, `.env.vps.example`, and `.env.vercel.example` committed.
+
+## Values To Get Before Deploying
+
+Cloudflare Pages:
+
+- `CLOUDFLARE_API_TOKEN`: Cloudflare Dashboard > My Profile > API Tokens > Create Token
+- `CLOUDFLARE_ACCOUNT_ID`: Cloudflare account sidebar
+- `CLOUDFLARE_PAGES_PROJECT_NAME`: Cloudflare Pages project name
+- `PUBLIC_SITE_URL`: production URL used by Astro output
+
+VPS:
+
+- `VPS_HOST`, `VPS_PORT`, `VPS_USER`: from the VPS provider panel or server setup
+- `VPS_TARGET_DIR`: directory served by the web server, or an upload staging directory
+- `VPS_SSH_KEY_PATH`: local private key path
+- `VPS_SSH_PASSPHRASE`: optional; prefer `ssh-agent` when possible
+
+Vercel:
+
+- `VERCEL_TOKEN`: Vercel Account Settings > Tokens
+- `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`: from `.vercel/project.json` after `vercel link`
+
 ## Non-Deployment Scripts
 
 - `analysis.mjs`: runs project checks and audits.
 - `run-e2e.mjs`: runs end-to-end tests.
+
+Run the fast self-check before publishing template changes:
+
+```bash
+pnpm selfcheck -- --quick
+```
+
+Run the full analysis when checking a larger change:
+
+```bash
+pnpm analyze
+```
+
+The analysis script checks `.gitignore` coverage, dangerous code patterns, important component wiring, public scripts, and suspicious sensitive files.
 
 ## Package Manager Support
 
@@ -81,3 +138,32 @@ VPS_SSH_PASSPHRASE=your_private_key_passphrase
 ```
 
 If `VPS_USER` is not `root`, it may not be allowed to write to `/var/www/...`. In that case, upload to a directory such as `/home/<user>/site-dist`, then move or sync the uploaded build output to the directory served by your web server on the VPS. Prefer `ssh-agent` for passphrase-protected private keys; use `VPS_SSH_PASSPHRASE` only in a local uncommitted env file or CI secret.
+
+## Git Ignore Requirements
+
+The repository `.gitignore` should keep secrets and generated output out of commits:
+
+```text
+.env
+.env.cloudflare
+.env.vps
+.env.vercel
+.env*.secret
+.npmrc
+.yarnrc
+.pnpmrc
+.ssh/
+*.pem
+*.key
+id_rsa
+id_ed25519
+dist/
+.astro/
+node_modules/
+.wrangler/
+.vercel/
+playwright-report/
+test-results/
+```
+
+If you change deployment filenames or add a new provider, update `.gitignore`, the relevant `.env.*.example`, and this guide together.

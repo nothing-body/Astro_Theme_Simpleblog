@@ -1,22 +1,25 @@
-# 書籤分類與連結維護指南
+# 書籤區塊指南
 
-首頁的書籤資料集中放在 `src/components/BookmarkLinks.astro`，由 `groupLabels` 管理分類名稱，由 `bookmarkRows` 管理每一列要顯示的連結。這樣做可以讓畫面模板保持單純，也比較容易檢查安全性與多語系內容。
+首頁書籤區塊維護在：
 
-## 新增一個分類
+```text
+src/components/BookmarkLinks.astro
+```
 
-第一步，在 `groupLabels` 裡加入新的分類名稱，並同時補上英文、簡體中文與繁體中文。
+書籤屬於網站內容，不是部署設定。不要把 API key、token、私人管理面板網址、私人伺服器位址放進這個檔案。
+
+## 新增群組
+
+先在 `groupLabels` 新增三語群組名稱：
 
 ```ts
 const groupLabels = {
   code: lang === 'en' ? 'Code' : lang === 'zh-cn' ? '代码' : '程式碼',
-  community: lang === 'en' ? 'Community' : lang === 'zh-cn' ? '社区' : '社群',
-  lookup: lang === 'en' ? 'IP Lookup' : lang === 'zh-cn' ? 'IP 查询' : 'IP 查詢',
-  reputation: lang === 'en' ? 'Reputation' : lang === 'zh-cn' ? '风险检查' : '風險檢查',
   shopping: lang === 'en' ? 'Shopping' : lang === 'zh-cn' ? '购物网站' : '購物網站',
 };
 ```
 
-第二步，在 `bookmarkRows` 最下方加入新的分類資料。
+再到 `bookmarkRows` 新增一列：
 
 ```ts
 {
@@ -24,33 +27,45 @@ const groupLabels = {
   items: [
     { label: 'PChome', href: 'https://www.pchome.com.tw/' },
     { label: 'Momo', href: 'https://www.momoshop.com.tw/' },
-    { label: 'Shopee', href: 'https://shopee.tw/' },
   ],
 },
 ```
 
-元件會透過 `.map()` 自動渲染新增的分類，並套用既有的間距、分隔線與響應式樣式。
+## 新增連結到既有群組
 
-## 在現有分類新增連結
-
-找到要修改的分類，在它的 `items` 陣列裡加入 `{ label, href }` 物件即可。
+找到目標群組，在 `items` 裡加入 `{ label, href }`：
 
 ```ts
 {
   group: groupLabels.code,
   items: [
     { label: 'GitHub', href: 'https://github.com/' },
-    { label: 'GitLab', href: 'https://gitlab.com/' },
-    { label: 'Codeberg', href: 'https://codeberg.org/' },
     { label: 'Gitea', href: 'https://gitea.com/' },
   ],
 },
 ```
 
-## 安全與維護注意事項
+## 連結行為
 
-- 優先使用 `https://` 連結。
-- 不要把 API key、token、帳號密碼或私人後台網址寫進書籤。
-- 若新增會開新分頁的連結，必須同時使用 `rel="noopener noreferrer"`。
-- 分類名稱請維持三語系同步，避免某個語系顯示空白或 fallback 文字。
-- 連結新增後請執行 `pnpm check`、`pnpm lint`、`pnpm lint:css`、`pnpm build`、`pnpm selfcheck -- --quick`。
+書籤連結會以外部連結方式開啟：
+
+```html
+target="_blank" rel="noopener noreferrer"
+```
+
+全站 Markdown 外部連結提示頁只會自動處理 Markdown 文章內的連結，不會自動改寫 Astro 元件裡直接寫的書籤連結。如果希望書籤也進入離站提示頁，可以手動設定 `href`：
+
+```ts
+{ label: 'Example', href: `/leaving?to=${encodeURIComponent('https://example.com/')}` }
+```
+
+繁體中文與簡體中文版本可使用 `/zh-tw/leaving?to=` 或 `/zh-cn/leaving?to=`。
+
+## 安全注意事項
+
+- 優先使用 `https://` 網址。
+- 外部連結保留 `target="_blank"` 與 `rel="noopener noreferrer"`。
+- 不要把訪客輸入、API 回傳或其他不可信資料直接塞進 `href`。
+- 公開模板不要加入私人控制台、私人 IP、內部 hostname、API token 或個人帳號網址。
+- 書籤面板有固定捲動範圍，較多群組或連結不會讓首頁無限拉長。
+- 編輯後執行 `pnpm check`、`pnpm lint`、`pnpm lint:css`、`pnpm build`、`pnpm selfcheck -- --quick`。

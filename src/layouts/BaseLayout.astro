@@ -18,6 +18,8 @@ export interface Props {
   category?: string;
   author?: string;
   customCanonical?: string;
+  robots?: string;
+  alternates?: boolean;
 }
 
 const {
@@ -32,6 +34,8 @@ const {
   category,
   author,
   customCanonical,
+  robots,
+  alternates = true,
 } = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
@@ -56,6 +60,8 @@ const finalCanonical = customCanonical ?? canonicalUrl;
       category={category}
       author={author}
       ga4Id={ga4Id}
+      robots={robots}
+      alternates={alternates}
     />
   </head>
   <body>

@@ -2,12 +2,14 @@
 title: 'How to Pin Posts'
 description: 'How to pin one or more posts in this Astro static blog with pinned and pinOrder.'
 pubDate: 2026-05-24
-category: 'Site Setup'
+category: 'Website'
 tags: ['Astro', 'Pinned Posts', 'Site Setup']
-author: 'Astro Blog Template'
+author: 'Tena'
 pinned: true
 pinOrder: 1
 ---
+
+Public GitHub repository: [nothing-body/Astro_Theme_Simpleblog](https://github.com/nothing-body/Astro_Theme_Simpleblog).
 
 This post is itself an example of a pinned post.
 
@@ -30,6 +32,8 @@ pinOrder: 1
 
 ## Pin Multiple Posts
 
+If multiple posts use `pinned: true`, give each one a clear `pinOrder`:
+
 ```yaml
 pinned: true
 pinOrder: 1
@@ -50,4 +54,8 @@ Set `pinned` to `false`, or remove both `pinned` and `pinOrder`.
 pinned: false
 ```
 
-After changing pinned posts, rebuild the site and deploy the generated `dist` directory.
+## Maintenance Notes
+
+Use simple integers for `pinOrder`, such as `1`, `2`, and `3`. Do not treat it as a date, formula, or complex priority system.
+
+This feature only reads post frontmatter. It does not execute arbitrary code from posts and does not accept visitor input. After changing pinned posts, rebuild the site and deploy the generated `dist` directory.
