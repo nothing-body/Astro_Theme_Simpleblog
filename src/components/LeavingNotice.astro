@@ -101,51 +101,9 @@ const copy = {
       </noscript>
     </div>
   </section>
+
+  <script is:inline src="/scripts/bb-leaving-notice.js" defer></script>
 </BaseLayout>
-
-<script is:inline>
-  (() => {
-    const root = document.querySelector('[data-leaving-notice]');
-    const params = new URLSearchParams(window.location.search);
-    const rawTarget = params.get('to') || '';
-    const hostEl = document.getElementById('leaving-host');
-    const urlEl = document.getElementById('leaving-url');
-    const warningEl = document.getElementById('leaving-warning');
-    const continueLink = document.getElementById('leaving-continue');
-    const invalidText = root?.getAttribute('data-invalid-text') || 'Invalid or missing link';
-    const backHref = root?.getAttribute('data-back-href') || '/';
-
-    const fail = () => {
-      if (hostEl) hostEl.textContent = invalidText;
-      if (urlEl) urlEl.textContent = '';
-      if (warningEl) warningEl.hidden = false;
-      if (continueLink) {
-        continueLink.setAttribute('href', backHref);
-        continueLink.setAttribute('aria-disabled', 'true');
-      }
-    };
-
-    try {
-      const target = new URL(rawTarget);
-      const allowedProtocol = target.protocol === 'http:' || target.protocol === 'https:';
-      const isCurrentSite = target.origin === window.location.origin;
-
-      if (!allowedProtocol || isCurrentSite) {
-        fail();
-        return;
-      }
-
-      if (hostEl) hostEl.textContent = target.hostname;
-      if (urlEl) urlEl.textContent = target.href;
-      if (continueLink) {
-        continueLink.setAttribute('href', target.href);
-        continueLink.removeAttribute('aria-disabled');
-      }
-    } catch {
-      fail();
-    }
-  })();
-</script>
 
 <style>
   .leaving-page {
