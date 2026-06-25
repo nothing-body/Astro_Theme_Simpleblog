@@ -84,3 +84,4 @@ tmp/
 
 # local pnpm store
 .pnpm-store/
+wrangler.toml
