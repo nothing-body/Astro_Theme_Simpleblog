@@ -1,5 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import PostCopyright from '../components/PostCopyright.astro';
 import {
@@ -10,23 +12,30 @@ import {
 } from '../i18n/utils';
 import { formatDate, safeJsonStringify, summarizePlainText } from '../lib/utils';
 import { DEFAULT_AUTHOR, SITE_NAME, getSiteUrl } from '../lib/site';
+import {
+  getCategoryPathFromData,
+  getCategoryUrl,
+  getNormalizedPostCategoryPath,
+} from '../lib/categories';
 import '../styles/markdown.css';
 import '../assets/css/blog-enhancements.css';
 
 export interface Props {
+  post?: CollectionEntry<'blog'>;
   frontmatter: {
     title: string;
     description?: string;
     pubDate: Date;
     updatedDate?: Date;
     category?: string;
+    categoryPath?: string[];
     tags?: string[];
     author?: string;
     ogImage?: string;
   };
 }
 
-const { frontmatter } = Astro.props;
+const { frontmatter, post } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const translatePath = useTranslatedPath(lang);
@@ -34,6 +43,16 @@ const translatePath = useTranslatedPath(lang);
 const categoryMapping = await getDynamicCategoryMapping();
 const uncategorized = t('post.uncategorized');
 const currentCategory = frontmatter.category ?? uncategorized;
+const currentCategoryPath = getCategoryPathFromData({
+  category: currentCategory,
+  categoryPath: frontmatter.categoryPath,
+});
+const allBlogPosts = await getCollection('blog', ({ data }) => !data.draft);
+const normalizedCategoryPath = post
+  ? getNormalizedPostCategoryPath(post, allBlogPosts)
+  : currentCategoryPath;
+const currentCategoryLabel = normalizedCategoryPath.join(' / ');
+const currentCategoryHref = getCategoryUrl(lang, normalizedCategoryPath, 1);
 
 const publishedDate = new Date(frontmatter.pubDate);
 const updatedDate = frontmatter.updatedDate ? new Date(frontmatter.updatedDate) : undefined;
@@ -49,10 +68,10 @@ const breadcrumbLabel = t('post.breadcrumbLabel');
 const breadcrumbs = [
   { label: t('breadcrumb.home'), href: translatePath('/') },
   { label: t('breadcrumb.posts'), href: translatePath('/posts') },
-  {
-    label: currentCategory,
-    href: translatePath(`/categories/${encodeURIComponent(currentCategory)}/1`),
-  },
+  ...normalizedCategoryPath.map((segment, index) => ({
+    label: segment,
+    href: getCategoryUrl(lang, normalizedCategoryPath.slice(0, index + 1), 1),
+  })),
   { label: frontmatter.title },
 ];
 ---
@@ -88,7 +107,7 @@ const breadcrumbs = [
         name: SITE_NAME,
         url: siteUrl,
       },
-      articleSection: currentCategory,
+      articleSection: currentCategoryLabel,
       keywords: (frontmatter.tags ?? []).join(', '),
       mainEntityOfPage: {
         '@type': 'WebPage',
@@ -105,10 +124,10 @@ const breadcrumbs = [
         <header class="post-header">
           <div class="post-meta-row">
             <a
-              href={translatePath(`/categories/${encodeURIComponent(currentCategory)}/1`)}
+              href={currentCategoryHref}
               class="post-category-badge"
             >
-              {currentCategory}
+              {currentCategoryLabel}
             </a>
             <span class="meta-dot" aria-hidden="true">/</span>
             <time class="post-date" datetime={publishedDate.toISOString()}>{formattedDate}</time>
@@ -167,7 +186,7 @@ const breadcrumbs = [
   is:inline
   type="application/json"
   id="bb-post-back-config"
-  set:html={safeJsonStringify({ lang, categoryMapping, currentCategory })}
+  set:html={safeJsonStringify({ lang, categoryMapping, currentCategory: currentCategoryLabel })}
 />
 <script is:inline src="/scripts/bb-post-back.js" defer></script>
 

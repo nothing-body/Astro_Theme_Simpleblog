@@ -3,7 +3,8 @@ title: 'VPS 基础安全防护配置指南'
 pubDate: 2026-03-11
 description: '全新 VPS 获取后需要进行的系统初始化与安全加固动作'
 category: '服务器'
-tags: ['安全', 'Linux', 'DevOps']
+categoryPath: ['服务器', '服务器安全']
+tags: ['服务器安全', 'Linux']
 ---
 
 这是一篇针对刚购买全新 VPS 进行安全防护强化的指南。本指南将使用 Debian 系统作为示范。

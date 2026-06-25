@@ -2,8 +2,9 @@
 title: 'Docker + Nginx Proxy Manager 完整安装与配置教程'
 pubDate: 2026-05-01
 description: '安装 Nginx Proxy Manager，使用图形界面轻松管理反向代理与 SSL 证书。'
-category: '软件'
-tags: ['Docker', 'Nginx', '反向代理']
+category: '网络与安全'
+categoryPath: ['网络与安全', '反向代理']
+tags: ['反向代理', 'Docker']
 ---
 
 想把你 VPS 上运行的各种服务，从 `IP:端口` 变成好记的域名访问？  

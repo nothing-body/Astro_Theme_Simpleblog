@@ -3,7 +3,8 @@ title: 'VPS Basic Security Configuration Guide'
 pubDate: 2026-03-11
 description: 'Basic configuration steps required after acquiring a brand new VPS'
 category: 'Server'
-tags: ['Security', 'Linux', 'DevOps']
+categoryPath: ['Server', 'Server Security']
+tags: ['Server Security', 'Linux']
 ---
 
 This is a guide aimed at enhancing the basic security configuration for a newly purchased VPS. This guide will use Debian as the demonstration system.

@@ -3,7 +3,8 @@ title: 'sing-box One-Click Installation Script'
 pubDate: 2026-05-21
 description: 'Easy deployment of sing-box'
 category: 'Software'
-tags: ['sing-box']
+categoryPath: ['Software', 'Network Tools']
+tags: ['Network Tools']
 ---
 
 This is a simple deployment script with fewer features but is very easy to understand at a glance:

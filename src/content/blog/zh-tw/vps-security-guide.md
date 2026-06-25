@@ -3,7 +3,8 @@ title: 'VPS 基礎安全防護設定指南'
 pubDate: 2026-03-11
 description: '全新的VPS獲取後，需做的基本動作'
 category: '伺服器'
-tags: ['安全', 'Linux', 'DevOps']
+categoryPath: ['伺服器', '伺服器安全']
+tags: ['伺服器安全', 'Linux']
 ---
 
 這是一篇針對剛購買全新 VPS 進行安全防護強化的指南。本指南將使用 Debian 系統作為示範

@@ -3,7 +3,8 @@ title: 'Setting Up Wallos Personal Subscription Tracker with Docker on Debian'
 pubDate: 2026-05-10
 description: 'Learn how to quickly and securely deploy the Wallos personal subscription tracker on a fresh Debian VPS using Docker and Docker Compose.'
 category: 'Software'
-tags: ['Docker', 'Linux']
+categoryPath: ['Software', 'Self-hosted']
+tags: ['Docker', 'Self-hosted']
 ---
 
 In the current era of subscription-based services, it's easy to lose track of how many services you're subscribed to (like Netflix, Spotify, cloud storage, etc.), and which services are about to expire and need to be renewed. **Wallos** is an open-source personal subscription tracking and management platform that helps you centralize and monitor all your subscription expenses.

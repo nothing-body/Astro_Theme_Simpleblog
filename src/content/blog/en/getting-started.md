@@ -9,7 +9,7 @@ tags:
   - Template
   - Deployment
 author: Astro Blog Template
-draft: false
+draft: true
 ---
 
 This Astro blog is a static, multilingual template with English, Traditional Chinese, and Simplified Chinese routes. It is designed to work as a personal blog, a public starter, or a deployment-ready static site.
@@ -37,7 +37,7 @@ updatedDate: 2026-06-19
 category: Guide
 tags:
   - Astro
-draft: false
+draft: true
 ```
 
 Set `draft: true` to keep a post out of the generated site. Add `pinned: true` if you want a post to appear before regular posts on home, post list, category, and tag pages.

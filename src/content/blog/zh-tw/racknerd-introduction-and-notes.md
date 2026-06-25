@@ -3,7 +3,8 @@ title: 'RackNerd 介紹與購買前注意事項'
 pubDate: 2026-06-18
 description: '整理 RackNerd 官方網站目前可確認的 KVM VPS、Ryzen VPS、Dedicated Server 價格、服務特色與購買前需注意的條款。'
 category: '伺服器'
-tags: ['VPS', 'Dedicated Server', 'Hosting', 'RackNerd']
+categoryPath: ['伺服器', '主機服務']
+tags: ['主機服務', 'VPS']
 ---
 
 > 查詢日期：2026-06-18。價格、促銷與庫存會變動，本文只整理 RackNerd 官方網站當天可確認的公開資訊；付款前請以官方訂單頁最後顯示為準。

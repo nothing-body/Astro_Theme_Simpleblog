@@ -3,7 +3,8 @@ title: 'sing-box一鍵安裝腳本'
 pubDate: 2026-05-21
 description: 'sing-box輕鬆部屬'
 category: '軟體'
-tags: ['sing-box']
+categoryPath: ['軟體', '網路工具']
+tags: ['網路工具']
 ---
 
 此腳本是簡單功能較少但一眼就能看懂的部屬腳本：

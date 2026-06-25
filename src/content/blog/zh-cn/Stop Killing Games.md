@@ -1,8 +1,9 @@
 ---
 title: 'Stop Killing Games：捍卫数字时代玩家所有权的消费者运动'
 pubDate: 2026-04-26
-category: '日常'
-tags: ['游戏', '消费者权益', '欧盟', 'Stop Killing Games']
+category: '数字权益'
+categoryPath: ['数字权益', '游戏']
+tags: ['数字权益', '游戏', '消费者权益']
 ---
 
 ## 什么是 Stop Killing Games？

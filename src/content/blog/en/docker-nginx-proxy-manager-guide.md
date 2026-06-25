@@ -2,8 +2,9 @@
 title: 'Complete Guide: Docker & Nginx Proxy Manager Setup on a VPS'
 pubDate: 2026-05-01
 description: 'Step-by-step guide to installing Docker with log size limits and deploying Nginx Proxy Manager for easy reverse proxy and SSL certificate management.'
-category: 'Software'
-tags: ['Docker', 'Nginx', 'Reverse Proxy']
+category: 'Network & Security'
+categoryPath: ['Network & Security', 'Reverse Proxy']
+tags: ['Reverse Proxy', 'Docker']
 ---
 
 Running services on a VPS and tired of typing `IP:port` to access them? **Reverse proxying** maps those ports to clean domain names — and **Nginx Proxy Manager (NPM)** makes it ridiculously easy, with a graphical interface and automatic SSL certificate handling.

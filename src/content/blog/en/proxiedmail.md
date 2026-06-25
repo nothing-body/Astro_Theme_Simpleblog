@@ -1,8 +1,9 @@
 ---
 title: 'Proxiedmail Email Alias Service'
 pubDate: 2026-03-16
-category: 'Alias'
-tags: ['Email Alias', 'Privacy', 'Closed Source']
+category: 'Privacy & Mail'
+categoryPath: ['Privacy & Mail', 'Email']
+tags: ['Email', 'Privacy']
 ---
 
 # Introduction to Proxiedmail

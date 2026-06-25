@@ -9,7 +9,7 @@ tags:
   - 模板
   - 部署
 author: Astro Blog Template
-draft: false
+draft: true
 ---
 
 这是一个静态输出的 Astro 多语言博客模板，支持英文、繁体中文与简体中文路由。它可以作为个人博客、公开模板，或可直接部署的静态网站基础。
@@ -37,7 +37,7 @@ updatedDate: 2026-06-19
 category: 指南
 tags:
   - Astro
-draft: false
+draft: true
 ```
 
 设置 `draft: true` 可以让文章不进入生成后的网站。若要置顶文章，可以加上 `pinned: true`，它会在首页、文章列表、分类页与标签页优先显示。

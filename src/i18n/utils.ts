@@ -1,5 +1,11 @@
 import { getCollection } from 'astro:content';
 import { ui, defaultLang, type Lang, type TranslationKey } from './ui';
+import {
+  categoryPathStartsWith,
+  getCategoryRoutePath,
+  getCategoryUrl,
+  getNormalizedPostCategoryPath,
+} from '../lib/categories';
 
 export function getLangFromUrl(url: URL): Lang {
   const [, firstSegment] = url.pathname.split('/');
@@ -32,6 +38,20 @@ export async function getDynamicCategoryMapping(): Promise<Record<string, Record
   const mapping: Record<string, Record<string, string>> = {};
   const postsByPath: Record<string, Record<string, string>> = {};
 
+  const addCategoryMapping = (sourcePath: string[], targetLang: string, targetPath: string[]) => {
+    if (sourcePath.length === 0 || targetPath.length === 0) return;
+
+    const sourceLabel = sourcePath.join('/');
+    const sourceRoute = getCategoryRoutePath(sourcePath);
+    const targetLabel = targetPath.join('/');
+
+    const labelMapping = (mapping[sourceLabel] ??= {});
+    const routeMapping = (mapping[sourceRoute] ??= {});
+
+    labelMapping[targetLang] = targetLabel;
+    routeMapping[targetLang] = targetLabel;
+  };
+
   for (const post of allPosts) {
     const parts = post.id.split('/');
     if (parts.length < 2) continue;
@@ -42,15 +62,25 @@ export async function getDynamicCategoryMapping(): Promise<Record<string, Record
     postsByPath[relativePath] ??= {};
 
     if (locale && locale in ui) {
-      postsByPath[relativePath][locale] = post.data.category;
+      postsByPath[relativePath][locale] = getNormalizedPostCategoryPath(post, allPosts).join('/');
     }
   }
 
   for (const categoriesByLang of Object.values(postsByPath)) {
     for (const [, catA] of Object.entries(categoriesByLang)) {
-      mapping[catA] ??= {};
-      for (const [langB, catB] of Object.entries(categoriesByLang)) {
-        mapping[catA][langB] = catB;
+      const sourceSegments = catA.split('/').filter(Boolean);
+
+      for (let depth = 1; depth <= sourceSegments.length; depth += 1) {
+        const sourcePrefix = sourceSegments.slice(0, depth);
+
+        for (const [langB, catB] of Object.entries(categoriesByLang)) {
+          const targetSegments = catB.split('/').filter(Boolean);
+          const targetPrefix = targetSegments.slice(0, depth);
+
+          if (targetPrefix.length === depth) {
+            addCategoryMapping(sourcePrefix, langB, targetPrefix);
+          }
+        }
       }
     }
   }
@@ -72,14 +102,19 @@ export async function getTargetLangPath(
   }
 
   if (parts[0] === 'categories' && parts[1]) {
-    const currentCat = decodeURIComponent(parts[1]);
+    const categoryParts = parts.slice(1);
+    const lastPart = categoryParts.at(-1);
+    const pathParts = lastPart && /^\d+$/.test(lastPart) ? categoryParts.slice(0, -1) : categoryParts;
+    const currentCat = pathParts.map(decodeURIComponent).join('/');
     const targetCat = categoryMapping[currentCat]?.[targetLang];
 
     if (targetCat) {
-      const hasPosts = targetPosts.some(p => p.data.category === targetCat);
+      const targetPath = targetCat.split('/').filter(Boolean);
+      const hasPosts = targetPosts.some(p =>
+        categoryPathStartsWith(getNormalizedPostCategoryPath(p, allPosts), targetPath)
+      );
       if (hasPosts) {
-        const basePath = `/categories/${encodeURIComponent(targetCat)}/1`;
-        return targetLang === defaultLang ? basePath : `/${targetLang}${basePath}`;
+        return getCategoryUrl(targetLang, targetPath, 1);
       }
     }
     return targetLang === defaultLang ? '/no-category' : `/${targetLang}/no-category`;

@@ -3,7 +3,8 @@ title: '在 Debian 上使用 Docker 搭建 Wallos 个人订阅管理系统'
 pubDate: 2026-05-10
 description: '这篇文章将教你如何在一台全新的 Debian VPS 上，使用 Docker 与 Docker Compose 快速且安全地部署 Wallos 个人订阅管理系统。'
 category: '软件'
-tags: ['Docker', 'Linux']
+categoryPath: ['软件', '自托管']
+tags: ['Docker', '自托管']
 ---
 
 在如今订阅制服务盛行的时代，我们很容易忘记自己到底订阅了多少服务（例如 Netflix、Spotify、云盘等），哪些服务快要到期需要续约。**Wallos** 是一个开源的个人订阅追踪与管理平台，它可以帮助你集中管理所有的订阅支出。

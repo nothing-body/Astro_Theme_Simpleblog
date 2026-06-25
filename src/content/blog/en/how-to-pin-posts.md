@@ -3,7 +3,8 @@ title: 'How to Pin Posts'
 description: 'How to pin one or more posts in this Astro static blog with pinned and pinOrder.'
 pubDate: 2026-05-24
 category: 'Website'
-tags: ['Astro', 'Pinned Posts', 'Site Setup']
+categoryPath: ['Website', 'Astro']
+tags: ['Astro', 'Website Setup']
 author: 'Tena'
 pinned: true
 pinOrder: 1

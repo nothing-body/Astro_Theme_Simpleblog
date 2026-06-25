@@ -3,7 +3,8 @@ title: 'Luanti: An Open Source Voxel Game Creation Platform'
 pubDate: 2026-06-18
 description: 'A factual introduction to Luanti, formerly Minetest, based on the official website, documentation, GitHub repository, and rename announcement.'
 category: 'Software'
-tags: ['Luanti', 'Minetest', 'Open Source', 'Game Engine', 'Voxel']
+categoryPath: ['Software', 'Open Source']
+tags: ['Open Source', 'Gaming']
 ---
 
 > Checked on 2026-06-18. This article only summarizes information confirmed from Luanti's official website, documentation, GitHub repository, and official blog. Versions and download options may change; always check the downloads page first.

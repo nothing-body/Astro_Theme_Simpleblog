@@ -3,7 +3,8 @@ title: 'DediRock Introduction and Buying Notes'
 pubDate: 2026-06-18
 description: 'A factual overview of DediRock VPS, Storage VPS, dedicated server pricing, service scope, and important terms to check before ordering.'
 category: 'Server'
-tags: ['VPS', 'Dedicated Server', 'Hosting', 'DediRock']
+categoryPath: ['Server', 'Hosting']
+tags: ['Hosting', 'VPS']
 ---
 
 > Checked on 2026-06-18. Hosting prices and availability can change. This article only summarizes public information visible on DediRock's official pages on the checked date; always confirm the final order form before paying.

@@ -1,8 +1,9 @@
 ---
 title: 'OpenClaw'
 pubDate: 2026-03-24
-category: 'Daily'
-tags: ['OpenClaw', 'Daily', 'AI']
+category: 'Software'
+categoryPath: ['Software', 'AI Developer Tools']
+tags: ['AI', 'Developer Tools']
 ---
 
 ## What Is OpenClaw?

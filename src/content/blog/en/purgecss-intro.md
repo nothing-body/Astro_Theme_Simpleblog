@@ -3,7 +3,8 @@ title: 'PurgeCSS: How It Works and How to Configure It Safely'
 pubDate: 2026-05-25
 description: 'A practical guide to PurgeCSS: how it finds unused CSS, when it can help, and how to configure content paths and safelists without breaking pages.'
 category: 'Website'
-tags: ['PurgeCSS', 'CSS', 'Frontend Optimization']
+categoryPath: ['Website', 'Frontend Optimization']
+tags: ['CSS', 'Frontend Optimization']
 author: 'Tena'
 ---
 

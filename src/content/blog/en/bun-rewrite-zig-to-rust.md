@@ -3,7 +3,8 @@ title: 'Bun: How AI Rewrote Nearly a Million Lines of Zig Into Rust in Six Days'
 pubDate: 2026-05-15
 description: "Bun is one of the fastest JavaScript runtimes ever built. Then its team used Claude AI to rewrite almost a million lines of Zig into Rust in roughly six days. Here's what happened, what the tradeoffs are, and what the Zig community thinks about it."
 category: 'Software'
-tags: ['Bun', 'Zig', 'Rust', 'JavaScript']
+categoryPath: ['Software', 'Programming']
+tags: ['Developer Tools', 'Programming']
 ---
 
 On May 8, 2026, Bun's creator **Jarred Sumner** opened a pull request with a deceptively simple title: **"Rewrite Bun in Rust."** That PR contained **6,755 commits**, touched nearly one million lines of code, and was completed in approximately six days.

@@ -3,7 +3,8 @@ title: 'Zig: The Systems Language That Refuses to Hide Things'
 pubDate: 2026-05-15
 description: 'Zig is a systems programming language built on a philosophy of radical honesty — no hidden control flow, no hidden memory allocation, no preprocessor.'
 category: 'Software'
-tags: ['Zig', 'Programming Language']
+categoryPath: ['Software', 'Programming']
+tags: ['Programming']
 ---
 
 In the world of systems programming languages, C has dominated for half a century. C++ tried to build higher abstractions on top of it. Rust enforced memory safety through a strict type system. **Zig** chose a completely different path — instead of adding things, it removes what doesn't belong.

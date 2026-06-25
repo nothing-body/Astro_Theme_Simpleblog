@@ -3,7 +3,8 @@ title: 'Luanti 介绍：开源体素游戏创作平台'
 pubDate: 2026-06-18
 description: '整理 Luanti 官方网站与文件中可确认的信息，介绍这个 formerly Minetest 的开源体素游戏引擎、特色、下载方式与使用前注意事项。'
 category: '软件'
-tags: ['Luanti', 'Minetest', 'Open Source', 'Game Engine', 'Voxel']
+categoryPath: ['软件', '开源']
+tags: ['开源', '游戏']
 ---
 
 > 查询日期：2026-06-18。本文只整理 Luanti 官方网站、官方文档、官方 GitHub 与官方博客可确认的信息；版本与下载方式可能会变动，请以下载页为准。

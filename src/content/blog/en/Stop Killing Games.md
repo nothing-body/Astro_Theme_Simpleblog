@@ -1,8 +1,9 @@
 ---
 title: 'Stop Killing Games'
 pubDate: 2026-04-26
-category: 'Daily'
-tags: ['Gaming', 'Consumer Rights', 'EU', 'Stop Killing Games']
+category: 'Digital Rights'
+categoryPath: ['Digital Rights', 'Gaming']
+tags: ['Digital Rights', 'Gaming', 'Consumer Rights']
 ---
 
 ## What Is Stop Killing Games?

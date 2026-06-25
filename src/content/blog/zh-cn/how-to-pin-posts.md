@@ -3,7 +3,8 @@ title: '如何置顶文章'
 description: '说明如何在这个 Astro 静态博客中使用 pinned 与 pinOrder 置顶一篇或多篇文章。'
 pubDate: 2026-05-24
 category: '网站'
-tags: ['Astro', '置顶文章', '网站设置']
+categoryPath: ['网站', 'Astro']
+tags: ['Astro', '网站设置']
 author: 'Tena'
 pinned: true
 pinOrder: 1

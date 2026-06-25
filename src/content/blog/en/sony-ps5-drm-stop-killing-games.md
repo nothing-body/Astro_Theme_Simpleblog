@@ -1,8 +1,9 @@
 ---
 title: "Is Sony Pushing Their Luck? Rolling Out a 30-Day Online Check Amid the 'Stop Killing Games' Movement"
 pubDate: 2026-04-30
-category: 'Daily'
-tags: ['Sony', 'PS5', 'DRM', 'StopKillingGames', 'Digital Ownership']
+category: 'Digital Rights'
+categoryPath: ['Digital Rights', 'Gaming']
+tags: ['Digital Rights', 'Gaming']
 ---
 
 I recently came across some news in the gaming space that really left me scratching my head—and honestly, feeling quite powerless as a gamer in the digital age.

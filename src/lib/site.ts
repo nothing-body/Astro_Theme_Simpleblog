@@ -1,7 +1,7 @@
-export const DEFAULT_SITE_URL = 'https://blog.gkbb.de';
+export const DEFAULT_SITE_URL = 'https://example.com';
 export const SITE_NAME = "Tena's Blog";
 export const DEFAULT_AUTHOR = 'Tena';
-export const DEFAULT_CONTACT_EMAIL = 'contact@duck.235803.xyz';
+export const DEFAULT_CONTACT_EMAIL = 'contact@example.com';
 export const DEFAULT_DESCRIPTION =
   'Personal technology notes about self-hosting, web development, security, and open source tools.';
 

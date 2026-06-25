@@ -1,8 +1,9 @@
 ---
 title: 'OpenClaw 盲目跟风背后的潜在安全风险与替代工具探讨'
 pubDate: 2026-03-24
-category: '日常'
-tags: ['OpenClaw', '日常', 'AI']
+category: '软件'
+categoryPath: ['软件', 'AI 开发工具']
+tags: ['AI', '开发工具']
 ---
 
 ## OpenClaw 是什么？

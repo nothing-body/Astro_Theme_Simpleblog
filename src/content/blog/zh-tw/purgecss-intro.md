@@ -3,7 +3,8 @@ title: 'PurgeCSS：運作方式與安全設定方法'
 pubDate: 2026-05-25
 description: 'PurgeCSS 實務指南：說明它如何判斷未使用 CSS、適合哪些情境，以及如何設定 content 路徑與 safelist 來避免破版。'
 category: '網站'
-tags: ['PurgeCSS', 'CSS', '前端優化']
+categoryPath: ['網站', '前端優化']
+tags: ['CSS', '前端優化']
 author: 'Tena'
 ---
 

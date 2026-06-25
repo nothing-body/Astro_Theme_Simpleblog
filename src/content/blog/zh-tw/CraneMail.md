@@ -1,8 +1,9 @@
 ---
 title: 'NameCrane - CraneMail'
 pubDate: 2026-04-06
-category: '信箱'
-tags: ['namecrane', 'CraneMail', 'Managed Mail']
+category: '隱私與信箱'
+categoryPath: ['隱私與信箱', '電子郵件']
+tags: ['電子郵件', '隱私']
 ---
 
 # Crane Mail介紹

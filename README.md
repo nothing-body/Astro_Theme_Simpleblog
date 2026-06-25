@@ -1,6 +1,6 @@
-# Astro Multilingual Blog Template
+# Tena's Blog
 
-A public-safe Astro static blog template with multilingual routes, Markdown/MDX posts, SEO metadata, external-link warning pages, privacy-friendly defaults, and deployment automation for Cloudflare Pages, VPS, and Vercel.
+Personal Astro static blog with multilingual content, Markdown/MDX posts, SEO metadata, external-link warning pages, deployment automation, and project self-check scripts.
 
 <p align="center">
   <a href="https://blog.gkbb.de/">Live Demo</a>
@@ -25,7 +25,7 @@ scripts/                   Build, deploy, and self-check scripts
 tests/                     Unit and browser tests
 ```
 
-Use the same slug in each language folder when a post has translated versions:
+Use the same slug in all three content folders when a post has translated versions. For example:
 
 ```text
 src/content/blog/en/getting-started.md
@@ -35,22 +35,17 @@ src/content/blog/zh-cn/getting-started.md
 
 These generate `/posts/getting-started`, `/zh-tw/posts/getting-started`, and `/zh-cn/posts/getting-started`.
 
-## Features
+## Content Features
 
 - Markdown/MDX posts with categories, tags, pagination, and RSS-friendly metadata
 - Pinned posts with `pinned: true`
 - Draft posts with `draft: true`
-- Language-aware routes for English, Traditional Chinese, and Simplified Chinese
-- External HTTP/HTTPS links in Markdown are rewritten at build time to leaving notice pages
-- Leaving notice routes at `/leaving`, `/zh-tw/leaving`, and `/zh-cn/leaving`
-- Responsive navigation, bookmarks, clock, cookie preferences, and accessibility support
+- External HTTP/HTTPS links in Markdown are rewritten at build time to language-aware leaving notice pages
+- Leaving notice routes exist at `/leaving`, `/zh-tw/leaving`, and `/zh-cn/leaving`
 - Sitemap, robots.txt, canonical URLs, JSON-LD, Open Graph, and security headers
-- Cloudflare Pages deployment that detects the project's production branch automatically
-- Astro checks, ESLint, Stylelint, Jest, Playwright, and project self-analysis
 
 ## Guides
 
-- [Traditional Chinese README](./README.zh-TW.md)
 - [Markdown writing guide](./MARKDOWN_GUIDE.en.md)
 - [Traditional Chinese Markdown writing guide](./MARKDOWN_GUIDE.zh-TW.md)
 - [Bookmark guide](./BOOKMARKS_GUIDE.en.md)
@@ -98,42 +93,28 @@ pnpm check
 pnpm build
 ```
 
-The project also supports npm:
-
-```bash
-npm install
-npm run build
-```
-
 ## Configuration
 
-Copy `.env.example` to `.env` and set public site values:
-
-```env
-PUBLIC_SITE_URL=https://example.com
-PUBLIC_CONTACT_EMAIL=hello@example.com
-PUBLIC_GA4_ID=
-```
-
-Provider-specific examples are also included:
+Use example files as templates, then keep real credentials local:
 
 ```text
+.env.example
 .env.cloudflare.example
 .env.vercel.example
 .env.vps.example
 ```
 
-Do not commit real credentials, deployment environment files, API tokens, private keys, provider account IDs, personal domains, or site verification files.
+Do not commit real `.env` files, API tokens, private keys, provider account IDs, or site verification files.
 
 ## Deployment
 
-Use the guided menu:
+Use the guided deployment menu:
 
 ```bash
 pnpm deploy:menu
 ```
 
-Or deploy directly:
+Or run a direct deployment target:
 
 ```bash
 pnpm deploy:switch -- --mode=direct:cf
@@ -143,16 +124,15 @@ pnpm deploy:vercel:only
 pnpm deploy:all
 ```
 
-Cloudflare deployment reads the configured Pages project's production branch automatically. Pass `--branch=<name>` only when an explicit override is required.
+Deployment scripts build the Astro project first and deploy the generated `dist/` output.
 
-## Public-Safe Defaults
+## Public Sync Notes
 
-This repository is intended to stay publishable:
+This private project can be used as the source for the public template, but public syncs must exclude private data:
 
-- `PUBLIC_SITE_URL` defaults to `https://example.com`.
-- Template deployment files should use placeholder project names and account values.
-- Real `.env` files, API tokens, private keys, analytics IDs, personal domains, and verification files should remain outside git.
-- Review copied content before publishing if it came from a private site.
+- Keep personal domains, analytics IDs, provider account IDs, API tokens, private keys, and real `.env` files out of the public repo.
+- Keep public defaults such as `PUBLIC_SITE_URL=https://example.com`.
+- Review copied content before publishing if a post contains personal notes or private operational details.
 
 ## Verification
 

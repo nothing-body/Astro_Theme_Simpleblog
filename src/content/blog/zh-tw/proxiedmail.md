@@ -1,8 +1,9 @@
 ---
 title: 'Proxiedmail電子郵箱別名服務'
 pubDate: 2026-03-16
-category: '別名'
-tags: ['電子郵件別名', '隱私', '閉源']
+category: '隱私與信箱'
+categoryPath: ['隱私與信箱', '電子郵件']
+tags: ['電子郵件', '隱私']
 ---
 
 # Proxiedmail介紹

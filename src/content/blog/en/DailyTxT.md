@@ -2,7 +2,8 @@
 title: 'Your Own Private Journal: A Guide to DailyTxT and Server Deployment'
 pubDate: 2026-05-02
 category: 'Software'
-tags: ['DailyTxT', 'Self-hosted', 'Journal']
+categoryPath: ['Software', 'Self-hosted']
+tags: ['Self-hosted', 'Personal Data']
 ---
 
 In the digital age, our lives are often scattered across countless cloud services. For truly private journal entries and personal thoughts, many people prefer to keep things completely under their own control. [DailyTxT](https://github.com/PhiTux/DailyTxT) was built for exactly this purpose — an encrypted, web-based diary and note-taking application designed with privacy at its core.

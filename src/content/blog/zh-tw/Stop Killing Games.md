@@ -1,8 +1,9 @@
 ---
 title: 'Stop Killing Games'
 pubDate: 2026-04-26
-category: '日常'
-tags: ['遊戲', '消費者權益', '歐盟', 'Stop Killing Games']
+category: '數位權益'
+categoryPath: ['數位權益', '遊戲']
+tags: ['數位權益', '遊戲', '消費者權益']
 ---
 
 ## 什麼是 Stop Killing Games？

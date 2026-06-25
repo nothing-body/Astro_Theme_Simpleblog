@@ -3,7 +3,8 @@ title: 'Securing KaraKeep (Hoarder): 3-in-1 AI Bookmarks & Notes Deployment Guid
 pubDate: 2026-05-21
 description: 'A step-by-step guide to deploying KaraKeep (formerly Hoarder) on a Debian VPS. Secure Meilisearch full-text search, fix headless Chrome memory crashes, and restrict public access.'
 category: 'Software'
-tags: ['Docker', 'KaraKeep', 'Hoarder', 'AI', 'Linux']
+categoryPath: ['Software', 'Self-hosted']
+tags: ['Docker', 'Self-hosted', 'AI']
 ---
 
 In the digital era, we consume vast amounts of web content daily. **KaraKeep** (formerly **Hoarder**, rebranded in April 2025) is an AI-powered bookmark and data collection tool. It supports saving web links, images, and text, using integrated AI models to automatically categorize, tag, and summarize your bookmarks.

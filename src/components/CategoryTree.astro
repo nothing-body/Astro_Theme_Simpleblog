@@ -1,0 +1,91 @@
+---
+import type { CategoryTreeNode } from '../lib/categories';
+import { getCategoryUrl } from '../lib/categories';
+import type { Lang } from '../i18n/ui';
+
+export interface Props {
+  nodes: CategoryTreeNode[];
+  lang: Lang;
+  postsHref: string;
+  activePathKey?: string;
+  depth?: number;
+}
+
+const { nodes, lang, postsHref, activePathKey, depth = 0 } = Astro.props;
+---
+
+<ul class:list={['category-tree', { 'category-tree--nested': depth > 0 }]} role={depth === 0 ? 'tree' : 'group'}>
+  {
+    nodes.map(node => {
+      const hasChildren = node.children.length > 0;
+      const isActive = node.pathKey === activePathKey;
+      const isOpen = node.containsActive;
+      const href = isActive ? postsHref : getCategoryUrl(lang, node.path, 1);
+      const childrenId = `category-tree-children-${depth}-${encodeURIComponent(node.path.join('/'))}`;
+
+      return (
+        <li class="category-tree-item" role="treeitem">
+          {hasChildren ? (
+            <>
+              <div class="category-tree-row category-tree-row--branch">
+                <button
+                  type="button"
+                  class="category-tree-toggle"
+                  aria-label={`Toggle ${node.label}`}
+                  aria-expanded={isOpen ? 'true' : 'false'}
+                  aria-controls={childrenId}
+                  data-category-tree-toggle
+                >
+                  <span class="category-tree-toggle-icon" aria-hidden="true" />
+                </button>
+                <a
+                  href={href}
+                  class:list={['category-tree-link', { 'category-tree-link--active': isActive }]}
+                  data-sidebar-filter-link
+                  data-filter-kind="category"
+                  data-filter-value={node.pathKey}
+                  data-filter-active={isActive ? 'true' : 'false'}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <span class="category-tree-label">{node.label}</span>
+                  <span class="cat-count">{node.count}</span>
+                </a>
+              </div>
+              <div
+                id={childrenId}
+                class="category-tree-children"
+                hidden={!isOpen}
+                data-category-tree-children
+              >
+                <Astro.self
+                  nodes={node.children}
+                  lang={lang}
+                  postsHref={postsHref}
+                  activePathKey={activePathKey}
+                  depth={depth + 1}
+                />
+              </div>
+            </>
+          ) : (
+            <div class="category-tree-row category-tree-row--leaf">
+              <span class="category-tree-toggle-placeholder" aria-hidden="true" />
+              <a
+                href={href}
+                class:list={['category-tree-link category-tree-link--leaf', { 'category-tree-link--active': isActive }]}
+                data-sidebar-filter-link
+                data-filter-kind="category"
+                data-filter-value={node.pathKey}
+                data-filter-active={isActive ? 'true' : 'false'}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                <span class="category-tree-leaf-mark" aria-hidden="true">-</span>
+                <span class="category-tree-label">{node.label}</span>
+                <span class="cat-count">{node.count}</span>
+              </a>
+            </div>
+          )}
+        </li>
+      );
+    })
+  }
+</ul>

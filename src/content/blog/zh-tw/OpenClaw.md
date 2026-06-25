@@ -1,8 +1,9 @@
 ---
 title: 'OpenClaw'
 pubDate: 2026-03-24
-category: '日常'
-tags: ['OpenClaw', '日常', 'AI']
+category: '軟體'
+categoryPath: ['軟體', 'AI 開發工具']
+tags: ['AI', '開發工具']
 ---
 
 ## OpenClaw 是什麼？

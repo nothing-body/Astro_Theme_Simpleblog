@@ -3,7 +3,8 @@ title: 'RackNerd Introduction and Buying Notes'
 pubDate: 2026-06-18
 description: 'A factual overview of RackNerd KVM VPS, Ryzen VPS, dedicated server pricing, service scope, and terms to check before ordering.'
 category: 'Server'
-tags: ['VPS', 'Dedicated Server', 'Hosting', 'RackNerd']
+categoryPath: ['Server', 'Hosting']
+tags: ['Hosting', 'VPS']
 ---
 
 > Checked on 2026-06-18. Prices, promotions, and inventory can change. This article only summarizes public information visible on RackNerd's official pages on the checked date; confirm the final order form before paying.

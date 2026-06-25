@@ -3,7 +3,8 @@ title: '如何置頂文章'
 description: '說明如何在這個 Astro 靜態部落格中使用 pinned 與 pinOrder 置頂一篇或多篇文章。'
 pubDate: 2026-05-24
 category: '網站'
-tags: ['Astro', '置頂文章', '網站設定']
+categoryPath: ['網站', 'Astro']
+tags: ['Astro', '網站設定']
 author: 'Tena'
 pinned: true
 pinOrder: 1

@@ -1,6 +1,7 @@
 (function () {
   var prefetched = new Set();
   var links = Array.from(document.querySelectorAll('[data-sidebar-filter-link]'));
+  var toggles = Array.from(document.querySelectorAll('[data-category-tree-toggle]'));
 
   function isPlainLeftClick(event) {
     return (
@@ -20,12 +21,14 @@
       var item = links[i];
       var itemKind = item.dataset.filterKind;
       if (itemKind === 'category') item.classList.remove('cat-link--active');
+      if (itemKind === 'category') item.classList.remove('category-tree-link--active');
       if (itemKind === 'tag') item.classList.remove('tag-box--active');
       item.removeAttribute('aria-current');
     }
 
     if (!returnsToAllPosts && kind === 'category') {
       link.classList.add('cat-link--active');
+      link.classList.add('category-tree-link--active');
       link.setAttribute('aria-current', 'page');
     }
 
@@ -65,5 +68,21 @@
         prefetch(link);
       }, { passive: true });
     })(links[j]);
+  }
+
+  for (var k = 0; k < toggles.length; k++) {
+    (function (toggle) {
+      toggle.addEventListener('click', function () {
+        var controls = toggle.getAttribute('aria-controls');
+        if (!controls) return;
+
+        var children = document.getElementById(controls);
+        if (!children) return;
+
+        var willOpen = toggle.getAttribute('aria-expanded') !== 'true';
+        toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        children.hidden = !willOpen;
+      });
+    })(toggles[k]);
   }
 })();

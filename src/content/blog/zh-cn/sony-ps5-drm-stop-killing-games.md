@@ -1,8 +1,9 @@
 ---
 title: 'Sony 顶风作案？在保护玩家权益呼声中出台 30 天联网验证引发争议'
 pubDate: 2026-04-30
-category: '日常'
-tags: ['Sony', 'PS5', 'DRM', 'StopKillingGames', '数字所有权']
+category: '数字权益'
+categoryPath: ['数字权益', '游戏']
+tags: ['数字权益', '游戏']
 ---
 
 最近看到游戏圈发生的一件事情，真的让我满脑子问号，也让我再次深深感觉到身为一个数字时代玩家的无力感。

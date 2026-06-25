@@ -115,8 +115,13 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://example.com/sitemap-index.xml
+User-agent: Google-Extended
+Disallow: /
 ```
+
+`Google-Extended` only opts out of Gemini AI training. It does **not** block Google Search indexing (`Googlebot`).
+
+On Cloudflare, **Managed robots.txt** may prepend additional rules and `Content-Signal` lines. Search Console may show syntax warnings or "blocked by robots.txt" for AI crawlers; verify affected URLs with the URL Inspection tool. If the inspected crawler is `Googlebot`, fix crawl rules. If it is `Google-Extended`, the block is intentional unless you want AI training.
 
 If `User-agent: *` is set to `Disallow: /`, Google Search Console may report that indexing is blocked, and the site may not appear in Google search even when searching the exact URL.
 
@@ -127,19 +132,19 @@ For HTML file verification, put the file provided by Google Search Console in `p
 Example:
 
 ```text
-public/googlexxxxxxxxxxxxxxxx.html
+public/google-site-verification-example.html
 ```
 
 The file content should match Google's required format:
 
 ```text
-google-site-verification: googlexxxxxxxxxxxxxxxx.html
+google-site-verification: google-site-verification-example.html
 ```
 
 After `pnpm build`, Astro copies files from `public/` to the site root. After deployment, this URL must be reachable:
 
 ```text
-https://example.com/googlexxxxxxxxxxxxxxxx.html
+https://example.com/google-site-verification-example.html
 ```
 
 Then click Verify in Google Search Console.
@@ -229,7 +234,7 @@ cp .env.vps.example .env.vps
 Typical values:
 
 ```env
-VPS_HOST=xxx.xxx.xxx
+VPS_HOST=203.0.113.10
 VPS_PORT=22
 VPS_USER=deploy
 VPS_TARGET_DIR=/var/www/example.com

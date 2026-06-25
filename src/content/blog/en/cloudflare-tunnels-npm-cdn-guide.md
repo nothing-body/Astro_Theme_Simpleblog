@@ -3,7 +3,8 @@ title: 'Exposing Services Securely: Cloudflare Tunnels & NPM Reverse Proxy Integ
 pubDate: 2026-05-21
 description: 'Build the ultimate self-hosting architecture. Expose your applications with Cloudflare Tunnels to keep all inbound ports closed, route traffic through Nginx Proxy Manager, and leverage edge CDN and WAF protection.'
 category: 'Network & Security'
-tags: ['Cloudflare', 'CDN']
+categoryPath: ['Network & Security', 'CDN']
+tags: ['CDN', 'Network Services']
 ---
 
 In traditional self-hosting setups, publishing services to the internet requires port forwarding on your router or opening ports `80` and `443` on your VPS. This exposes your public IP address to automated bot scans, DDoS attacks, and Nginx exploits.

@@ -17,7 +17,12 @@ const groupLabels = {
   code: lang === 'en' ? 'Code' : lang === 'zh-cn' ? '\u4ee3\u7801' : '\u7a0b\u5f0f\u78bc',
   community: lang === 'en' ? 'Community' : lang === 'zh-cn' ? '\u793e\u533a' : '\u793e\u7fa4',
   lookup: lang === 'en' ? 'IP Lookup' : lang === 'zh-cn' ? 'IP \u67e5\u8be2' : 'IP \u67e5\u8a62',
-  reputation: lang === 'en' ? 'Reputation' : lang === 'zh-cn' ? '\u98ce\u9669\u68c0\u67e5' : '\u98a8\u96aa\u6aa2\u67e5',
+  reputation:
+    lang === 'en'
+      ? 'Reputation'
+      : lang === 'zh-cn'
+        ? '\u98ce\u9669\u68c0\u67e5'
+        : '\u98a8\u96aa\u6aa2\u67e5',
 };
 
 const bookmarkRows = [
@@ -43,7 +48,9 @@ const bookmarkRows = [
       { label: 'ipaddress', href: 'https://ipaddress.my/' },
       { label: 'iplark', href: 'https://iplark.com/' },
       { label: 'ippure', href: 'https://ippure.com/' },
-      { label: 'ipinfo', href: 'https://ipinfo.io/what-is-my-ip' },
+      { label: 'ipleak', href: 'https://ipleak.net/' },
+      { label: 'dnsleaktest', href: 'https://dnsleaktest.com/' },
+      { label: 'ipinfo', href: 'https://ipinfo.io/' },
     ],
   },
   {
@@ -66,7 +73,17 @@ const bookmarkRows = [
 
   <div class="bookmark-body-container">
     <button class="scroll-arrow scroll-arrow-up" aria-label="Scroll Up" tabindex="-1">
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="4.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg
+      >
     </button>
 
     <div class="bookmark-rows">
@@ -87,7 +104,17 @@ const bookmarkRows = [
     </div>
 
     <button class="scroll-arrow scroll-arrow-down" aria-label="Scroll Down" tabindex="-1">
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="4.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg
+      >
     </button>
   </div>
 </section>
@@ -117,7 +144,12 @@ const bookmarkRows = [
     inset: 0 0 auto;
     height: 3px;
     border-radius: 8px 8px 0 0;
-    background: linear-gradient(90deg, rgba(196, 122, 101, 0.2), rgba(196, 122, 101, 0.72), rgba(196, 122, 101, 0.2));
+    background: linear-gradient(
+      90deg,
+      rgba(196, 122, 101, 0.2),
+      rgba(196, 122, 101, 0.72),
+      rgba(196, 122, 101, 0.2)
+    );
   }
 
   .bookmark-panel::after {
@@ -178,7 +210,10 @@ const bookmarkRows = [
     opacity: 0;
     pointer-events: none;
     z-index: 10;
-    transition: opacity 220ms ease, background-color 160ms ease, transform 220ms ease;
+    transition:
+      opacity 220ms ease,
+      background-color 160ms ease,
+      transform 220ms ease;
   }
 
   .scroll-arrow-up {

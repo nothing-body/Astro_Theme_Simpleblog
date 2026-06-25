@@ -1,8 +1,9 @@
 ---
 title: 'Proxiedmail 电子邮件别名服务：保护隐私的临时与自建域名邮箱方案'
 pubDate: 2026-03-16
-category: '别名'
-tags: ['电子邮件别名', '隐私', '闭源']
+category: '隐私与邮箱'
+categoryPath: ['隐私与邮箱', '电子邮件']
+tags: ['电子邮件', '隐私']
 ---
 
 # Proxiedmail 介绍

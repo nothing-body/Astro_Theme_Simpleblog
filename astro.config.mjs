@@ -38,6 +38,11 @@ function remarkDirectiveToDiv() {
   };
 }
 
+/**
+ * @param {unknown} existingRel
+ * @param {string[]} requiredRel
+ * @returns {string}
+ */
 function appendRel(existingRel, requiredRel) {
   const rels = new Set(
     String(existingRel || '')
@@ -52,6 +57,10 @@ function appendRel(existingRel, requiredRel) {
   return Array.from(rels).join(' ');
 }
 
+/**
+ * @param {{ path?: string; history?: string[] } | null | undefined} file
+ * @returns {string}
+ */
 function getLocalizedLeavingPath(file) {
   const filePath = String(file?.path || file?.history?.[0] || '').replace(/\\/g, '/');
 
@@ -61,6 +70,11 @@ function getLocalizedLeavingPath(file) {
   return '/leaving';
 }
 
+/**
+ * @param {unknown} rawHref
+ * @param {string} warningPath
+ * @returns {string | null}
+ */
 function toExternalWarningHref(rawHref, warningPath) {
   if (typeof rawHref !== 'string' || !rawHref) return null;
 
@@ -78,6 +92,10 @@ function toExternalWarningHref(rawHref, warningPath) {
 }
 
 function remarkExternalLinkNotice() {
+  /**
+   * @param {any} tree
+   * @param {any} file
+   */
   return (tree, file) => {
     const warningPath = getLocalizedLeavingPath(file);
 
@@ -99,6 +117,10 @@ function remarkExternalLinkNotice() {
 
 const remarkPlugins = [remarkGfm, remarkDirective, remarkDirectiveToDiv, remarkExternalLinkNotice];
 
+/**
+ * @param {string} dir
+ * @returns {AsyncGenerator<string, void, unknown>}
+ */
 async function* walkHtmlFiles(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
 
@@ -116,7 +138,11 @@ function localizedExternalNoticeOutput() {
   return {
     name: 'localized-external-notice-output',
     hooks: {
-      'astro:build:done': async ({ dir }) => {
+      /**
+       * @param {{ dir: URL }} context
+       */
+      'astro:build:done': async context => {
+        const { dir } = context;
         const distDir = fileURLToPath(dir);
         const localeTargets = [
           { dir: path.join(distDir, 'zh-tw'), leavingPath: '/zh-tw/leaving' },

@@ -22,6 +22,16 @@ window.addEventListener('DOMContentLoaded', function () {
       return 'en';
     }
 
+    function getCategoryRouteSegment(segment) {
+      return String(segment)
+        .trim()
+        .replace(/&/g, ' and ')
+        .replace(/[\\/:*?"<>|#%{}^~[\]`]+/g, ' ')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+    }
+
     var lastLang = getPathLang(lastPath);
 
     if (lastLang !== lang) {
@@ -29,9 +39,15 @@ window.addEventListener('DOMContentLoaded', function () {
       var hasPrefix = parts[0] === 'zh-tw' || parts[0] === 'zh-cn';
 
       if (lastPath.indexOf('/categories/') !== -1) {
-        var catName = decodeURIComponent(parts[hasPrefix ? 2 : 1] || '');
-        var targetCat = categoryMapping[catName] || currentCategory;
-        var catPath = '/categories/' + encodeURIComponent(targetCat) + '/1';
+        var categoryStart = hasPrefix ? 2 : 1;
+        var categoryParts = parts.slice(categoryStart);
+        if (/^\d+$/.test(categoryParts[categoryParts.length - 1] || '')) categoryParts.pop();
+        var catName = categoryParts.map(decodeURIComponent).join('/');
+        var mapped = categoryMapping[catName] || {};
+        var targetCat = mapped[lang] || currentCategory;
+        var targetParts = String(targetCat).split('/').filter(Boolean);
+        var routeParts = targetParts.map(getCategoryRouteSegment).filter(Boolean);
+        var catPath = '/categories/' + routeParts.map(encodeURIComponent).join('/') + '/1';
         lastPath = lang === 'en' ? catPath : '/' + lang + catPath;
       } else if (lastPath.indexOf('/tags/') !== -1) {
         var tagName = decodeURIComponent(parts[hasPrefix ? 2 : 1] || '');

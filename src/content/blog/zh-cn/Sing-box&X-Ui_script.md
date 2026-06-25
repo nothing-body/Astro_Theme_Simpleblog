@@ -3,7 +3,8 @@ title: 'sing-box 一键安装与配置脚本推荐'
 pubDate: 2026-05-21
 description: 'sing-box 轻松部署'
 category: '软件'
-tags: ['sing-box']
+categoryPath: ['软件', '网络工具']
+tags: ['网络工具']
 ---
 
 此脚本是简单、功能较少但一眼就能看懂的部署脚本：

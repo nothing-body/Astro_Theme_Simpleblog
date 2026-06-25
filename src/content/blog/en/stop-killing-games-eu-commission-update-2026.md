@@ -2,8 +2,9 @@
 title: 'Stop Killing Games Update: EU Commission Response, Ubisoft Meeting Controversy, and What Comes Next'
 pubDate: 2026-06-18
 description: 'A current factual update on Stop Killing Games / Stop Destroying Videogames in June 2026, covering the EU Commission response, Ubisoft and Video Games Europe meeting controversy, and the Digital Fairness Act route.'
-category: 'Daily'
-tags: ['Stop Killing Games', 'Digital Ownership', 'Gaming', 'Consumer Rights', 'EU']
+category: 'Digital Rights'
+categoryPath: ['Digital Rights', 'Gaming']
+tags: ['Digital Rights', 'Gaming', 'Consumer Rights']
 ---
 
 > Checked on 2026-06-18. This article only summarizes information that can be verified from EU pages, the European Commission press release, Stop Killing Games' official site, and recent reporting. Unpublished meeting details and full attendee lists are not treated as facts.

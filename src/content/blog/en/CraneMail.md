@@ -1,8 +1,9 @@
 ---
 title: 'NameCrane - CraneMail'
 pubDate: 2026-04-06
-category: 'Mail'
-tags: ['namecrane', 'CraneMail', 'Managed Mail']
+category: 'Privacy & Mail'
+categoryPath: ['Privacy & Mail', 'Email']
+tags: ['Email', 'Privacy']
 ---
 
 # Introduction to Crane Mail

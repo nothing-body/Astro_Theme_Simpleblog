@@ -3,7 +3,8 @@ title: 'Visualizing Docker Compose Stacks with Dockge & Tuning WebSockets'
 pubDate: 2026-05-21
 description: 'Learn how to deploy Dockge, a visual Docker Compose manager, on a Debian VPS. This guide walks you through secure installation, troubleshooting the Docker-UFW bypass, and configuring Nginx reverse proxy for WebSockets.'
 category: 'Software'
-tags: ['Docker', 'Dockge', 'Nginx', 'Linux']
+categoryPath: ['Software', 'Self-hosted']
+tags: ['Docker', 'Self-hosted']
 ---
 
 When managing self-hosted services, raw command-line `docker compose` is incredibly powerful but lacks a visual dashboard. **Dockge** is a sleek, responsive, and specialized visual manager for Docker Compose. It lets you write, edit, and manage `docker-compose.yml` stacks, check real-time logs, and access an interactive terminal directly from your web browser.

@@ -371,7 +371,7 @@ function scanLocaleRoutes() {
     'no-category.astro',
     'page/[page].astro',
     'posts/[...slug].astro',
-    'categories/[category]/[page].astro',
+    'categories/[...categoryPath].astro',
     'tags/[tag]/[page].astro',
   ];
 
@@ -569,13 +569,28 @@ function scanRobots() {
   } else {
     const robotsText = fs.readFileSync(robotsBuilt, 'utf8');
     const readGroup = agent => {
-      const match = robotsText.match(
-        new RegExp(`User-agent:\\s*${agent}\\s*\\n([\\s\\S]*?)(?=\\nUser-agent:|\\nSitemap:|$)`, 'i')
-      );
-      return match ? match[1] : '';
+      const lines = robotsText.split(/\r?\n/);
+      const group = [];
+      let collecting = false;
+
+      for (const line of lines) {
+        const userAgent = line.match(/^User-agent:\s*(.+?)\s*$/i)?.[1];
+        if (userAgent) {
+          if (collecting) break;
+          collecting = userAgent.toLowerCase() === agent.toLowerCase();
+          continue;
+        }
+
+        if (collecting) {
+          if (/^Sitemap:/i.test(line)) break;
+          group.push(line);
+        }
+      }
+
+      return group.join('\n');
     };
     const googlebotGroup = readGroup('Googlebot');
-    const wildcardGroup = readGroup('\\*');
+    const wildcardGroup = readGroup('*');
     if (!/Allow:\s*\//i.test(googlebotGroup)) {
       failures += fail('dist/robots.txt must allow Googlebot to crawl the site (Allow: /).');
     }
@@ -707,14 +722,14 @@ function scanDeadComponents(files) {
     const relPath = `src/components/${entry}`;
     if (optionalComponents.has(relPath)) continue;
     const importName = entry.replace(/\.astro$/, '');
-    const patterns = [
-      new RegExp(`from\\s+['"]\\.\\./components/${importName}\\.astro['"]`),
-      new RegExp(`from\\s+['"]\\.\\./\\.\\./components/${importName}\\.astro['"]`),
-      new RegExp(`from\\s+['"]\\.\\./components/${importName}['"]`),
-      new RegExp(`from\\s+['"]\\.\\./\\.\\./components/${importName}['"]`),
-      new RegExp(`<${importName}\\b`),
+    const references = [
+      `../components/${importName}.astro`,
+      `../../components/${importName}.astro`,
+      `../components/${importName}`,
+      `../../components/${importName}`,
+      `<${importName}`,
     ];
-    if (!patterns.some(pattern => pattern.test(corpus))) {
+    if (!references.some(reference => corpus.includes(reference))) {
       failures += fail(`Unused Astro component (dead code): ${relPath}`);
     }
   }
@@ -742,9 +757,9 @@ function scanDeadExports() {
       })
       .map(file => fs.readFileSync(file, 'utf8'))
       .join('\n');
+    const identifiers = new Set(corpus.match(/\b[A-Za-z_$][\w$]*\b/g) ?? []);
     for (const name of exported) {
-      const usage = new RegExp(`\\b${name}\\b`);
-      if (!usage.test(corpus)) failures += fail(`Exported helper appears unused: ${name}()`);
+      if (!identifiers.has(name)) failures += fail(`Exported helper appears unused: ${name}()`);
     }
   }
 

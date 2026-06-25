@@ -2,7 +2,8 @@
 title: '打造专属的安全私密日记本：DailyTxT 介绍与服务器部署指南'
 pubDate: 2026-05-02
 category: '软件'
-tags: ['DailyTxT', 'Self-hosted', '日记']
+categoryPath: ['软件', '自托管']
+tags: ['自托管', '个人数据']
 ---
 
 在数字时代，我们的生活轨迹往往散落在各大云服务中，然而对于真正私密的日记与灵感，许多人更倾向于“完全掌握在自己手中”。[DailyTxT](https://github.com/PhiTux/DailyTxT) 应运而生，它是一款专为隐私设计的加密网页版日记/笔记应用程序。

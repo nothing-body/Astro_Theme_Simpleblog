@@ -3,7 +3,8 @@ title: 'KaraKeep (Hoarder) 三合一 AI 智能书签与笔记系统'
 pubDate: 2026-05-21
 description: 'KaraKeep (原名 Hoarder) AI 书签笔记生态系统。结合 Meilisearch 全文搜索引擎与 Headless Chrome 网页快照引擎。'
 category: '软件'
-tags: ['Docker', 'KaraKeep']
+categoryPath: ['软件', '自托管']
+tags: ['Docker', '自托管', 'AI']
 ---
 
 在信息爆炸的时代，我们每天都会阅读大量的网页、文章与贴图。**KaraKeep**（原名 **Hoarder**，于 2025 年 4 月 正式更名）是一款功能极为强大的全功能 AI 数据与书签收集工具。它不仅支持网页链接、纯文本与图片的收集，还能通过自定义的 AI 模型对内容进行自动分类、标签与摘要。

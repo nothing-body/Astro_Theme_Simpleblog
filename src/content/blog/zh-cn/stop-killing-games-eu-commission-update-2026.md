@@ -2,8 +2,9 @@
 title: 'Stop Killing Games 最新进度：欧盟委员会回应、Ubisoft 闭门会议争议与后续路线'
 pubDate: 2026-06-18
 description: '整理 Stop Killing Games / Stop Destroying Videogames 在 2026 年 6 月的最新进度，包括欧盟委员会回应、Ubisoft 与 Video Games Europe 会议争议，以及 Digital Fairness Act 后续方向。'
-category: '日常'
-tags: ['Stop Killing Games', 'Digital Ownership', 'Gaming', 'Consumer Rights', 'EU']
+category: '数字权益'
+categoryPath: ['数字权益', '游戏']
+tags: ['数字权益', '游戏', '消费者权益']
 ---
 
 > 查询日期：2026-06-18。本文只整理欧盟官方页面、欧盟委员会新闻稿、Stop Killing Games 官方网站与近期媒体报道中可核实的信息；未公开的会议内容与完整出席名单不写成事实。

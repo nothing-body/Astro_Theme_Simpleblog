@@ -1,0 +1,75 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Sidebar from '../../../components/Sidebar.astro';
+import PostCard from '../../../components/PostCard.astro';
+import Pagination from '../../../components/Pagination.astro';
+import { useTranslations } from '../../../i18n/utils';
+import {
+  getCategoryPageEntries,
+  getCategoryUrl,
+  parseCategoryRoutePath,
+} from '../../../lib/categories';
+
+export async function getStaticPaths() {
+  const PAGE_SIZE = 5;
+  const allPosts = await getCollection(
+    'blog',
+    ({ id, data }) => id.startsWith('zh-tw/') && !data.draft
+  );
+  const globalPosts = await getCollection('blog', ({ data }) => !data.draft);
+  const entries = getCategoryPageEntries(allPosts, PAGE_SIZE, globalPosts);
+
+  return entries.flatMap(entry =>
+    Array.from({ length: entry.totalPages }, (_, index) => ({
+      params: { categoryPath: `${entry.routePath}/${index + 1}` },
+      props: {
+        allPosts,
+        categoryPosts: entry.posts,
+        currentCategoryPath: entry.path,
+        totalPages: entry.totalPages,
+      },
+    }))
+  );
+}
+
+const { allPosts, categoryPosts, currentCategoryPath, totalPages } = Astro.props;
+const PAGE_SIZE = 5;
+const { page } = parseCategoryRoutePath(Astro.params.categoryPath);
+const t = useTranslations('zh-tw');
+const currentPage = page;
+const currentCategory = currentCategoryPath.join(' / ');
+const posts = categoryPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+const getPageUrl = (n: number) => getCategoryUrl('zh-tw', currentCategoryPath, n);
+---
+
+<BaseLayout title={`${currentCategory} - ${t('sidebar.categories')}`}>
+  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+    <div class="content-wrapper">
+      <Sidebar
+        allPosts={allPosts}
+        lang="zh-tw"
+        activeCategory={currentCategoryPath.at(0)}
+        activeCategoryPath={currentCategoryPath}
+      />
+      <main id="main-content" class="main-content">
+        <h1
+          style="font-size:1.6rem; font-weight:800; color:var(--text-heading); margin-bottom:1.5rem;"
+        >
+          {t('sidebar.categories')}：{currentCategory}
+        </h1>
+        {posts.map(post => <PostCard post={post} lang="zh-tw" />)}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          prevUrl={currentPage > 1 ? getPageUrl(currentPage - 1) : undefined}
+          nextUrl={currentPage < totalPages ? getPageUrl(currentPage + 1) : undefined}
+          getPageUrl={getPageUrl}
+          lang="zh-tw"
+        />
+      </main>
+    </div>
+  </div>
+
+  <script is:inline src="/scripts/bb-last-list.js" defer></script>
+</BaseLayout>
