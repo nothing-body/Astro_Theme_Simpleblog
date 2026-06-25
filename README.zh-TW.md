@@ -1,9 +1,9 @@
-# Tena's Blog
+# SimpleBlog
 
 使用 Astro 建置的多語靜態部落格模板，支援 Markdown/MDX 文章、SEO metadata、外部連結提醒頁、部署輔助腳本與專案自我檢查。
 
 <p align="center">
-  <a href="https://blog.gkbb.de/">Live Demo</a>
+  <a href="https://example.com/">正式網站</a>
   &middot;
   <a href="./README.md">English README</a>
 </p>

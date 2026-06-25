@@ -1,5 +1,4 @@
-# Tena's Blog
-
+# SimpleBlog
 Personal Astro static blog with multilingual content, Markdown/MDX posts, SEO metadata, external-link warning pages, deployment automation, and project self-check scripts.
 
 <p align="center">
