@@ -7,6 +7,7 @@ Personal Astro static blog with multilingual content, Markdown/MDX posts, SEO me
   <a href="./README.zh-TW.md">Traditional Chinese README</a>
 </p>
 
+
 ## Current Structure
 
 English is the default locale at `/`. Traditional Chinese uses `/zh-tw/`, and Simplified Chinese uses `/zh-cn/`.
