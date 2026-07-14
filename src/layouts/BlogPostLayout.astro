@@ -5,7 +5,7 @@ import type { CollectionEntry } from 'astro:content';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import PostCopyright from '../components/PostCopyright.astro';
 import {
-  getDynamicCategoryMapping,
+  buildDynamicCategoryMapping,
   getLangFromUrl,
   useTranslatedPath,
   useTranslations,
@@ -40,7 +40,6 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const translatePath = useTranslatedPath(lang);
 
-const categoryMapping = await getDynamicCategoryMapping();
 const uncategorized = t('post.uncategorized');
 const currentCategory = frontmatter.category ?? uncategorized;
 const currentCategoryPath = getCategoryPathFromData({
@@ -48,6 +47,7 @@ const currentCategoryPath = getCategoryPathFromData({
   categoryPath: frontmatter.categoryPath,
 });
 const allBlogPosts = await getCollection('blog', ({ data }) => !data.draft);
+const categoryMapping = buildDynamicCategoryMapping(allBlogPosts);
 const normalizedCategoryPath = post
   ? getNormalizedPostCategoryPath(post, allBlogPosts)
   : currentCategoryPath;
@@ -152,7 +152,7 @@ const breadcrumbs = [
             (frontmatter.tags ?? []).length > 0 && (
               <div class="post-tags-row" aria-label={tagsLabel}>
                 {(frontmatter.tags ?? []).map((tag: string) => (
-                  <a href={translatePath(`/tags/${encodeURIComponent(tag)}/1`)} class="inline-tag">
+                  <a href={translatePath(`/tags/${encodeURIComponent(tag)}/1/`)} class="inline-tag">
                     #{tag}
                   </a>
                 ))}

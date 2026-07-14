@@ -1,28 +1,25 @@
 ---
-import {
-  getDynamicCategoryMapping,
-  getLangFromUrl,
-  getTargetLangPath,
-  useTranslatedPath,
-  useTranslations,
-} from '../i18n/utils';
-import { languages } from '../i18n/ui';
+import { getLangFromUrl, useTranslatedPath, useTranslations } from '../i18n/utils';
+import { languages, type Lang } from '../i18n/ui';
 import { SITE_NAME } from '../lib/site';
+import type { LanguageRoute } from '../types';
 
+export interface Props {
+  languageRoutes: Record<Lang, LanguageRoute>;
+}
+
+const { languageRoutes } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const translatePath = useTranslatedPath(lang);
-const categoryMapping = await getDynamicCategoryMapping();
 const currentPath = Astro.url.pathname;
 
-const languagePaths = await Promise.all(
-  (Object.keys(languages) as (keyof typeof languages)[]).map(async code => ({
+const languagePaths = (Object.keys(languages) as Lang[]).map(code => ({
     code,
     label: languages[code],
-    path: await getTargetLangPath(Astro.url, code, categoryMapping),
+    path: languageRoutes[code].path,
     hreflang: code === 'zh-tw' ? 'zh-TW' : code === 'zh-cn' ? 'zh-CN' : 'en',
-  }))
-);
+  }));
 
 const copy = {
   skip: t('a11y.skipToMain'),

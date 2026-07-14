@@ -42,6 +42,17 @@
   }
 
   function prefetch(link) {
+    var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (
+      document.visibilityState !== 'visible' ||
+      (connection &&
+        (connection.saveData ||
+          connection.effectiveType === 'slow-2g' ||
+          connection.effectiveType === '2g'))
+    ) {
+      return;
+    }
+
     var href = link.href;
     if (!href || prefetched.has(href)) return;
 

@@ -5,10 +5,10 @@ import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import Sidebar from '../../../../components/Sidebar.astro';
 import PostCard from '../../../../components/PostCard.astro';
 import Pagination from '../../../../components/Pagination.astro';
-import { sortBlogPosts } from '../../../../lib/posts';
+import { sortBlogPosts, paginatePosts, getTotalPages } from '../../../../lib/posts';
+import { getTagListUrl } from '../../../../lib/routes';
 
 export async function getStaticPaths() {
-  const PAGE_SIZE = 5;
   const allPosts = await getCollection(
     'blog',
     ({ id, data }) => id.startsWith('zh-cn/') && !data.draft
@@ -31,7 +31,7 @@ export async function getStaticPaths() {
   }[] = [];
   for (const [tag, tagPosts] of tagMap) {
     const sorted = sortBlogPosts(tagPosts);
-    const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+    const totalPages = getTotalPages(sorted.length);
     for (let i = 1; i <= totalPages; i++) {
       paths.push({
         params: { tag, page: String(i) },
@@ -43,17 +43,16 @@ export async function getStaticPaths() {
 }
 
 const { allPosts, tagPosts, currentTag, totalPages } = Astro.props;
-const PAGE_SIZE = 5;
 const currentPage = Number(Astro.params.page);
-const posts = tagPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-const getPageUrl = (n: number) => `/zh-cn/tags/${encodeURIComponent(currentTag)}/${n}`;
+const posts = paginatePosts(tagPosts, currentPage);
+const getPageUrl = (n: number) => getTagListUrl('zh-cn', currentTag, n);
 ---
 
 <BaseLayout title={`#${currentTag} — 标签`}>
   <div class="page-container" style="padding-top:2rem; padding-bottom:4rem;">
     <div class="content-wrapper">
       <Sidebar allPosts={allPosts} lang="zh-cn" activeTag={currentTag} />
-      <main id="main-content" class="main-content">
+      <div class="main-content">
         <h1
           style="font-size:1.6rem; font-weight:800; color:var(--text-heading); margin-bottom:1.5rem;"
         >
@@ -68,7 +67,7 @@ const getPageUrl = (n: number) => `/zh-cn/tags/${encodeURIComponent(currentTag)}
           getPageUrl={getPageUrl}
           lang="zh-cn"
         />
-      </main>
+      </div>
     </div>
   </div>
 

@@ -1,4 +1,3 @@
-import { getCollection } from 'astro:content';
 import { ui, defaultLang, type Lang, type TranslationKey } from './ui';
 import {
   categoryPathStartsWith,
@@ -6,6 +5,15 @@ import {
   getCategoryUrl,
   getNormalizedPostCategoryPath,
 } from '../lib/categories';
+import { POSTS_PAGE_SIZE, getTotalPages, type BlogPost } from '../lib/posts';
+import {
+  getPostsListUrl,
+  getPostsPageUrl,
+  getTagListUrl,
+  stripLocalePathParts,
+} from '../lib/routes';
+import { getCleanSlug, getPostUrl } from '../lib/utils';
+import type { LanguageRoute } from '../types';
 
 export function getLangFromUrl(url: URL): Lang {
   const [, firstSegment] = url.pathname.split('/');
@@ -33,8 +41,9 @@ export function useTranslatedPath(lang: Lang) {
   };
 }
 
-export async function getDynamicCategoryMapping(): Promise<Record<string, Record<string, string>>> {
-  const allPosts = await getCollection('blog');
+export function buildDynamicCategoryMapping(
+  allPosts: BlogPost[]
+): Record<string, Record<string, string>> {
   const mapping: Record<string, Record<string, string>> = {};
   const postsByPath: Record<string, Record<string, string>> = {};
 
@@ -88,17 +97,74 @@ export async function getDynamicCategoryMapping(): Promise<Record<string, Record
   return mapping;
 }
 
-export async function getTargetLangPath(
+export function buildDynamicTagMapping(
+  allPosts: BlogPost[]
+): Record<string, Record<string, string>> {
+  const mapping: Record<string, Record<string, string>> = {};
+  const postsByPath = new Map<string, Partial<Record<Lang, BlogPost>>>();
+
+  for (const post of allPosts) {
+    const [locale, ...relativeParts] = post.id.split('/');
+    if (!(locale in ui) || relativeParts.length === 0) continue;
+
+    const relativePath = relativeParts.join('/');
+    const translations = postsByPath.get(relativePath) ?? {};
+    translations[locale as Lang] = post;
+    postsByPath.set(relativePath, translations);
+  }
+
+  for (const translations of postsByPath.values()) {
+    for (const sourcePost of Object.values(translations)) {
+      if (!sourcePost) continue;
+
+      sourcePost.data.tags.forEach((sourceTag, index) => {
+        const targetByLanguage = (mapping[sourceTag] ??= {});
+
+        for (const [targetLang, targetPost] of Object.entries(translations)) {
+          const targetTag = targetPost?.data.tags[index];
+          if (targetTag) targetByLanguage[targetLang] = targetTag;
+        }
+      });
+    }
+  }
+
+  return mapping;
+}
+
+function unavailableRoute(targetLang: Lang): LanguageRoute {
+  const path = targetLang === defaultLang ? '/no-category' : `/${targetLang}/no-category`;
+  return { path, canonicalPath: path, available: false };
+}
+
+function route(path: string, canonicalPath = path): LanguageRoute {
+  const normalizedCanonical =
+    canonicalPath === '/' || canonicalPath.endsWith('/') ? canonicalPath : `${canonicalPath}/`;
+  return { path, canonicalPath: normalizedCanonical, available: true };
+}
+
+export function getTargetLangRoute(
   currentUrl: URL,
   targetLang: Lang,
-  categoryMapping: Record<string, Record<string, string>>
-): Promise<string> {
-  const allPosts = await getCollection('blog');
+  categoryMapping: Record<string, Record<string, string>>,
+  tagMapping: Record<string, Record<string, string>>,
+  allPosts: BlogPost[]
+): LanguageRoute {
   const targetPosts = allPosts.filter(p => p.id.startsWith(`${targetLang}/`));
-  const parts = currentUrl.pathname.split('/').filter(Boolean);
+  const parts = stripLocalePathParts(currentUrl.pathname.split('/').filter(Boolean));
 
-  if (parts[0] && parts[0] in ui && parts[0] !== defaultLang) {
-    parts.shift();
+  if (parts[0] === 'posts' && parts.length > 1) {
+    const slug = decodeURIComponent(parts.slice(1).join('/'));
+    const targetPost = targetPosts.find(post => getCleanSlug(post.id) === slug);
+    return targetPost ? route(getPostUrl(targetPost.id, targetLang)) : unavailableRoute(targetLang);
+  }
+
+  if (parts[0] === 'posts') {
+    return route(getPostsListUrl(targetLang, 1), getPostsPageUrl(targetLang, 1));
+  }
+
+  if (parts[0] === 'page' && parts[1] && /^\d+$/.test(parts[1])) {
+    const page = Math.min(Number(parts[1]), getTotalPages(targetPosts.length));
+    return route(getPostsPageUrl(targetLang, page));
   }
 
   if (parts[0] === 'categories' && parts[1]) {
@@ -114,25 +180,37 @@ export async function getTargetLangPath(
         categoryPathStartsWith(getNormalizedPostCategoryPath(p, allPosts), targetPath)
       );
       if (hasPosts) {
-        return getCategoryUrl(targetLang, targetPath, 1);
+        const requestedPage = lastPart && /^\d+$/.test(lastPart) ? Number(lastPart) : 1;
+        const matchingPosts = targetPosts.filter(p =>
+          categoryPathStartsWith(getNormalizedPostCategoryPath(p, allPosts), targetPath)
+        );
+        const page = Math.min(requestedPage, getTotalPages(matchingPosts.length, POSTS_PAGE_SIZE));
+        return route(getCategoryUrl(targetLang, targetPath, page));
       }
     }
-    return targetLang === defaultLang ? '/no-category' : `/${targetLang}/no-category`;
+    return unavailableRoute(targetLang);
   }
 
   if (parts[0] === 'tags' && parts[1]) {
     const currentTag = decodeURIComponent(parts[1]);
-    const hasPosts = targetPosts.some(p => p.data.tags.includes(currentTag));
+    const targetTag = targetPosts.some(p => p.data.tags.includes(currentTag))
+      ? currentTag
+      : tagMapping[currentTag]?.[targetLang];
+    const matchingPosts = targetTag
+      ? targetPosts.filter(p => p.data.tags.includes(targetTag))
+      : [];
+    const hasPosts = matchingPosts.length > 0;
     if (hasPosts) {
-      const basePath = `/tags/${encodeURIComponent(currentTag)}/1`;
-      return targetLang === defaultLang ? basePath : `/${targetLang}${basePath}`;
+      const requestedPage = parts[2] && /^\d+$/.test(parts[2]) ? Number(parts[2]) : 1;
+      const page = Math.min(requestedPage, getTotalPages(matchingPosts.length, POSTS_PAGE_SIZE));
+      return route(getTagListUrl(targetLang, targetTag, page));
     }
-    return targetLang === defaultLang ? '/no-category' : `/${targetLang}/no-category`;
+    return unavailableRoute(targetLang);
   }
 
   const basePath = parts.length === 0 ? '/' : `/${parts.join('/')}`;
   if (targetLang === defaultLang) {
-    return basePath;
+    return route(basePath);
   }
-  return basePath === '/' ? `/${targetLang}` : `/${targetLang}${basePath}`;
+  return route(basePath === '/' ? `/${targetLang}` : `/${targetLang}${basePath}`);
 }

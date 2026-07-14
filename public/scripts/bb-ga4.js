@@ -30,5 +30,12 @@
 
   window.__loadGa4IfConsented = loadGa4;
   loadGa4();
-  document.addEventListener('privacy-settings-updated', loadGa4);
+  document.addEventListener('privacy-settings-updated', function (event) {
+    var next = event.detail;
+    if (loaded && (!next || next.enableAnalytics !== true)) {
+      window.location.reload();
+      return;
+    }
+    loadGa4();
+  });
 })();

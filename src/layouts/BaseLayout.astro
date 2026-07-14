@@ -3,7 +3,14 @@ import HeadMeta from '../components/HeadMeta.astro';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import CookieConsent from '../components/CookieConsent.astro';
-import { getLangFromUrl } from '../i18n/utils';
+import { getCollection } from 'astro:content';
+import { languages, type Lang } from '../i18n/ui';
+import {
+  buildDynamicCategoryMapping,
+  buildDynamicTagMapping,
+  getLangFromUrl,
+  getTargetLangRoute,
+} from '../i18n/utils';
 import '../styles/global.css';
 
 export interface Props {
@@ -42,6 +49,15 @@ const lang = getLangFromUrl(Astro.url);
 const htmlLang = lang === 'en' ? 'en' : lang === 'zh-cn' ? 'zh-CN' : 'zh-TW';
 const ga4Id = import.meta.env.PUBLIC_GA4_ID ?? '';
 const finalCanonical = customCanonical ?? canonicalUrl;
+const allBlogPosts = await getCollection('blog', ({ data }) => !data.draft);
+const categoryMapping = buildDynamicCategoryMapping(allBlogPosts);
+const tagMapping = buildDynamicTagMapping(allBlogPosts);
+const languageRoutes = Object.fromEntries(
+  (Object.keys(languages) as Lang[]).map(targetLang => [
+    targetLang,
+    getTargetLangRoute(Astro.url, targetLang, categoryMapping, tagMapping, allBlogPosts),
+  ])
+) as Record<Lang, ReturnType<typeof getTargetLangRoute>>;
 ---
 
 <!doctype html>
@@ -62,10 +78,11 @@ const finalCanonical = customCanonical ?? canonicalUrl;
       ga4Id={ga4Id}
       robots={robots}
       alternates={alternates}
+      languageRoutes={languageRoutes}
     />
   </head>
   <body>
-    <Navbar />
+    <Navbar languageRoutes={languageRoutes} />
     <CookieConsent lang={lang} />
 
     <main id="main-content" tabindex="-1">

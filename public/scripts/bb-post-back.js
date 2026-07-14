@@ -14,7 +14,15 @@ window.addEventListener('DOMContentLoaded', function () {
     var lastPath = sessionStorage.getItem('bb-last-list');
     var currentPath = window.location.pathname;
 
-    if (!lastPath || lastPath === currentPath || !/^\/[^/]/.test(lastPath)) return;
+    if (!lastPath || lastPath === currentPath) return;
+
+    try {
+      var lastUrl = new URL(lastPath, window.location.origin);
+      if (lastUrl.origin !== window.location.origin) return;
+      lastPath = lastUrl.pathname + lastUrl.search + lastUrl.hash;
+    } catch (_e) {
+      return;
+    }
 
     function getPathLang(path) {
       if (path.indexOf('/zh-tw/') === 0 || path === '/zh-tw') return 'zh-tw';
@@ -32,6 +40,11 @@ window.addEventListener('DOMContentLoaded', function () {
         .replace(/^-|-$/g, '');
     }
 
+    function postsListPath(targetLang, pageNum) {
+      var prefix = targetLang === 'en' ? '' : '/' + targetLang;
+      return pageNum <= 1 ? prefix + '/posts' : prefix + '/page/' + pageNum;
+    }
+
     var lastLang = getPathLang(lastPath);
 
     if (lastLang !== lang) {
@@ -47,14 +60,20 @@ window.addEventListener('DOMContentLoaded', function () {
         var targetCat = mapped[lang] || currentCategory;
         var targetParts = String(targetCat).split('/').filter(Boolean);
         var routeParts = targetParts.map(getCategoryRouteSegment).filter(Boolean);
-        var catPath = '/categories/' + routeParts.map(encodeURIComponent).join('/') + '/1';
+        var catPath = '/categories/' + routeParts.map(encodeURIComponent).join('/') + '/1/';
         lastPath = lang === 'en' ? catPath : '/' + lang + catPath;
       } else if (lastPath.indexOf('/tags/') !== -1) {
         var tagName = decodeURIComponent(parts[hasPrefix ? 2 : 1] || '');
-        var tagPath = '/tags/' + encodeURIComponent(tagName) + '/1';
+        var tagPath = '/tags/' + encodeURIComponent(tagName) + '/1/';
         lastPath = lang === 'en' ? tagPath : '/' + lang + tagPath;
+      } else if (lastPath.indexOf('/page/') !== -1) {
+        var pageParts = lastPath.split('/').filter(Boolean);
+        var pageIndex = pageParts.indexOf('page');
+        var pageNum = parseInt(pageParts[pageIndex + 1] || '1', 10);
+        if (!Number.isFinite(pageNum) || pageNum < 1) pageNum = 1;
+        lastPath = postsListPath(lang, pageNum);
       } else {
-        lastPath = lang === 'en' ? '/posts' : '/' + lang + '/posts';
+        lastPath = postsListPath(lang, 1);
       }
     }
 

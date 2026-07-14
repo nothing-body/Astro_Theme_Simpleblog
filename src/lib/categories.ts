@@ -1,9 +1,7 @@
-import type { CollectionEntry } from 'astro:content';
 import type { Lang } from '../i18n/ui';
 import { defaultLang } from '../i18n/ui';
+import type { BlogPost } from './posts';
 import { sortBlogPosts } from './posts';
-
-export type BlogPost = CollectionEntry<'blog'>;
 
 const PATH_SEPARATOR = '\u001f';
 
@@ -41,7 +39,7 @@ export function getCategoryPathFromData(data: {
   return category ? [category] : ['Uncategorized'];
 }
 
-export function getPostCategoryPath(post: BlogPost): string[] {
+function getPostCategoryPath(post: BlogPost): string[] {
   return getCategoryPathFromData(post.data);
 }
 
@@ -116,7 +114,7 @@ export function getCategoryUrl(lang: Lang, path: string[], page = 1): string {
     .split('/')
     .map(segment => encodeURIComponent(segment))
     .join('/');
-  return `${prefix}/categories/${encodedPath}/${page}`;
+  return `${prefix}/categories/${encodedPath}/${page}/`;
 }
 
 function localeForSort(lang: Lang): string {

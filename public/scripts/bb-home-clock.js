@@ -3,6 +3,9 @@
   var dateLocale = (script && script.getAttribute('data-date-locale')) || 'en-GB';
   var tzValue = 'auto';
   var clockTimer = null;
+  var formatterTimezone = null;
+  var dateFormatter = null;
+  var timeFormatter = null;
   var TZ_KEY = 'bb-tz';
 
   function getPart(parts, type) {
@@ -23,19 +26,24 @@
   function updateClock() {
     var now = new Date();
     var tz = tzValue === 'auto' ? undefined : tzValue;
-    var dateParts = new Intl.DateTimeFormat(dateLocale, {
-      timeZone: tz,
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }).formatToParts(now);
-    var timeParts = new Intl.DateTimeFormat(dateLocale, {
-      timeZone: tz,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    }).formatToParts(now);
+    if (!dateFormatter || !timeFormatter || formatterTimezone !== tzValue) {
+      dateFormatter = new Intl.DateTimeFormat(dateLocale, {
+        timeZone: tz,
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+      timeFormatter = new Intl.DateTimeFormat(dateLocale, {
+        timeZone: tz,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      });
+      formatterTimezone = tzValue;
+    }
+    var dateParts = dateFormatter.formatToParts(now);
+    var timeParts = timeFormatter.formatToParts(now);
     var dateEl = document.getElementById('clock-date');
     var timeEl = document.getElementById('clock-time');
     if (dateEl) {
@@ -99,7 +107,7 @@
         savedTz = localStorage.getItem(TZ_KEY);
       } catch (_e) {}
     }
-    if (savedTz) {
+    if (savedTz && tzList.indexOf(savedTz) !== -1) {
       tzValue = savedTz;
       tzSelect.value = savedTz;
       updateClock();

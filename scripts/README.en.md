@@ -45,6 +45,7 @@ Cloudflare Pages:
 - `CLOUDFLARE_ACCOUNT_ID`: Cloudflare account sidebar
 - `CLOUDFLARE_PAGES_PROJECT_NAME`: Cloudflare Pages project name
 - `PUBLIC_SITE_URL`: production URL used by Astro output
+- `PUBLIC_CONTACT_EMAIL`: public contact address required by the Astro build
 
 VPS:
 
@@ -60,8 +61,9 @@ Vercel:
 
 ## Non-Deployment Scripts
 
-- `analysis.mjs`: runs project checks and audits.
-- `run-e2e.mjs`: runs end-to-end tests.
+- `analysis.mjs`: checks code, CSS, SEO, security, privacy, content provenance, deployment paths, and documentation.
+- `clean-generated.mjs`: removes only the project `.astro` and `dist` directories before a clean build.
+- `run-e2e.mjs`: runs end-to-end tests and keeps browser output outside the repository.
 
 Run the fast self-check before publishing template changes:
 
@@ -75,7 +77,7 @@ Run the full analysis when checking a larger change:
 pnpm analyze
 ```
 
-The analysis script checks `.gitignore` coverage, dangerous code patterns, important component wiring, public scripts, and suspicious sensitive files.
+The analysis script checks `.gitignore` coverage, dangerous code patterns, important component wiring, public scripts, suspicious sensitive files, built-content provenance, local documentation links, and documented package commands.
 
 ## Package Manager Support
 
@@ -144,11 +146,9 @@ If `VPS_USER` is not `root`, it may not be allowed to write to `/var/www/...`. I
 The repository `.gitignore` should keep secrets and generated output out of commits:
 
 ```text
-.env
-.env.cloudflare
-.env.vps
-.env.vercel
-.env*.secret
+.env*
+!.env.example
+!.env.*.example
 .npmrc
 .yarnrc
 .pnpmrc

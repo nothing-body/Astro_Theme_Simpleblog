@@ -46,17 +46,20 @@ const pinnedLabel = t('post.pinned');
   .post-card {
     display: block;
     height: 100%;
+    overflow: visible;
     content-visibility: auto;
     contain-intrinsic-size: auto 180px;
     transition:
       transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-      box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @media (hover: hover) {
     .post-card:hover {
-      transform: translateY(-5px) scale(1.01);
+      transform: translateY(-4px);
       box-shadow: var(--shadow-card-hover);
+      border-color: var(--glass-border);
     }
   }
 

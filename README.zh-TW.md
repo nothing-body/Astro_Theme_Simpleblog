@@ -6,6 +6,8 @@
   <a href="https://blog.gkbb.de/">Live Demo</a>
   &middot;
   <a href="./README.md">English README</a>
+  &middot;
+  <a href="./README.zh-CN.md">簡體中文 README</a>
 </p>
 
 ## 目前結構
@@ -26,6 +28,18 @@ tests/                     單元與端對端測試
 ```
 
 ## 內容寫作
+
+完整指南：
+
+- [英文 Markdown 指南](./MARKDOWN_GUIDE.en.md)
+- [繁體中文 Markdown 指南](./MARKDOWN_GUIDE.zh-TW.md)
+- [簡體中文 Markdown 指南](./MARKDOWN_GUIDE.zh-CN.md)
+
+其他教學：
+
+- 書籤：[英文](./BOOKMARKS_GUIDE.en.md) · [繁體中文](./BOOKMARKS_GUIDE.zh-TW.md) · [簡體中文](./BOOKMARKS_GUIDE.zh-CN.md)
+- 部署：[英文](./DEPLOYMENT.en.md) · [繁體中文](./DEPLOYMENT.zh-TW.md) · [簡體中文](./DEPLOYMENT.zh-CN.md)
+- 腳本：[英文](./scripts/README.en.md) · [繁體中文](./scripts/README.zh-TW.md) · [簡體中文](./scripts/README.zh-CN.md)
 
 每篇文章使用 frontmatter 管理標題、摘要、日期、分類與標籤。
 
@@ -61,6 +75,16 @@ categoryPath:
 請使用 `.env.example`、`.env.cloudflare.example`、`.env.vercel.example`、`.env.vps.example` 作為範本。
 
 不要提交真實 `.env` 檔、API token、私鑰、帳號 ID、站點驗證檔、真實分析 ID 或私人部署目標。公開版本應保留通用範例值，例如 `https://example.com/` 與 `contact@example.com`。
+
+建置前至少設定：
+
+```env
+PUBLIC_SITE_URL=https://example.com
+PUBLIC_CONTACT_EMAIL=contact@example.com
+PUBLIC_GA4_ID=
+```
+
+實際搭建時在未提交的 `.env` 或平台變數替換前兩個值。`PUBLIC_GA4_ID` 不使用時可留空。
 
 ## 常用命令
 

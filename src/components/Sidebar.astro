@@ -1,19 +1,26 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { getCollection } from 'astro:content';
 import { useTranslations } from '../i18n/utils';
 import CategoryTree from './CategoryTree.astro';
 import { buildCategoryTree, getCategoryPathKey } from '../lib/categories';
 
 export interface Props {
   allPosts: CollectionEntry<'blog'>[];
+  globalPosts?: CollectionEntry<'blog'>[];
   lang?: 'zh-tw' | 'en' | 'zh-cn';
   activeCategory?: string;
   activeCategoryPath?: string[];
   activeTag?: string;
 }
 
-const { allPosts, lang = 'zh-tw', activeCategory, activeCategoryPath, activeTag } = Astro.props;
+const {
+  allPosts,
+  globalPosts = allPosts,
+  lang = 'zh-tw',
+  activeCategory,
+  activeCategoryPath,
+  activeTag,
+} = Astro.props;
 const t = useTranslations(lang);
 
 const pathPrefix = lang === 'en' ? '' : `/${lang}`;
@@ -25,7 +32,6 @@ const sidebarLabel = t('sidebar.label');
 const normalizedActivePath = activeCategoryPath ?? (activeCategory ? [activeCategory] : []);
 const activePathKey =
   normalizedActivePath.length > 0 ? getCategoryPathKey(normalizedActivePath) : undefined;
-const globalPosts = await getCollection('blog', ({ data }) => !data.draft);
 const categoryTree = buildCategoryTree(allPosts, lang, normalizedActivePath, globalPosts);
 
 const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
@@ -48,7 +54,7 @@ const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
       {
         allTags.map(tag => (
           <a
-            href={tag === activeTag ? postsHref : `${pathPrefix}/tags/${encodeURIComponent(tag)}/1`}
+            href={tag === activeTag ? postsHref : `${pathPrefix}/tags/${encodeURIComponent(tag)}/1/`}
             class:list={['tag-box', { 'tag-box--active': tag === activeTag }]}
             data-sidebar-filter-link
             data-filter-kind="tag"

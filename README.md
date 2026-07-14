@@ -5,6 +5,8 @@ Personal Astro static blog with multilingual content, Markdown/MDX posts, SEO me
   <a href="https://blog.gkbb.de/">Live Demo</a>
   &middot;
   <a href="./README.zh-TW.md">Traditional Chinese README</a>
+  &middot;
+  <a href="./README.zh-CN.md">Simplified Chinese README</a>
 </p>
 
 
@@ -48,12 +50,16 @@ These generate `/posts/getting-started`, `/zh-tw/posts/getting-started`, and `/z
 
 - [Markdown writing guide](./MARKDOWN_GUIDE.en.md)
 - [Traditional Chinese Markdown writing guide](./MARKDOWN_GUIDE.zh-TW.md)
+- [Simplified Chinese Markdown writing guide](./MARKDOWN_GUIDE.zh-CN.md)
 - [Bookmark guide](./BOOKMARKS_GUIDE.en.md)
 - [Traditional Chinese bookmark guide](./BOOKMARKS_GUIDE.zh-TW.md)
+- [Simplified Chinese bookmark guide](./BOOKMARKS_GUIDE.zh-CN.md)
 - [Deployment guide](./DEPLOYMENT.en.md)
 - [Traditional Chinese deployment guide](./DEPLOYMENT.zh-TW.md)
+- [Simplified Chinese deployment guide](./DEPLOYMENT.zh-CN.md)
 - [Scripts overview](./scripts/README.en.md)
 - [Traditional Chinese scripts overview](./scripts/README.zh-TW.md)
+- [Simplified Chinese scripts overview](./scripts/README.zh-CN.md)
 
 ## What To Configure
 
@@ -71,7 +77,8 @@ Only commit the `.example` files. The real `.env*` files contain local values an
 
 Required deployment values:
 
-- Cloudflare Pages: API token, Account ID, Pages project name, and `PUBLIC_SITE_URL`
+- Shared build settings: `PUBLIC_SITE_URL` and `PUBLIC_CONTACT_EMAIL`
+- Cloudflare Pages: API token, Account ID, and Pages project name
 - VPS: host, port, SSH user, target directory, SSH key path, and optional passphrase
 - Vercel: token, org/user ID, and project ID
 
@@ -126,13 +133,13 @@ pnpm deploy:all
 
 Deployment scripts build the Astro project first and deploy the generated `dist/` output.
 
-## Public Sync Notes
+## Public Template Safety
 
-This private project can be used as the source for the public template, but public syncs must exclude private data:
+Before publishing a fork or template update, review the repository for private data:
 
 - Keep personal domains, analytics IDs, provider account IDs, API tokens, private keys, and real `.env` files out of the public repo.
 - Keep public defaults such as `PUBLIC_SITE_URL=https://example.com`.
-- Review copied content before publishing if a post contains personal notes or private operational details.
+- Review articles and assets before publishing; do not copy personal notes, private operational details, or non-public images into the repository.
 
 ## Verification
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawn, spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
@@ -14,6 +15,8 @@ const host = '127.0.0.1';
 const port = 4321;
 const baseUrl = `http://${host}:${port}`;
 const outputDir = path.join(os.tmpdir(), `astro-playwright-${process.pid}`);
+const projectRoot = fileURLToPath(new URL('..', import.meta.url));
+const chromiumDebugLog = path.join(projectRoot, 'debug.log');
 
 function waitForServer(url, timeoutMs = 30000) {
   const deadline = Date.now() + timeoutMs;
@@ -82,5 +85,6 @@ try {
   process.exitCode = 1;
 } finally {
   stop(preview);
+  fs.rmSync(chromiumDebugLog, { force: true });
   process.exit(process.exitCode ?? 0);
 }

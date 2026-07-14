@@ -15,19 +15,11 @@ yarn-error.log*
 pnpm-debug.log*
 
 # local environment files
-.env
-.env.local
-.env.production
-.env.development
-.env.staging
-.env.test
-.env.preview
-.env.ci
-.env.*.local
-.env.cloudflare
-.env.vps
-.env.vercel
-.env*.secret
+.env*
+
+# keep public examples commit-safe
+!.env.example
+!.env.*.example
 .dev.vars
 .dev.vars.*
 
@@ -38,10 +30,6 @@ pnpm-debug.log*
 .npmrc.local
 .yarnrc.local
 .pnpmrc.local
-
-# keep public examples commit-safe
-!.env.example
-!.env.*.example
 
 # Wrangler and Cloudflare local state
 .wrangler/
@@ -84,4 +72,3 @@ tmp/
 
 # local pnpm store
 .pnpm-store/
-wrangler.toml

@@ -1,12 +1,11 @@
-export const DEFAULT_SITE_URL = 'https://example.com';
-export const SITE_NAME = "Tena's Blog";
-export const DEFAULT_AUTHOR = 'Tena';
-export const DEFAULT_CONTACT_EMAIL = 'contact@example.com';
+export const SITE_NAME = "SimpleBlog";
+export const DEFAULT_AUTHOR = 'SimpleBlog';
 export const DEFAULT_DESCRIPTION =
   'Personal technology notes about self-hosting, web development, security, and open source tools.';
 
 export function getSiteUrl(site?: URL | string | null): string {
-  const raw = site?.toString() || import.meta.env.PUBLIC_SITE_URL || DEFAULT_SITE_URL;
+  const raw = site?.toString() || import.meta.env.PUBLIC_SITE_URL;
+  if (!raw) throw new Error('PUBLIC_SITE_URL is required to generate absolute site URLs.');
   return raw.replace(/\/$/, '');
 }
 
@@ -15,17 +14,9 @@ export function getCanonicalUrl(pathname: string, site?: URL | string | null): s
 }
 
 export function getContactEmail(): string {
-  return import.meta.env.PUBLIC_CONTACT_EMAIL || DEFAULT_CONTACT_EMAIL;
-}
-
-export function getLocalizedUrl(
-  pathname: string,
-  lang: 'zh-tw' | 'en' | 'zh-cn',
-  site?: URL | string | null
-): string {
-  const cleanPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
-  if (lang === 'en') return getCanonicalUrl(cleanPath.replace(/^\/(en|zh-tw|zh-cn)(?=\/|$)/, '') || '/', site);
-
-  const pathWithoutLocale = cleanPath.replace(/^\/(en|zh-tw|zh-cn)(?=\/|$)/, '');
-  return getCanonicalUrl(`/${lang}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`, site);
+  const email = import.meta.env.PUBLIC_CONTACT_EMAIL?.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error('PUBLIC_CONTACT_EMAIL is required and must be a valid email address.');
+  }
+  return email;
 }

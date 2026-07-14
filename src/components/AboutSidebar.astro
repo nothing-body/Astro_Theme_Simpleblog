@@ -8,10 +8,10 @@ export interface Props {
 const { lang = 'zh-tw', currentPath } = Astro.props;
 
 const menuZh = [
-  { label: '關於本站', path: '/about' },
-  { label: '聯絡我們', path: '/contact' },
-  { label: '隱私權政策', path: '/privacy' },
-  { label: '免責聲明', path: '/disclaimer' },
+  { label: '關於本站', path: '/zh-tw/about' },
+  { label: '聯絡我們', path: '/zh-tw/contact' },
+  { label: '隱私權政策', path: '/zh-tw/privacy' },
+  { label: '免責聲明', path: '/zh-tw/disclaimer' },
 ];
 
 const menuEn = [
@@ -29,13 +29,16 @@ const menuZhCn = [
 ];
 
 const menu = lang === 'en' ? menuEn : lang === 'zh-cn' ? menuZhCn : menuZh;
+const sidebarLabel =
+  lang === 'en' ? 'About sidebar' : lang === 'zh-cn' ? '关于侧边栏' : '關於側邊欄';
+const sidebarTitle = lang === 'en' ? 'About' : lang === 'zh-cn' ? '关于本站' : '關於本站';
 
 const isActive = (menuPath: string) => currentPath === menuPath || currentPath === menuPath + '/';
 ---
 
-<aside class="sidebar" aria-label={lang === 'en' ? 'About sidebar' : '關於側邊欄'}>
+<aside class="sidebar" aria-label={sidebarLabel}>
   <div class="glass-card sidebar-widget">
-    <h3 class="widget-title">{lang === 'en' ? 'About' : '關於本站'}</h3>
+    <h3 class="widget-title">{sidebarTitle}</h3>
     <ul class="category-list" role="list">
       {
         menu.map(item => (

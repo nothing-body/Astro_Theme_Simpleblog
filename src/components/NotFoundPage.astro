@@ -12,9 +12,9 @@ const t = useTranslations(lang);
 const translatePath = useTranslatedPath(lang);
 ---
 
-<BaseLayout title={t('404.title')}>
+<BaseLayout title={t('404.title')} robots="noindex, nofollow" alternates={false}>
   <div class="page-container not-found-page">
-    <main id="main-content">
+    <div>
       <div class="glass-card not-found-card">
         <p class="error-code" aria-hidden="true">404</p>
         <h1 class="not-found-title">{t('404.title')}</h1>
@@ -28,7 +28,7 @@ const translatePath = useTranslatedPath(lang);
           <a href={translatePath('/about')} class="btn-secondary">{t('nav.about')}</a>
         </nav>
       </div>
-    </main>
+    </div>
   </div>
 
   <style is:global>

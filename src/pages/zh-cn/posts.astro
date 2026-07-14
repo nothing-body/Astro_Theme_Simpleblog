@@ -1,80 +1,21 @@
 ---
-
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Sidebar from '../../components/Sidebar.astro';
-import PostCard from '../../components/PostCard.astro';
-import Pagination from '../../components/Pagination.astro';
+import PostsListSection from '../../components/PostsListSection.astro';
 import { useTranslations } from '../../i18n/utils';
-import { sortBlogPosts } from '../../lib/posts';
-import { getSiteUrl } from '../../lib/site';
+import { getPublishedPostsForLang, getTotalPages } from '../../lib/posts';
+import { getPostsPageUrl } from '../../lib/routes';
+import { getCanonicalUrl } from '../../lib/site';
 
 const t = useTranslations('zh-cn');
-const PAGE_SIZE = 5;
-
-const allPosts = await getCollection(
-  'blog',
-  ({ id, data }) => id.startsWith('zh-cn/') && !data.draft
-);
-const sortedPosts = sortBlogPosts(allPosts);
-const totalPages = Math.max(1, Math.ceil(sortedPosts.length / PAGE_SIZE));
-const posts = sortedPosts.slice(0, PAGE_SIZE);
-
-const siteUrl = getSiteUrl(Astro.site);
-const canonicalPage1 = new URL('/zh-cn/page/1', siteUrl).href;
+const allPosts = await getPublishedPostsForLang('zh-cn');
+const totalPages = getTotalPages(allPosts.length);
+const canonicalPage1 = getCanonicalUrl(getPostsPageUrl('zh-cn', 1), Astro.site);
 ---
 
 <BaseLayout
   title={t('posts.title')}
-  description={'\u6240\u6709\u6587\u7ae0\u5217\u8868 - \u6d4f\u89c8\u6240\u6709\u6280\u672f\u7b14\u8bb0\u4e0e\u751f\u6d3b\u968f\u7b14\u3002'}
+  description="所有文章 - 浏览全部简体中文文章。"
   customCanonical={canonicalPage1}
 >
-  <div class="page-container posts-page-container">
-    <div class="content-wrapper">
-      <Sidebar allPosts={allPosts} lang="zh-cn" />
-      <main id="main-content" class="main-content">
-        <h1 class="posts-page-title">
-          {t('posts.title')}
-        </h1>
-        {
-          posts.length > 0 ? (
-            <>
-              {posts.map(post => (
-                <PostCard post={post} lang="zh-cn" />
-              ))}
-              <Pagination
-                currentPage={1}
-                totalPages={totalPages}
-                nextUrl={totalPages > 1 ? '/zh-cn/page/2' : undefined}
-                getPageUrl={n => (n === 1 ? '/zh-cn/posts' : `/zh-cn/page/${n}`)}
-                lang="zh-cn"
-              />
-            </>
-          ) : (
-            <p class="posts-no-posts">{t('posts.noPost')}</p>
-          )
-        }
-      </main>
-    </div>
-  </div>
-
-  <style>
-    .posts-page-container {
-      padding-top: 2rem;
-      padding-bottom: 4rem;
-    }
-    .posts-page-title {
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: var(--text-heading);
-      margin-bottom: 1.5rem;
-    }
-    .posts-no-posts {
-      color: var(--text-muted);
-      padding: 3rem 0;
-      text-align: center;
-    }
-  </style>
-
-  <script is:inline src="/scripts/bb-last-list.js" defer></script>
+  <PostsListSection lang="zh-cn" allPosts={allPosts} currentPage={1} totalPages={totalPages} />
 </BaseLayout>

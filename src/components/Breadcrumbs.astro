@@ -1,11 +1,7 @@
-﻿---
+---
 import { getSiteUrl } from '../lib/site';
 import { safeJsonStringify } from '../lib/utils';
-
-export interface BreadcrumbItem {
-  label: string;
-  href?: string;
-}
+import type { BreadcrumbItem } from '../types';
 
 export interface Props {
   items: BreadcrumbItem[];

@@ -45,6 +45,7 @@ Cloudflare Pages：
 - `CLOUDFLARE_ACCOUNT_ID`：Cloudflare 帳號頁面右側資訊欄
 - `CLOUDFLARE_PAGES_PROJECT_NAME`：Cloudflare Pages 專案名稱
 - `PUBLIC_SITE_URL`：正式網站 URL
+- `PUBLIC_CONTACT_EMAIL`：Astro 建置必要的公開聯絡信箱
 
 VPS：
 
@@ -86,8 +87,9 @@ pnpm deploy:all
 
 ## 非部署腳本
 
-- `analysis.mjs`：專案檢查與分析。
-- `run-e2e.mjs`：端對端測試。
+- `analysis.mjs`：檢查程式碼、CSS、SEO、安全、隱私、內容來源、部署流程與文件。
+- `clean-generated.mjs`：乾淨建置前只清除專案內的 `.astro` 與 `dist`。
+- `run-e2e.mjs`：執行端對端測試，瀏覽器輸出不留在專案內。
 
 發布 template 變更前建議跑快速自檢：
 
@@ -101,7 +103,30 @@ pnpm selfcheck -- --quick
 pnpm analyze
 ```
 
-自檢腳本會檢查 `.gitignore` 覆蓋、危險程式碼模式、重要元件串接、public scripts 與可疑敏感檔案。
+自檢腳本會檢查 `.gitignore`、危險程式碼、元件串接、public scripts、敏感檔案、建置內容來源、本地文件連結與教學中的 package 指令。
+
+## 套件管理器與語言
+
+部署腳本支援 pnpm 與 npm。互動式選單、`--lang` 或 `DEPLOY_LANG` 可切換英文與繁中主控台訊息；這不會改變網站內容語系或部署目標。
+
+```bash
+pnpm deploy:menu -- --lang=en
+pnpm deploy:menu -- --lang=zh-tw
+pnpm deploy:switch --mode=direct:cf --lang=en --dry-run
+```
+
+## 建置輸出
+
+直接部署會先執行 package `build`，再部署 `dist/`。Cloudflare 與 VPS 可用 `--dist=<dir>` 指定其他輸出目錄。建置腳本會先清除舊 `.astro` 與 `dist`，避免舊文章快取混入新輸出。
+
+## 安全升級 Astro
+
+```bash
+pnpm upgrade:astro -- --lang=zh-tw --dry-run
+pnpm upgrade:astro -- --lang=zh-tw --dry-run --clean-install
+```
+
+升級助手會從 `package.json` 偵測 Astro 套件，dirty 工作樹預設停止，完成後執行現有 check、lint、build。`--clean-install` 不會刪除 lockfile。
 
 ## VPS 使用者與權限
 
@@ -123,11 +148,9 @@ VPS_SSH_PASSPHRASE=your_private_key_passphrase
 `.gitignore` 應阻擋機密與產生物：
 
 ```text
-.env
-.env.cloudflare
-.env.vps
-.env.vercel
-.env*.secret
+.env*
+!.env.example
+!.env.*.example
 .npmrc
 .yarnrc
 .pnpmrc

@@ -10,21 +10,22 @@ import {
   getCategoryUrl,
   parseCategoryRoutePath,
 } from '../../../lib/categories';
+import { POSTS_PAGE_SIZE, paginatePosts } from '../../../lib/posts';
 
 export async function getStaticPaths() {
-  const PAGE_SIZE = 5;
   const allPosts = await getCollection(
     'blog',
     ({ id, data }) => id.startsWith('zh-tw/') && !data.draft
   );
   const globalPosts = await getCollection('blog', ({ data }) => !data.draft);
-  const entries = getCategoryPageEntries(allPosts, PAGE_SIZE, globalPosts);
+  const entries = getCategoryPageEntries(allPosts, POSTS_PAGE_SIZE, globalPosts);
 
   return entries.flatMap(entry =>
     Array.from({ length: entry.totalPages }, (_, index) => ({
       params: { categoryPath: `${entry.routePath}/${index + 1}` },
       props: {
         allPosts,
+        globalPosts,
         categoryPosts: entry.posts,
         currentCategoryPath: entry.path,
         totalPages: entry.totalPages,
@@ -33,13 +34,12 @@ export async function getStaticPaths() {
   );
 }
 
-const { allPosts, categoryPosts, currentCategoryPath, totalPages } = Astro.props;
-const PAGE_SIZE = 5;
+const { allPosts, globalPosts, categoryPosts, currentCategoryPath, totalPages } = Astro.props;
 const { page } = parseCategoryRoutePath(Astro.params.categoryPath);
 const t = useTranslations('zh-tw');
 const currentPage = page;
 const currentCategory = currentCategoryPath.join(' / ');
-const posts = categoryPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+const posts = paginatePosts(categoryPosts, currentPage);
 const getPageUrl = (n: number) => getCategoryUrl('zh-tw', currentCategoryPath, n);
 ---
 
@@ -48,11 +48,12 @@ const getPageUrl = (n: number) => getCategoryUrl('zh-tw', currentCategoryPath, n
     <div class="content-wrapper">
       <Sidebar
         allPosts={allPosts}
+        globalPosts={globalPosts}
         lang="zh-tw"
         activeCategory={currentCategoryPath.at(0)}
         activeCategoryPath={currentCategoryPath}
       />
-      <main id="main-content" class="main-content">
+      <div class="main-content">
         <h1
           style="font-size:1.6rem; font-weight:800; color:var(--text-heading); margin-bottom:1.5rem;"
         >
@@ -67,7 +68,7 @@ const getPageUrl = (n: number) => getCategoryUrl('zh-tw', currentCategoryPath, n
           getPageUrl={getPageUrl}
           lang="zh-tw"
         />
-      </main>
+      </div>
     </div>
   </div>
 

@@ -51,14 +51,9 @@ cp .env.vercel.example .env.vercel
 建議 `.gitignore` 至少包含：
 
 ```text
-.env
-.env.local
-.env.production
-.env.*.local
-.env.cloudflare
-.env.vps
-.env.vercel
-.env*.secret
+.env*
+!.env.example
+!.env.*.example
 .npmrc
 .yarnrc
 .pnpmrc
@@ -100,13 +95,14 @@ npm run build
 
 ## 4. 網站 URL、SEO、robots.txt
 
-在 `.env` 或部署環境中設定正式網址：
+在 `.env` 或部署環境中設定建置所需的正式網址與公開聯絡信箱：
 
 ```env
 PUBLIC_SITE_URL=https://example.com
+PUBLIC_CONTACT_EMAIL=contact@example.com
 ```
 
-這個值會用於 sitemap、canonical URL 與 structured data。公開模板請使用 `https://example.com` 這類 placeholder；私人站才填真實網域。
+網址會用於 sitemap、canonical URL 與 structured data，信箱會用於聯絡頁與 metadata。公開模板保留範例值，實際站點應在未提交的 `.env` 或平台變數中替換兩者。
 
 ## 5. Google Search Console 驗證
 
@@ -315,3 +311,40 @@ src/pages/zh-cn/leaving.astro            簡體中文路由
 ```
 
 要改提示文字，編輯 `src/components/LeavingNotice.astro`。要調整哪些連結會被改寫，編輯 `astro.config.mjs` 的 helper functions，然後執行 `pnpm build` 並檢查 `dist/` 內產生的連結。
+
+## 14. GitHub、GitLab、Codeberg CI/CD
+
+Git 供應商模式只推送原始碼，實際建置與部署由 CI/CD 執行。專案已提供：
+
+- GitHub：`.github/workflows/deploy.yml`
+- GitLab：`.gitlab-ci.yml`
+- Codeberg/Woodpecker：`.woodpecker.yml`
+
+必須在選用的平台設定 `PUBLIC_SITE_URL`、`PUBLIC_CONTACT_EMAIL` 及所選部署目標需要的 Cloudflare、VPS、Vercel token、帳號 ID、SSH key 等 secrets。不要把真實值直接寫進 CI YAML。
+
+## 15. 腳本角色
+
+- `deploy_menu.mjs`：互動式部署選單。
+- `deploy_switch.mjs`：命令列部署模式切換器。
+- `deploy_i18n.mjs`：英文與繁中主控台訊息。
+- `deploy_lib.mjs`：部署模式、組合與指令產生。
+- `deploy_runtime.mjs`：Node.js、pnpm、npm 與跨平台 runner 偵測。
+- `deploy_safety.mjs`：部署前 `.gitignore` 與敏感檔案檢查。
+- `uploaddist_cf.mjs`、`uploaddist_vps.mjs`、`uploaddist_vercel.mjs`：各平台部署。
+- `upgrade_astro.mjs`：Astro 套件安全升級。
+- `analysis.mjs`、`run-e2e.mjs`：全域分析與瀏覽器測試。
+
+## 16. 安全升級 Astro
+
+先使用 dry-run：
+
+```bash
+pnpm upgrade:astro -- --lang=zh-tw --dry-run
+pnpm upgrade:astro -- --lang=zh-tw --dry-run --clean-install
+```
+
+確認後才執行真實升級。腳本預設拒絕在 dirty Git 工作樹升級；只有明確理解風險時才使用 `--allow-dirty`。`--clean-install` 只移除可重建的 `node_modules`、`.astro`、`dist`，不會刪 lockfile。升級後會依現有 package scripts 執行 check、lint、build。
+
+## 17. 敏感檔案
+
+不要提交任何真實 `.env*`、`.dev.vars*`、`.npmrc`、`.pnpmrc`、`.ssh/`、私鑰、憑證、kubeconfig、service-account 或 credentials JSON。`.gitignore` 預設忽略所有 `.env*`，只放行 `.env.example` 與 `.env.*.example`。

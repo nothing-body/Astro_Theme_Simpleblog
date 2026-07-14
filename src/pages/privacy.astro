@@ -19,17 +19,17 @@ const jsonLd = {
   '@type': 'WebPage',
   name: 'Privacy Policy',
   url: pageUrl,
-  description: "Privacy policy for the Tena's Blog blog.",
-  publisher: { '@type': 'Person', name: "Tena's Blog" },
+  description: "Privacy policy for the SimpleBlog blog.",
+  publisher: { '@type': 'Person', name: "SimpleBlog" },
 };
 ---
 
-<BaseLayout title="Privacy Policy" description="Privacy policy for the Tena's Blog blog.">
+<BaseLayout title="Privacy Policy" description="Privacy policy for the SimpleBlog blog.">
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
   <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
     <div class="content-wrapper">
       <AboutSidebar lang="en" currentPath={currentPath} />
-      <main id="main-content" class="main-content">
+      <div class="main-content">
         <article class="glass-card" style="padding: 2.5rem;">
           <div class="article-entry">
             <h1>Privacy Policy</h1>
@@ -75,7 +75,7 @@ const jsonLd = {
             <p>If you have questions, please use our <a href="/contact">Contact Us</a> page.</p>
           </div>
         </article>
-      </main>
+      </div>
     </div>
   </div>
 

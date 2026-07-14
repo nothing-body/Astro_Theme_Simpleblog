@@ -20,6 +20,25 @@ test.describe('layout regression checks', () => {
     await expect(page.locator('.post-card').first()).toBeVisible();
   });
 
+  test('posts list keeps locale when switching language', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'bb-privacy-v1',
+        JSON.stringify({
+          hasSetCookies: true,
+          rememberTimezone: false,
+          enableAnalytics: false,
+        })
+      );
+    });
+
+    await page.goto('/posts/');
+    await page.locator('#lang-trigger-btn').click();
+    await page.locator('.lang-option[hreflang="zh-TW"]').click();
+    await expect(page).toHaveURL(/\/zh-tw\/posts\/?$/);
+    await expect(page.locator('html')).toHaveAttribute('lang', 'zh-TW');
+  });
+
   test('posts pagination keeps enhanced button styling', async ({ page }) => {
     await page.goto('/posts/');
 
@@ -51,6 +70,66 @@ test.describe('layout regression checks', () => {
     await expect(firstLink).toBeVisible();
     await expect(firstLink).toHaveCSS('border-radius', /.+/);
     await expect(firstLink).not.toHaveText(/\//);
+  });
+
+  test('article language switch stays on the translated article', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'bb-privacy-v1',
+        JSON.stringify({
+          hasSetCookies: true,
+          rememberTimezone: false,
+          enableAnalytics: false,
+        })
+      );
+    });
+    await page.goto('/posts/site-setup-success');
+    await page.locator('#lang-trigger-btn').click();
+
+    const traditionalChinese = page.locator('.lang-option[hreflang="zh-TW"]');
+    await expect(traditionalChinese).toHaveAttribute(
+      'href',
+      '/zh-tw/posts/site-setup-success'
+    );
+    await traditionalChinese.click();
+    await expect(page).toHaveURL(/\/zh-tw\/posts\/site-setup-success\/?$/);
+  });
+
+  test('localized category alternates exist and the page has one main landmark', async ({
+    page,
+    request,
+  }) => {
+    await page.goto('/categories/Guide/1/');
+
+    await expect(page.locator('main')).toHaveCount(1);
+    await expect(page.locator('#main-content')).toHaveCount(1);
+    const zhTwHref = await page
+      .locator('link[rel="alternate"][hreflang="zh-TW"]')
+      .getAttribute('href');
+    expect(zhTwHref).toBeTruthy();
+    expect(decodeURIComponent(zhTwHref!)).toContain('/zh-tw/categories/教學/1/');
+    expect((await request.get(new URL(zhTwHref!).pathname)).ok()).toBe(true);
+  });
+
+  test('stored privacy strings cannot enable analytics or timezone persistence', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'bb-privacy-v1',
+        JSON.stringify({
+          hasSetCookies: 'true',
+          rememberTimezone: 'true',
+          enableAnalytics: 'false',
+        })
+      );
+    });
+
+    await page.goto('/');
+    const settings = await page.evaluate(() => window.__privacySettings);
+    expect(settings).toEqual({
+      hasSetCookies: false,
+      rememberTimezone: false,
+      enableAnalytics: false,
+    });
   });
 
   test('navbar language and mobile controls stay interactive after initialization', async ({

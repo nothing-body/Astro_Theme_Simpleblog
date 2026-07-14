@@ -1,50 +1,45 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import AboutSidebar from '../../components/AboutSidebar.astro';
-import { getCanonicalUrl } from '../../lib/site';
+import { SITE_NAME, getCanonicalUrl } from '../../lib/site';
 import { safeJsonStringify } from '../../lib/utils';
 
 const currentPath = Astro.url.pathname;
 const pageUrl = getCanonicalUrl(currentPath, Astro.site);
-
+const description = `關於 ${SITE_NAME} Astro 多語系靜態部落格模板。`;
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
   name: '關於本站',
   url: pageUrl,
-  description: "Tena's Blog 的關於頁，記錄網站定位、內容類型與維護原則。",
-  publisher: { '@type': 'Person', name: "Tena's Blog" },
+  description,
+  publisher: { '@type': 'Organization', name: SITE_NAME },
 };
 ---
 
-<BaseLayout
-  title="關於本站"
-  description="Tena's Blog 的關於頁，記錄網站定位、內容類型與維護原則。"
->
+<BaseLayout title="關於本站" {description}>
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
   <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
     <div class="content-wrapper">
       <AboutSidebar lang="zh-tw" currentPath={currentPath} />
-      <main id="main-content" class="main-content">
+      <div class="main-content">
         <article class="glass-card be-article-wrapper" style="padding: 2.5rem;">
           <div class="article-entry">
             <h1>關於本站</h1>
             <p>
-              歡迎來到 Tena's Blog。這是一個個人數位筆記空間，主要記錄軟體使用心得、VPS
-              設定、網站建置與日常隨筆。
+              {SITE_NAME} 是一套 Astro 多語系靜態部落格模板，支援 Markdown/MDX、分類、標籤、SEO、隱私設定與部署工具。
             </p>
-            <h2>內容方向</h2>
+            <h2>客製這個頁面</h2>
             <p>
-              本站偏向實用型記錄：把實際操作過的步驟、遇到的問題、有價值的解法統一整理，讓未來回頭查找時更容易。
+              請將本段替換成你願意公開的介紹。在 <code>src/lib/site.ts</code> 修改網站名稱與作者，並同步檢查英文與簡體中文頁面。
             </p>
-            <h2>網站技術</h2>
+            <h2>安全發布</h2>
             <p>
-              本站使用 Astro 建置為靜態網站，盡量降低客戶端 JavaScript
-              與不必要的執行成本，同時保留 SEO、多語系與內容維護的彈性。
+              公開倉庫不可包含真實環境檔、token、私鑰、私人文章與個人圖片。部署前請執行 <code>pnpm selfcheck</code>。
             </p>
           </div>
         </article>
-      </main>
+      </div>
     </div>
   </div>
 </BaseLayout>

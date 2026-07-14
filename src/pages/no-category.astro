@@ -6,9 +6,9 @@ import { useTranslations } from '../i18n/utils';
 const t = useTranslations('en');
 ---
 
-<BaseLayout title={t('noCategory.title')}>
+<BaseLayout title={t('noCategory.title')} robots="noindex, follow" alternates={false}>
   <div class="page-container" style="padding-top:4rem; padding-bottom:4rem; text-align:center;">
-    <main id="main-content">
+    <div>
       <div class="glass-card" style="padding:3rem 2rem; max-width:540px; margin:0 auto;">
         <p style="font-size:3rem; margin:0 0 1rem;">🔍</p>
         <h1
@@ -22,7 +22,7 @@ const t = useTranslations('en');
         </p>
         <a href="/posts" class="btn-primary">{t('noCategory.manual')}</a>
       </div>
-    </main>
+    </div>
   </div>
 
   <script is:inline src="/scripts/bb-no-category-redirect.js" data-redirect="/posts" defer></script>

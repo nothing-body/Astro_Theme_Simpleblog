@@ -51,14 +51,9 @@ Commit only the `.example` files. Never commit real tokens, private keys, accoun
 Recommended `.gitignore` coverage:
 
 ```text
-.env
-.env.local
-.env.production
-.env.*.local
-.env.cloudflare
-.env.vps
-.env.vercel
-.env*.secret
+.env*
+!.env.example
+!.env.*.example
 .npmrc
 .yarnrc
 .pnpmrc
@@ -100,11 +95,14 @@ npm run build
 
 ## 3. Site URL, SEO, and Robots
 
-Set your production URL:
+Set the public URL and contact email required by the build:
 
 ```env
 PUBLIC_SITE_URL=https://example.com
+PUBLIC_CONTACT_EMAIL=contact@example.com
 ```
+
+Replace both placeholders in your local `.env` or hosting-platform variables. The public template keeps example values only.
 
 For a public website, `robots.txt` should allow normal search engines while blocking only unwanted AI/data crawlers. The intended behavior is:
 
@@ -388,7 +386,7 @@ pnpm deploy:switch --mode=direct:cf+vps --dry-run
 pnpm deploy:switch --mode=direct:cf+vps+vercel --dry-run --lang=en
 ```
 
-## 11. GitHub / GitLab / Codeberg CI/CD
+## 14. GitHub / GitLab / Codeberg CI/CD
 
 Git provider modes only push source code. Build and deployment should happen in CI/CD.
 
@@ -398,9 +396,9 @@ Required files:
 - GitLab: `.gitlab-ci.yml`
 - Codeberg/Woodpecker: `.woodpecker.yml`
 
-Configure platform secrets for Cloudflare, VPS, Vercel, SSH keys, and tokens.
+Configure platform variables/secrets for `PUBLIC_SITE_URL`, `PUBLIC_CONTACT_EMAIL`, Cloudflare, VPS, Vercel, SSH keys, and tokens. The committed CI examples already pass these values to the deployment scripts, but the values must be created in the selected Git provider.
 
-## 12. Script Roles
+## 15. Script Roles
 
 - `deploy_menu.mjs`: interactive deployment menu with language selection.
 - `deploy_switch.mjs`: command-line deployment switcher.
@@ -415,7 +413,7 @@ Configure platform secrets for Cloudflare, VPS, Vercel, SSH keys, and tokens.
 - `analysis.mjs`: project analysis and checks.
 - `run-e2e.mjs`: end-to-end test entry.
 
-## 13. Safe Astro Upgrade
+## 16. Safe Astro Upgrade
 
 ```bash
 pnpm upgrade:astro -- --lang=en --dry-run
@@ -450,7 +448,7 @@ Options:
 | `--skip-lint`     | Skip `lint`                                                  |
 | `--skip-build`    | Skip `build`                                                 |
 
-## 14. Sensitive Files
+## 17. Sensitive Files
 
 Never commit real secrets:
 

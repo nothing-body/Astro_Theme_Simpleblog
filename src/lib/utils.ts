@@ -1,6 +1,6 @@
-export type SupportedLang = 'zh-tw' | 'en' | 'zh-cn';
+import type { Lang } from '../i18n/ui';
 
-export function formatDate(date: Date, lang: SupportedLang = 'zh-tw'): string {
+export function formatDate(date: Date, lang: Lang = 'zh-tw'): string {
   const locale = lang === 'en' ? 'en-GB' : lang === 'zh-cn' ? 'zh-CN' : 'zh-TW';
   return date.toLocaleDateString(locale, {
     year: 'numeric',
@@ -13,7 +13,7 @@ export function getCleanSlug(postId: string): string {
   return postId.replace(/\.mdx?$/, '').replace(/^(zh-tw|en|zh-cn)\//, '');
 }
 
-export function getPostUrl(slug: string, lang: SupportedLang): string {
+export function getPostUrl(slug: string, lang: Lang): string {
   const cleanSlug = slug.replace(/^(zh-tw|en|zh-cn)\//, '').replace(/\.mdx?$/, '');
   return lang === 'en' ? `/posts/${cleanSlug}` : `/${lang}/posts/${cleanSlug}`;
 }

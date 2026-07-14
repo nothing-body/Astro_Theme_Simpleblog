@@ -4,15 +4,39 @@
   try {
     raw = localStorage.getItem(KEY);
   } catch (_e) {}
-  var settings = { hasSetCookies: false, rememberTimezone: false, enableAnalytics: false };
+
+  function normalizeSettings(value, fallback) {
+    var source = value && typeof value === 'object' ? value : {};
+    var defaults = fallback || {
+      hasSetCookies: false,
+      rememberTimezone: false,
+      enableAnalytics: false,
+    };
+    return {
+      hasSetCookies:
+        Object.prototype.hasOwnProperty.call(source, 'hasSetCookies')
+          ? source.hasSetCookies === true
+          : defaults.hasSetCookies,
+      rememberTimezone:
+        Object.prototype.hasOwnProperty.call(source, 'rememberTimezone')
+          ? source.rememberTimezone === true
+          : defaults.rememberTimezone,
+      enableAnalytics:
+        Object.prototype.hasOwnProperty.call(source, 'enableAnalytics')
+          ? source.enableAnalytics === true
+          : defaults.enableAnalytics,
+    };
+  }
+
+  var settings = normalizeSettings(null);
   if (raw) {
     try {
-      settings = Object.assign(settings, JSON.parse(raw));
+      settings = normalizeSettings(JSON.parse(raw));
     } catch (_e) {}
   }
   window.__privacySettings = settings;
   window.updatePrivacySettings = function (updates) {
-    var next = Object.assign({}, settings, updates);
+    var next = normalizeSettings(updates, settings);
     try {
       localStorage.setItem(KEY, JSON.stringify(next));
     } catch (_e) {}

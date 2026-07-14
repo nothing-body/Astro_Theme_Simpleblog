@@ -1,5 +1,5 @@
 {
-  "name": "blue-binary",
+  "name": "astro-theme-simpleblog",
   "type": "module",
   "version": "0.0.1",
   "engines": {
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node ./scripts/clean-generated.mjs && astro build",
     "check": "astro check",
     "preview": "astro preview",
     "astro": "astro",
@@ -32,7 +32,7 @@
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:css:fix": "stylelint \"src/**/*.css\" --fix",
     "format": "prettier --write \"src/**/*.{js,ts,astro,css,md}\"",
-    "test": "jest && astro build && node ./scripts/run-e2e.mjs",
+    "test": "jest && node ./scripts/clean-generated.mjs && astro build && node ./scripts/run-e2e.mjs",
     "analyze": "node ./scripts/analysis.mjs",
     "selfcheck": "node ./scripts/analysis.mjs",
     "deploy:menu": "node ./scripts/deploy_menu.mjs",
