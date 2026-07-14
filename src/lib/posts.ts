@@ -1,6 +1,8 @@
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import type { Lang } from '../i18n/ui';
+import { normalizePageNumber } from './routes';
+import { getCleanSlug } from './utils';
 
 export type BlogPost = CollectionEntry<'blog'>;
 
@@ -43,7 +45,7 @@ export function getTotalPages(itemCount: number, pageSize = POSTS_PAGE_SIZE): nu
 }
 
 export function paginatePosts<T>(items: T[], page: number, pageSize = POSTS_PAGE_SIZE): T[] {
-  const currentPage = Math.max(1, Number(page) || 1);
+  const currentPage = normalizePageNumber(page);
   return items.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 }
 
@@ -51,8 +53,16 @@ export async function getPostsPageStaticPaths(lang: Lang) {
   const allPosts = await getPublishedPostsForLang(lang);
   const totalPages = getTotalPages(allPosts.length);
 
-  return Array.from({ length: totalPages }, (_, index) => ({
-    params: { page: String(index + 1) },
+  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => ({
+    params: { page: String(index + 2) },
     props: { totalPages, allPosts },
+  }));
+}
+
+export async function getPostStaticPaths(lang: Lang) {
+  const posts = await getPublishedPostsForLang(lang);
+  return posts.map(post => ({
+    params: { slug: getCleanSlug(post.id) },
+    props: { post },
   }));
 }

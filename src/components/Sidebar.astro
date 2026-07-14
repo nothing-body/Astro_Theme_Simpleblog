@@ -6,16 +6,14 @@ import { buildCategoryTree, getCategoryPathKey } from '../lib/categories';
 
 export interface Props {
   allPosts: CollectionEntry<'blog'>[];
-  globalPosts?: CollectionEntry<'blog'>[];
-  lang?: 'zh-tw' | 'en' | 'zh-cn';
-  activeCategory?: string;
-  activeCategoryPath?: string[];
-  activeTag?: string;
+  lang?: 'zh-tw' | 'en' | 'zh-cn' | undefined;
+  activeCategory?: string | undefined;
+  activeCategoryPath?: string[] | undefined;
+  activeTag?: string | undefined;
 }
 
 const {
   allPosts,
-  globalPosts = allPosts,
   lang = 'zh-tw',
   activeCategory,
   activeCategoryPath,
@@ -32,7 +30,7 @@ const sidebarLabel = t('sidebar.label');
 const normalizedActivePath = activeCategoryPath ?? (activeCategory ? [activeCategory] : []);
 const activePathKey =
   normalizedActivePath.length > 0 ? getCategoryPathKey(normalizedActivePath) : undefined;
-const categoryTree = buildCategoryTree(allPosts, lang, normalizedActivePath, globalPosts);
+const categoryTree = buildCategoryTree(allPosts, lang, normalizedActivePath);
 
 const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
 ---
@@ -71,7 +69,9 @@ const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
   </div>
 </aside>
 
-<script is:inline src="/scripts/bb-sidebar.js" defer></script>
+<script>
+  import '../scripts/sidebar';
+</script>
 
 <style is:global>
   .sidebar-widget:last-child {

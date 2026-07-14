@@ -18,7 +18,7 @@ function post(
       category: categoryPath.at(-1) ?? 'Uncategorized',
       categoryPath,
       tags,
-      author: 'Blue Binary',
+      author: 'SimpleBlog',
       pinned: false,
       draft: false,
     },
@@ -85,9 +85,23 @@ describe('getTargetLangRoute', () => {
     ).toBe('/zh-cn/tags/%E9%9A%90%E7%A7%81/1/');
   });
 
+  test('rejects ambiguous tag translations instead of using build order', () => {
+    const posts = [
+      post('en/one.md', ['Security'], ['Privacy']),
+      post('zh-tw/one.md', ['安全'], ['隱私']),
+      post('en/two.md', ['Security'], ['Privacy']),
+      post('zh-tw/two.md', ['安全'], ['私隱']),
+    ];
+    expect(() => buildDynamicTagMapping(posts)).toThrow(/Conflicting tag translation/);
+  });
+
   test('uses canonical page-one routes for the posts listing', () => {
     const route = resolve('https://example.com/posts', 'zh-tw', []);
     expect(route.path).toBe('/zh-tw/posts');
-    expect(route.canonicalPath).toBe('/zh-tw/page/1/');
+    expect(route.canonicalPath).toBe('/zh-tw/posts/');
+  });
+
+  test('handles malformed encoded routes without throwing', () => {
+    expect(resolve('https://example.com/tags/%ZZ/1/', 'zh-tw', []).available).toBe(false);
   });
 });

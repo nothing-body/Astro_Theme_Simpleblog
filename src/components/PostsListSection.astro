@@ -51,7 +51,9 @@ const nextUrl = currentPage < totalPages ? getPageUrl(currentPage + 1) : undefin
   </div>
 </div>
 
-<script is:inline src="/scripts/bb-last-list.js" defer></script>
+<script>
+  import '../scripts/last-list';
+</script>
 
 <style>
   .posts-page-container {

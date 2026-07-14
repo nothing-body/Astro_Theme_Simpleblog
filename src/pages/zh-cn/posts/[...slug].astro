@@ -1,18 +1,11 @@
 ﻿---
 
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
 import BlogPostLayout from '../../../layouts/BlogPostLayout.astro';
-import { getCleanSlug } from '../../../lib/utils';
+import { getPostStaticPaths } from '../../../lib/posts';
 
 export async function getStaticPaths() {
-  const posts = await getCollection(
-    'blog',
-    ({ id, data }) => id.startsWith('zh-cn/') && !data.draft
-  );
-  return posts.map(post => ({
-    params: { slug: getCleanSlug(post.id) },
-    props: { post },
-  }));
+  return getPostStaticPaths('zh-cn');
 }
 
 const { post } = Astro.props;

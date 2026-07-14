@@ -1,10 +1,11 @@
 import js from '@eslint/js';
 import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
-import astroParser from 'astro-eslint-parser';
+import * as astroParser from 'astro-eslint-parser';
 import astroPlugin from 'eslint-plugin-astro';
 import securityPlugin from 'eslint-plugin-security';
 import prettierConfig from 'eslint-config-prettier/flat';
+import globals from 'globals';
 
 export default [
   {
@@ -30,15 +31,7 @@ export default [
         sourceType: 'module',
       },
       globals: {
-        console: 'readonly',
-        process: 'readonly',
-        Buffer: 'readonly',
-        Response: 'readonly',
-        URL: 'readonly',
-        document: 'readonly',
-        localStorage: 'readonly',
-        window: 'readonly',
-        Window: 'readonly',
+        ...globals.node,
       },
     },
     plugins: {
@@ -54,10 +47,24 @@ export default [
       'no-script-url': 'error',
       'no-var': 'error',
       'prefer-const': 'error',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-explicit-any': 'error',
       'security/detect-non-literal-fs-filename': 'off',
       'security/detect-object-injection': 'off',
+    },
+  },
+  {
+    files: ['src/scripts/**/*.ts'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
+  {
+    files: ['**/*.ts'],
+    rules: {
+      'no-undef': 'off',
     },
   },
   {
@@ -71,7 +78,8 @@ export default [
         sourceType: 'module',
       },
       globals: {
-        URL: 'readonly',
+        ...globals.node,
+        ...globals.browser,
       },
     },
     plugins: {
@@ -83,9 +91,10 @@ export default [
     },
   },
   {
-    files: ['**/*.test.{js,ts}'],
+    files: ['**/*.{test,spec}.{js,ts}'],
     languageOptions: {
       globals: {
+        ...globals.browser,
         describe: 'readonly',
         expect: 'readonly',
         test: 'readonly',

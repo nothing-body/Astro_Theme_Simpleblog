@@ -1,29 +1,6 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import HomeHero from '../components/HomeHero.astro';
-import HomeLatestPosts from '../components/HomeLatestPosts.astro';
-import { getRecentPostsForLang } from '../lib/posts';
-import { SITE_NAME, DEFAULT_DESCRIPTION, getSiteUrl } from '../lib/site';
-import { safeJsonStringify } from '../lib/utils';
-
-const recentPosts = await getRecentPostsForLang('en');
-
-const siteUrl = getSiteUrl(Astro.site);
-const pageUrl = new URL(Astro.url.pathname, siteUrl).href;
-
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Blog',
-  name: SITE_NAME,
-  description: DEFAULT_DESCRIPTION,
-  url: pageUrl,
-  publisher: { '@type': 'Person', name: SITE_NAME, '@id': siteUrl },
-};
+import HomePage from '../components/HomePage.astro';
+import { DEFAULT_DESCRIPTION } from '../lib/site';
 ---
 
-<BaseLayout title={SITE_NAME} description={DEFAULT_DESCRIPTION}>
-  <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
-
-  <HomeHero lang="en" />
-  <HomeLatestPosts lang="en" posts={recentPosts} />
-</BaseLayout>
+<HomePage lang="en" description={DEFAULT_DESCRIPTION} />

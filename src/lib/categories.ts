@@ -2,6 +2,7 @@ import type { Lang } from '../i18n/ui';
 import { defaultLang } from '../i18n/ui';
 import type { BlogPost } from './posts';
 import { sortBlogPosts } from './posts';
+import { decodeRouteSegments, getCategoryRouteSegment, normalizePageNumber } from './routes';
 
 const PATH_SEPARATOR = '\u001f';
 
@@ -29,8 +30,8 @@ function cleanSegment(segment: unknown): string | undefined {
 }
 
 export function getCategoryPathFromData(data: {
-  category?: string;
-  categoryPath?: string[];
+  category?: string | undefined;
+  categoryPath?: string[] | undefined;
 }): string[] {
   const explicitPath = (data.categoryPath ?? []).map(cleanSegment).filter(Boolean) as string[];
   if (explicitPath.length > 0) return explicitPath;
@@ -43,46 +44,8 @@ function getPostCategoryPath(post: BlogPost): string[] {
   return getCategoryPathFromData(post.data);
 }
 
-function getPostRelativeId(post: BlogPost): string {
-  return post.id.split('/').slice(1).join('/');
-}
-
-function getPostLang(post: BlogPost): string {
-  return post.id.split('/')[0] ?? '';
-}
-
-function getCategoryReferenceRank(post: BlogPost): number {
-  const lang = getPostLang(post);
-  if (lang === defaultLang) return 0;
-  if (lang === 'zh-tw') return 1;
-  if (lang === 'zh-cn') return 2;
-  return 3;
-}
-
-export function getNormalizedPostCategoryPath(
-  post: BlogPost,
-  allPosts: BlogPost[] = []
-): string[] {
-  const ownPath = getPostCategoryPath(post);
-  const relativeId = getPostRelativeId(post);
-  if (!relativeId || allPosts.length === 0) return ownPath;
-
-  const referencePost = allPosts
-    .filter(candidate => getPostRelativeId(candidate) === relativeId)
-    .sort((a, b) => {
-      const lengthDiff = getPostCategoryPath(b).length - getPostCategoryPath(a).length;
-      if (lengthDiff !== 0) return lengthDiff;
-
-      const rankDiff = getCategoryReferenceRank(a) - getCategoryReferenceRank(b);
-      if (rankDiff !== 0) return rankDiff;
-
-      return a.id.localeCompare(b.id);
-    })[0];
-
-  const referencePath = referencePost ? getPostCategoryPath(referencePost) : ownPath;
-
-  if (ownPath.length >= referencePath.length) return ownPath;
-  return [...ownPath, ...referencePath.slice(ownPath.length)];
+export function getNormalizedPostCategoryPath(post: BlogPost): string[] {
+  return getPostCategoryPath(post);
 }
 
 export function getCategoryPathKey(path: string[]): string {
@@ -94,27 +57,22 @@ export function categoryPathStartsWith(path: string[], prefix: string[]): boolea
   return prefix.every((segment, index) => path[index] === segment);
 }
 
-export function getCategoryRouteSegment(segment: string): string {
-  return segment
-    .trim()
-    .replace(/&/g, ' and ')
-    .replace(/[\\/:*?"<>|#%{}^~[\]`]+/g, ' ')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
 export function getCategoryRoutePath(path: string[]): string {
-  return path.map(getCategoryRouteSegment).filter(Boolean).join('/');
+  const segments = path.map(getCategoryRouteSegment);
+  if (segments.some(segment => !segment)) {
+    throw new Error(`Category path contains a segment with no URL-safe characters: ${path.join(' / ')}`);
+  }
+  return segments.join('/');
 }
 
 export function getCategoryUrl(lang: Lang, path: string[], page = 1): string {
+  if (path.length === 0) throw new Error('Category routes require at least one segment.');
   const prefix = lang === defaultLang ? '' : `/${lang}`;
   const encodedPath = getCategoryRoutePath(path)
     .split('/')
     .map(segment => encodeURIComponent(segment))
     .join('/');
-  return `${prefix}/categories/${encodedPath}/${page}/`;
+  return `${prefix}/categories/${encodedPath}/${normalizePageNumber(page)}/`;
 }
 
 function localeForSort(lang: Lang): string {
@@ -126,15 +84,14 @@ function localeForSort(lang: Lang): string {
 export function buildCategoryTree(
   posts: BlogPost[],
   lang: Lang,
-  activePath: string[] = [],
-  allPosts: BlogPost[] = posts
+  activePath: string[] = []
 ): CategoryTreeNode[] {
   const roots: CategoryTreeNode[] = [];
   const nodeMap = new Map<string, CategoryTreeNode>();
   const activeKey = activePath.length > 0 ? getCategoryPathKey(activePath) : undefined;
 
   for (const post of posts) {
-    const path = getNormalizedPostCategoryPath(post, allPosts);
+    const path = getNormalizedPostCategoryPath(post);
     const seenForPost = new Set<string>();
 
     for (let depth = 1; depth <= path.length; depth += 1) {
@@ -145,22 +102,25 @@ export function buildCategoryTree(
 
       let node = nodeMap.get(pathKey);
       if (!node) {
-        node = {
-          label: nodePath[nodePath.length - 1],
+        const label = nodePath.at(-1);
+        if (!label) continue;
+        const createdNode: CategoryTreeNode = {
+          label,
           path: nodePath,
           pathKey,
           count: 0,
           containsActive: false,
           children: [],
         };
-        nodeMap.set(pathKey, node);
+        node = createdNode;
+        nodeMap.set(pathKey, createdNode);
 
         if (depth === 1) {
-          roots.push(node);
+          roots.push(createdNode);
         } else {
           const parentKey = getCategoryPathKey(nodePath.slice(0, -1));
           const parent = nodeMap.get(parentKey);
-          parent?.children.push(node);
+          parent?.children.push(createdNode);
         }
       }
 
@@ -186,13 +146,12 @@ export function buildCategoryTree(
 
 export function getCategoryPageEntries(
   posts: BlogPost[],
-  pageSize: number,
-  allPosts: BlogPost[] = posts
+  pageSize: number
 ): CategoryPageEntry[] {
   const categoryMap = new Map<string, { path: string[]; posts: BlogPost[] }>();
 
   for (const post of posts) {
-    const path = getNormalizedPostCategoryPath(post, allPosts);
+    const path = getNormalizedPostCategoryPath(post);
     for (let depth = 1; depth <= path.length; depth += 1) {
       const nodePath = path.slice(0, depth);
       const pathKey = getCategoryPathKey(nodePath);
@@ -219,9 +178,12 @@ export function parseCategoryRoutePath(routePath: string | undefined): {
   path: string[];
   page: number;
 } {
-  const segments = (routePath ?? '').split('/').map(decodeURIComponent).filter(Boolean);
+  const encodedSegments = (routePath ?? '').split('/').filter(Boolean);
+  const segments = decodeRouteSegments(encodedSegments) ?? [];
   const pageSegment = segments.at(-1);
-  const page = pageSegment && /^\d+$/.test(pageSegment) ? Number(pageSegment) : 1;
+  const page = pageSegment && /^\d+$/.test(pageSegment)
+    ? normalizePageNumber(Number(pageSegment))
+    : 1;
   const path = pageSegment && /^\d+$/.test(pageSegment) ? segments.slice(0, -1) : segments;
 
   return { path, page };

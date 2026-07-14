@@ -73,5 +73,6 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          DEPLOY_CHECKED: "1"
           DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || vars.DEPLOY_MODE || 'direct:cf+vps' }}
         run: pnpm deploy:switch --mode="$DEPLOY_MODE" --yes

@@ -1,31 +1,8 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import HomeHero from '../../components/HomeHero.astro';
-import HomeLatestPosts from '../../components/HomeLatestPosts.astro';
-import { getRecentPostsForLang } from '../../lib/posts';
-import { getSiteUrl } from '../../lib/site';
-import { safeJsonStringify } from '../../lib/utils';
-
-const recentPosts = await getRecentPostsForLang('zh-tw');
-const description =
-  '分享軟體使用心得、VPS 設定、網站建置與日常隨筆的個人數位筆記。';
-
-const siteUrl = getSiteUrl(Astro.site);
-const pageUrl = new URL(Astro.url.pathname, siteUrl).href;
-
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Blog',
-  name: "SimpleBlog",
-  description,
-  url: pageUrl,
-  publisher: { '@type': 'Person', name: "SimpleBlog", '@id': siteUrl },
-};
+import HomePage from '../../components/HomePage.astro';
 ---
 
-<BaseLayout title="SimpleBlog" description={description}>
-  <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
-
-  <HomeHero lang="zh-tw" />
-  <HomeLatestPosts lang="zh-tw" posts={recentPosts} />
-</BaseLayout>
+<HomePage
+  lang="zh-tw"
+  description="分享軟體使用心得、VPS 設定、網站建置與日常隨筆的個人數位筆記。"
+/>

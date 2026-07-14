@@ -167,8 +167,6 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
   </nav>
 </div>
 
-<script is:inline src="/scripts/bb-navbar.js" defer></script>
-
 <style is:global>
   .skip-link {
     position: fixed;
@@ -195,7 +193,6 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
     height: 70px;
     border-bottom: 1px solid var(--border-light);
     background: var(--bg-nav);
-    backdrop-filter: blur(16px);
     transition:
       transform 0.28s ease,
       background-color 0.28s ease,
@@ -205,6 +202,15 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
   .nav-header--scrolled {
     background: rgba(255, 255, 255, 0.9);
     box-shadow: 0 4px 20px rgba(44, 32, 24, 0.05);
+  }
+
+  .nav-header--hidden {
+    transform: translateY(-100%);
+  }
+
+  html.is-mobile-menu-open,
+  html.is-prefs-open {
+    overflow: hidden;
   }
 
   .nav-container {
@@ -284,7 +290,7 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
     min-width: 140px;
     padding: 0.45rem;
     border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--bg-card);
     box-shadow: var(--shadow-lg);
     opacity: 0;

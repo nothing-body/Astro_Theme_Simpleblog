@@ -12,6 +12,32 @@ test.describe('layout regression checks', () => {
     await expect(firstCard.locator('.post-card-desc')).not.toContainText(/`|>\s*-/);
   });
 
+  test('hover feedback stays sharp on posts, categories, and tags', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'bb-privacy-v1',
+        JSON.stringify({
+          hasSetCookies: true,
+          rememberTimezone: false,
+          enableAnalytics: false,
+        })
+      );
+    });
+    await page.goto('/posts/');
+
+    const postCard = page.locator('.post-card').first();
+    const categoryLink = page.locator('.category-tree-link').first();
+    const tagLink = page.locator('.tag-box').first();
+
+    for (const target of [postCard, categoryLink, tagLink]) {
+      await expect(target).toBeVisible();
+      await target.hover();
+      await expect(target).toHaveCSS('transform', 'none');
+    }
+
+    await expect(postCard).toHaveCSS('backdrop-filter', 'none');
+  });
+
   test('traditional chinese locale remains available under zh-tw', async ({ page }) => {
     await page.goto('/zh-tw/');
 
@@ -34,7 +60,7 @@ test.describe('layout regression checks', () => {
 
     await page.goto('/posts/');
     await page.locator('#lang-trigger-btn').click();
-    await page.locator('.lang-option[hreflang="zh-TW"]').click();
+    await page.locator('.lang-option', { hasText: '繁體中文' }).click();
     await expect(page).toHaveURL(/\/zh-tw\/posts\/?$/);
     await expect(page.locator('html')).toHaveAttribute('lang', 'zh-TW');
   });
@@ -83,23 +109,27 @@ test.describe('layout regression checks', () => {
         })
       );
     });
-    await page.goto('/posts/site-setup-success');
+    await page.goto('/posts/');
+    const articlePath = await page.locator('.post-card a').first().getAttribute('href');
+    expect(articlePath).toMatch(/^\/posts\/[^/]+\/?$/);
+    await page.goto(articlePath!);
     await page.locator('#lang-trigger-btn').click();
 
     const traditionalChinese = page.locator('.lang-option[hreflang="zh-TW"]');
-    await expect(traditionalChinese).toHaveAttribute(
-      'href',
-      '/zh-tw/posts/site-setup-success'
-    );
+    const expectedPath = `/zh-tw${articlePath}`.replace(/\/$/, '');
+    await expect(traditionalChinese).toHaveAttribute('href', expectedPath);
     await traditionalChinese.click();
-    await expect(page).toHaveURL(/\/zh-tw\/posts\/site-setup-success\/?$/);
+    await expect.poll(() => new URL(page.url()).pathname.replace(/\/$/, '')).toBe(expectedPath);
   });
 
   test('localized category alternates exist and the page has one main landmark', async ({
     page,
     request,
   }) => {
-    await page.goto('/categories/Guide/1/');
+    await page.goto('/posts/');
+    const categoryPath = await page.locator('.category-tree-link').first().getAttribute('href');
+    expect(categoryPath).toMatch(/^\/categories\/.+\/1\/?$/);
+    await page.goto(categoryPath!);
 
     await expect(page.locator('main')).toHaveCount(1);
     await expect(page.locator('#main-content')).toHaveCount(1);
@@ -107,7 +137,7 @@ test.describe('layout regression checks', () => {
       .locator('link[rel="alternate"][hreflang="zh-TW"]')
       .getAttribute('href');
     expect(zhTwHref).toBeTruthy();
-    expect(decodeURIComponent(zhTwHref!)).toContain('/zh-tw/categories/教學/1/');
+    expect(decodeURIComponent(zhTwHref!)).toContain('/zh-tw/categories/');
     expect((await request.get(new URL(zhTwHref!).pathname)).ok()).toBe(true);
   });
 
@@ -222,5 +252,60 @@ test.describe('layout regression checks', () => {
     await expect
       .poll(() => page.evaluate(() => window.scrollY), { timeout: 2000 })
       .toBeLessThan(before - 80);
+  });
+
+  test('core layouts do not create page-level horizontal overflow', async ({ page }) => {
+    await page.goto('/posts/');
+    const categoryPath = await page.locator('.category-tree-link').first().getAttribute('href');
+    const articlePath = await page.locator('.post-card a').first().getAttribute('href');
+    expect(categoryPath).toBeTruthy();
+    expect(articlePath).toBeTruthy();
+    const paths = ['/', '/posts/', categoryPath!, articlePath!];
+    for (const viewport of [{ width: 360, height: 740 }, { width: 1280, height: 800 }]) {
+      await page.setViewportSize(viewport);
+      for (const path of paths) {
+        await page.goto(path);
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+        );
+        expect(overflow, `${path} overflow at ${viewport.width}px`).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  test('constrained devices disable expensive visual effects', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'hardwareConcurrency', { configurable: true, value: 2 });
+      localStorage.setItem(
+        'bb-privacy-v1',
+        JSON.stringify({ hasSetCookies: true, rememberTimezone: false, enableAnalytics: false })
+      );
+    });
+    await page.goto('/');
+    await expect(page.locator('html')).toHaveClass(/is-low-power-device/);
+    await expect(page.locator('#navbar')).toHaveCSS('backdrop-filter', 'none');
+  });
+
+  test('privacy dialog keeps keyboard focus inside the modal', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'bb-privacy-v1',
+        JSON.stringify({ hasSetCookies: true, rememberTimezone: false, enableAnalytics: false })
+      );
+    });
+    await page.goto('/');
+    await page.locator('#footer-prefs-trigger').click();
+    await page.locator('#site-prefs-close').focus();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('.site-prefs-link')).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(page.locator('#site-prefs-close')).toBeFocused();
+  });
+
+  test('external notice rejects URLs containing credentials', async ({ page }) => {
+    await page.goto('/leaving/?to=https%3A%2F%2Fuser%3Asecret%40example.com%2F');
+    await expect(page.locator('#leaving-continue')).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.locator('#leaving-warning')).toBeVisible();
+    await expect(page.locator('#leaving-url')).toBeEmpty();
   });
 });

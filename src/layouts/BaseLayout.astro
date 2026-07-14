@@ -15,18 +15,18 @@ import '../styles/global.css';
 
 export interface Props {
   title: string;
-  description?: string;
-  canonicalUrl?: string;
-  ogImage?: string;
-  pubDate?: Date;
-  updatedDate?: Date;
-  type?: 'website' | 'article';
-  tags?: string[];
-  category?: string;
-  author?: string;
-  customCanonical?: string;
-  robots?: string;
-  alternates?: boolean;
+  description?: string | undefined;
+  canonicalUrl?: string | undefined;
+  ogImage?: string | undefined;
+  pubDate?: Date | undefined;
+  updatedDate?: Date | undefined;
+  type?: 'website' | 'article' | undefined;
+  tags?: string[] | undefined;
+  category?: string | undefined;
+  author?: string | undefined;
+  customCanonical?: string | undefined;
+  robots?: string | undefined;
+  alternates?: boolean | undefined;
 }
 
 const {
@@ -101,6 +101,8 @@ const languageRoutes = Object.fromEntries(
 
     <Footer lang={lang} />
 
-    <script is:inline src="/scripts/bb-back-to-top.js" defer></script>
+    <script>
+      import '../scripts/site';
+    </script>
   </body>
 </html>

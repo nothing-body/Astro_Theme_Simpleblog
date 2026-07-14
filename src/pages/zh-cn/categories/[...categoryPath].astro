@@ -1,76 +1,21 @@
 ---
-import { getCollection } from 'astro:content';
-import BaseLayout from '../../../layouts/BaseLayout.astro';
-import Sidebar from '../../../components/Sidebar.astro';
-import PostCard from '../../../components/PostCard.astro';
-import Pagination from '../../../components/Pagination.astro';
-import { useTranslations } from '../../../i18n/utils';
-import {
-  getCategoryPageEntries,
-  getCategoryUrl,
-  parseCategoryRoutePath,
-} from '../../../lib/categories';
-import { POSTS_PAGE_SIZE, paginatePosts } from '../../../lib/posts';
+import ArchivePage from '../../../components/ArchivePage.astro';
+import { getCategoryArchiveStaticPaths } from '../../../lib/archive-paths';
+import { parseCategoryRoutePath } from '../../../lib/categories';
 
-export async function getStaticPaths() {
-  const allPosts = await getCollection(
-    'blog',
-    ({ id, data }) => id.startsWith('zh-cn/') && !data.draft
-  );
-  const globalPosts = await getCollection('blog', ({ data }) => !data.draft);
-  const entries = getCategoryPageEntries(allPosts, POSTS_PAGE_SIZE, globalPosts);
+export const getStaticPaths = () => getCategoryArchiveStaticPaths('zh-cn');
 
-  return entries.flatMap(entry =>
-    Array.from({ length: entry.totalPages }, (_, index) => ({
-      params: { categoryPath: `${entry.routePath}/${index + 1}` },
-      props: {
-        allPosts,
-        globalPosts,
-        categoryPosts: entry.posts,
-        currentCategoryPath: entry.path,
-        totalPages: entry.totalPages,
-      },
-    }))
-  );
-}
-
-const { allPosts, globalPosts, categoryPosts, currentCategoryPath, totalPages } = Astro.props;
-const { page } = parseCategoryRoutePath(Astro.params.categoryPath);
-const t = useTranslations('zh-cn');
-const currentPage = page;
-const currentCategory = currentCategoryPath.join(' / ');
-const posts = paginatePosts(categoryPosts, currentPage);
-const getPageUrl = (n: number) => getCategoryUrl('zh-cn', currentCategoryPath, n);
+const { allPosts, categoryPosts, currentCategoryPath, totalPages } = Astro.props;
+const { page: currentPage } = parseCategoryRoutePath(Astro.params.categoryPath);
 ---
 
-<BaseLayout title={`${currentCategory} - ${t('sidebar.categories')}`}>
-  <div class="page-container" style="padding-top:2rem; padding-bottom:4rem;">
-    <div class="content-wrapper">
-      <Sidebar
-        allPosts={allPosts}
-        globalPosts={globalPosts}
-        lang="zh-cn"
-        activeCategory={currentCategoryPath.at(0)}
-        activeCategoryPath={currentCategoryPath}
-      />
-      <div class="main-content">
-        <h1
-          style="font-size:1.6rem; font-weight:800; color:var(--text-heading); margin-bottom:1.5rem;"
-        >
-          {t('sidebar.categories')}：{currentCategory}
-        </h1>
-        {posts.map(post => <PostCard post={post} lang="zh-cn" />)}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          prevUrl={currentPage > 1 ? getPageUrl(currentPage - 1) : undefined}
-          nextUrl={currentPage < totalPages ? getPageUrl(currentPage + 1) : undefined}
-          getPageUrl={getPageUrl}
-          lang="zh-cn"
-        />
-      </div>
-    </div>
-  </div>
-
-  <script is:inline src="/scripts/bb-last-list.js" defer></script>
-</BaseLayout>
+<ArchivePage
+  kind="category"
+  lang="zh-cn"
+  allPosts={allPosts}
+  filteredPosts={categoryPosts}
+  label={currentCategoryPath.join(' / ')}
+  categoryPath={currentCategoryPath}
+  currentPage={currentPage}
+  totalPages={totalPages}
+/>

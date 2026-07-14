@@ -19,15 +19,15 @@ const jsonLd = {
 
 <BaseLayout title="About This Site" {description}>
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
-  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+  <div class="page-container content-page">
     <div class="content-wrapper">
       <AboutSidebar lang="en" currentPath={currentPath} />
       <div class="main-content">
-        <article class="glass-card be-article-wrapper" style="padding: 2.5rem;">
+        <article class="glass-card be-article-wrapper content-article">
           <div class="article-entry">
             <h1>About This Site</h1>
             <p>
-              {SITE_NAME} is a multilingual Astro static blog template with Markdown/MDX content,
+              {SITE_NAME} is a multilingual Astro static blog template with Markdown content,
               categories, tags, SEO metadata, privacy controls, and deployment helpers.
             </p>
             <h2>Customize this page</h2>

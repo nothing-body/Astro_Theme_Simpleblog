@@ -1,6 +1,6 @@
 # SimpleBlog 内容与配置指南
 
-本指南完整说明 Markdown/MDX 文章、多语言路由、文章置顶、项目配置、隐私、自检与自动部署。
+本指南完整说明 Markdown 文章、多语言路由、文章置顶、项目配置、隐私、自检与自动部署。
 
 其他语言：[English](./MARKDOWN_GUIDE.en.md) | [繁體中文](./MARKDOWN_GUIDE.zh-TW.md)
 
@@ -13,6 +13,8 @@ pnpm dev
 ```
 
 Windows PowerShell 可以使用 `Copy-Item .env.example .env`。至少设置：
+
+本项目主要且建议使用 pnpm，因为 `package.json` 已锁定 pnpm 版本，仓库也提交 `pnpm-lock.yaml`。只有在系统无法使用 pnpm 时才改用 npm。
 
 ```env
 PUBLIC_SITE_URL=https://example.com
@@ -34,8 +36,10 @@ PUBLIC_GA4_ID=
 | `src/i18n/ui.ts` | 三语言界面文字 |
 | `src/components/BookmarkLinks.astro` | 默认书签分类与链接 |
 | `public/_headers` | Cloudflare 安全与缓存响应头 |
+| `vercel.json` | Vercel 安全与缓存响应头 |
+| `deploy/nginx-security-headers.conf` | VPS 使用 Nginx 时的安全响应头 include 文件 |
 | `public/_redirects` | 静态重定向 |
-| `astro.config.mjs` | Astro、Markdown、sitemap、SEO 与构建整合 |
+| `astro.config.ts` | Astro、Markdown、sitemap、SEO 与构建整合 |
 | `.env.example` | 公开网站设置模板 |
 | `.env.cloudflare.example` | Cloudflare 部署模板 |
 | `.env.vps.example` | VPS 部署模板 |
@@ -43,7 +47,7 @@ PUBLIC_GA4_ID=
 | `.github/workflows/deploy.yml` | GitHub Actions 部署 |
 | `.gitlab-ci.yml` | GitLab CI 部署 |
 | `.woodpecker.yml` | Woodpecker/Codeberg 部署 |
-| `scripts/analysis.mjs` | 全项目自检 |
+| `scripts/analysis.ts` | 全项目自检 |
 
 只能提交 `.example` 环境模板。不可提交真实 token、密钥、Account ID、SSH passphrase、私人文章、个人图片、`dist` 或 `.astro` 缓存。
 
@@ -86,13 +90,12 @@ ogImage: 'https://example.com/images/post-cover.png'
 ---
 ```
 
-- `title`、`pubDate` 必填。
-- `description` 可选，但建议用于 SEO。
+- `title`、`description`、`pubDate` 必填；描述长度必须为 12 到 300 个字符。
 - `categoryPath` 支持一到五层非空分类。
 - `tags` 必须是 YAML 数组。
 - `pinned`、`draft` 是布尔值，不可写成带引号的字符串。
 - `pinOrder` 必须是 1 到 9999 的整数。
-- `ogImage` 必须是绝对网址；没有公开图片时直接省略。
+- `ogImage` 必须使用 `/images/...` 路径或 HTTPS 网址；没有公开图片时直接省略。
 - `draft: true` 会让文章不进入公开构建结果。
 
 ## 5. 如何置顶文章
@@ -106,12 +109,12 @@ pinOrder: 1
 
 同一篇文章的三语言翻译应使用相同 `pinOrder`，避免不同语言排序不一致。
 
-## 6. Markdown 与 MDX 安全
+## 6. Markdown 安全
 
 - 优先使用标准 Markdown 链接，不要随意加入 raw HTML。
 - 外部 HTTP/HTTPS 链接会经过对应语言的离站提醒页。
 - 不要把 script、API key、token、私人 hostname、内网 IP 或个人文件路径写进文章。
-- 只有确实需要组件时才使用 MDX；导入组件会在构建期间执行，必须按源代码审查。
+- 文章统一使用 `.md`，不支持可执行的 import、export、JSX 或嵌入式 script；需要共用排版功能时，应添加到经过审查的共用 layout 或 Markdown processor。
 - 公开资源放在 `public/`；不要把私人照片或私人站图片目录复制到公开模板。
 
 ## 7. 网站定制设置
@@ -147,7 +150,7 @@ pnpm deploy:vercel:only
 pnpm deploy:all
 ```
 
-部署脚本会先构建，只上传生成结果。Process/CI 注入的环境变量优先于本地 env 文件，防止过期的本地值静默覆盖 CI secret。
+部署脚本会先执行项目的 `check` 与 `build` 命令，通过后才上传生成结果。Process/CI 注入的环境变量优先于本地 env 文件，防止过期的本地值静默覆盖 CI secret。
 
 机密应设置在 Git 平台，不可写入 YAML：
 

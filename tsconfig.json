@@ -13,9 +13,9 @@
       "@i18n/*": ["src/i18n/*"]
     },
     "strictNullChecks": true,
-    "exactOptionalPropertyTypes": false,
+    "exactOptionalPropertyTypes": true,
     "noImplicitAny": true,
-    "noUncheckedIndexedAccess": false
+    "noUncheckedIndexedAccess": true
   },
   "exclude": [
     "backup",

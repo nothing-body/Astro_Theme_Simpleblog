@@ -7,8 +7,8 @@ export interface Props {
   nodes: CategoryTreeNode[];
   lang: Lang;
   postsHref: string;
-  activePathKey?: string;
-  depth?: number;
+  activePathKey?: string | undefined;
+  depth?: number | undefined;
 }
 
 const { nodes, lang, postsHref, activePathKey, depth = 0 } = Astro.props;

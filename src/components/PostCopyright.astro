@@ -4,7 +4,7 @@ import { DEFAULT_AUTHOR } from '../lib/site';
 export interface Props {
   canonicalUrl: string;
   lang: 'zh-tw' | 'en' | 'zh-cn';
-  author?: string;
+  author?: string | undefined;
 }
 
 const { canonicalUrl, lang, author = DEFAULT_AUTHOR } = Astro.props;

@@ -7,18 +7,16 @@ const t = useTranslations('zh-tw');
 ---
 
 <BaseLayout title={t('noCategory.title')} robots="noindex, follow" alternates={false}>
-  <div class="page-container" style="padding-top:4rem; padding-bottom:4rem; text-align:center;">
+  <div class="page-container no-category-page" data-no-category data-redirect="/zh-tw/posts">
     <div>
-      <div class="glass-card" style="padding:3rem 2rem; max-width:540px; margin:0 auto;">
-        <p style="font-size:3rem; margin:0 0 1rem;">🔍</p>
-        <h1
-          style="font-size:1.5rem; font-weight:800; color:var(--text-heading); margin-bottom:1rem;"
-        >
+      <div class="glass-card no-category-card">
+        <p class="no-category-symbol" aria-hidden="true">404</p>
+        <h1 class="no-category-title">
           {t('noCategory.title')}
         </h1>
-        <p style="color:var(--text-secondary); margin-bottom:2rem;">{t('noCategory.message')}</p>
+        <p class="no-category-message">{t('noCategory.message')}</p>
         <p
-          style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;"
+          class="no-category-redirect"
           id="redirect-msg"
         >
           {t('noCategory.redirecting')}
@@ -28,5 +26,7 @@ const t = useTranslations('zh-tw');
     </div>
   </div>
 
-  <script is:inline src="/scripts/bb-no-category-redirect.js" data-redirect="/zh-tw/posts" defer></script>
+  <script>
+    import '../../scripts/no-category';
+  </script>
 </BaseLayout>

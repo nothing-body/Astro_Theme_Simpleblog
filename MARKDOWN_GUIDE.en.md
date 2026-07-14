@@ -1,6 +1,6 @@
 # SimpleBlog Content And Configuration Guide
 
-This guide covers Markdown/MDX posts, multilingual routing, pinned posts, project settings, privacy, self-checks, and automated deployment.
+This guide covers Markdown posts, multilingual routing, pinned posts, project settings, privacy, self-checks, and automated deployment.
 
 Language versions: [繁體中文](./MARKDOWN_GUIDE.zh-TW.md) | [简体中文](./MARKDOWN_GUIDE.zh-CN.md)
 
@@ -13,6 +13,8 @@ pnpm dev
 ```
 
 Windows PowerShell users can run `Copy-Item .env.example .env`. Set at least:
+
+pnpm is the primary and recommended package manager because `package.json` pins its version and the repository commits `pnpm-lock.yaml`. npm remains a fallback for systems where pnpm is unavailable.
 
 ```env
 PUBLIC_SITE_URL=https://example.com
@@ -34,8 +36,10 @@ Use your real public URL and public contact email in `.env`. Keep `.env` uncommi
 | `src/i18n/ui.ts` | Interface text for all languages |
 | `src/components/BookmarkLinks.astro` | Default bookmark groups and links |
 | `public/_headers` | Cloudflare security and cache headers |
+| `vercel.json` | Vercel security and cache headers |
+| `deploy/nginx-security-headers.conf` | Nginx security-header include for VPS hosting |
 | `public/_redirects` | Static redirects |
-| `astro.config.mjs` | Astro, Markdown, sitemap, SEO, and build integrations |
+| `astro.config.ts` | Astro, Markdown, sitemap, SEO, and build integrations |
 | `.env.example` | Public site setting template |
 | `.env.cloudflare.example` | Cloudflare deployment template |
 | `.env.vps.example` | VPS deployment template |
@@ -43,7 +47,7 @@ Use your real public URL and public contact email in `.env`. Keep `.env` uncommi
 | `.github/workflows/deploy.yml` | GitHub Actions deployment |
 | `.gitlab-ci.yml` | GitLab CI deployment |
 | `.woodpecker.yml` | Woodpecker/Codeberg deployment |
-| `scripts/analysis.mjs` | Full project self-check |
+| `scripts/analysis.ts` | Full project self-check |
 
 Commit only `.example` environment files. Never commit real tokens, keys, account IDs, SSH passphrases, private articles, personal images, generated `dist`, or `.astro` cache data.
 
@@ -86,13 +90,12 @@ ogImage: 'https://example.com/images/post-cover.png'
 ---
 ```
 
-- `title` and `pubDate` are required.
-- `description` is optional but recommended for SEO.
+- `title`, `description`, and `pubDate` are required. Descriptions must contain 12 to 300 characters.
 - `categoryPath` supports one to five non-empty levels.
 - `tags` must be a YAML array.
 - `pinned`, `draft` are booleans, not quoted strings.
 - `pinOrder` accepts integers from 1 to 9999.
-- `ogImage` must be an absolute URL. Omit it when no public image exists.
+- `ogImage` must use `/images/...` or an HTTPS URL. Omit it when no public image exists.
 - `draft: true` excludes the post from the generated public site.
 
 ## 5. Pin Posts
@@ -106,12 +109,12 @@ Pinned posts appear before normal posts. Smaller `pinOrder` values appear first.
 
 Do not give every translated version a different `pinOrder`; matching translations should have matching priority.
 
-## 6. Markdown And MDX Safety
+## 6. Markdown Safety
 
 - Prefer normal Markdown links instead of raw HTML.
 - External HTTP/HTTPS links are routed through the localized leaving-notice page.
 - Do not paste scripts, API keys, access tokens, private hostnames, internal IP addresses, or personal filesystem paths into posts.
-- Use MDX only when a real component is required. Imported components execute during build and must be reviewed like source code.
+- Posts use `.md`. Executable imports, exports, JSX, and embedded scripts are intentionally unsupported; add reviewed presentation features through the shared layout or Markdown processor instead.
 - Put public assets in `public/`; do not copy private photos or the private site's image directory into a public template.
 
 ## 7. Site Customization
@@ -147,7 +150,7 @@ pnpm deploy:vercel:only
 pnpm deploy:all
 ```
 
-The deployment scripts build first and upload only generated output. Process/CI environment variables take priority over local env files, so a checked-in or stale local value cannot silently replace an injected CI secret.
+The deployment scripts run the project's `check` and `build` commands, then upload only generated output. Process/CI environment variables take priority over local env files, so a stale local value cannot silently replace an injected CI secret.
 
 Configure secrets in the selected Git provider, not in YAML:
 

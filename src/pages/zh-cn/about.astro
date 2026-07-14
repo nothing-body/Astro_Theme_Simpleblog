@@ -19,15 +19,15 @@ const jsonLd = {
 
 <BaseLayout title="关于本站" {description}>
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
-  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+  <div class="page-container content-page">
     <div class="content-wrapper">
       <AboutSidebar lang="zh-cn" currentPath={currentPath} />
       <div class="main-content">
-        <article class="glass-card be-article-wrapper" style="padding: 2.5rem;">
+        <article class="glass-card be-article-wrapper content-article">
           <div class="article-entry">
             <h1>关于本站</h1>
             <p>
-              {SITE_NAME} 是一套 Astro 多语言静态博客模板，支持 Markdown/MDX、分类、标签、SEO、隐私设置与部署工具。
+              {SITE_NAME} 是一套 Astro 多语言静态博客模板，支持 Markdown、分类、标签、SEO、隐私设置与部署工具。
             </p>
             <h2>定制这个页面</h2>
             <p>

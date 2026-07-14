@@ -1,4 +1,19 @@
-import { getPostsListUrl, getPostsPageUrl, getTagListUrl, stripLocalePathParts } from './routes';
+import {
+  decodeRouteSegment,
+  decodeRouteSegments,
+  getPostsListUrl,
+  getPostsPageUrl,
+  getTagListUrl,
+  normalizePageNumber,
+  stripLocalePathParts,
+} from './routes';
+
+describe('route decoding', () => {
+  test('returns null for malformed percent encoding', () => {
+    expect(decodeRouteSegment('%E0%A4%A')).toBeNull();
+    expect(decodeRouteSegments(['valid', '%ZZ'])).toBeNull();
+  });
+});
 
 describe('stripLocalePathParts', () => {
   test('removes legacy /en prefix', () => {
@@ -22,11 +37,18 @@ describe('getPostsListUrl', () => {
     expect(getPostsListUrl('zh-tw', 3)).toBe('/zh-tw/page/3');
     expect(getPostsListUrl('zh-cn', 3)).toBe('/zh-cn/page/3');
   });
+
+  test('normalizes unsafe and fractional page values to page one', () => {
+    for (const value of [0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(normalizePageNumber(value)).toBe(1);
+      expect(getPostsListUrl('en', value)).toBe('/posts');
+    }
+  });
 });
 
 describe('getPostsPageUrl', () => {
-  test('always uses /page/N including page 1', () => {
-    expect(getPostsPageUrl('en', 1)).toBe('/page/1/');
+  test('uses /posts for page 1 and /page/N for later pages', () => {
+    expect(getPostsPageUrl('en', 1)).toBe('/posts/');
     expect(getPostsPageUrl('zh-tw', 2)).toBe('/zh-tw/page/2/');
   });
 });
@@ -35,5 +57,13 @@ describe('getTagListUrl', () => {
   test('builds localized tag pagination URLs', () => {
     expect(getTagListUrl('en', 'AI API', 2)).toBe('/tags/AI%20API/2/');
     expect(getTagListUrl('zh-tw', 'AI API', 1)).toBe('/zh-tw/tags/AI%20API/1/');
+  });
+
+  test('does not generate invalid pagination segments', () => {
+    expect(getTagListUrl('en', 'Privacy', 2.5)).toBe('/tags/Privacy/1/');
+  });
+
+  test('rejects empty tag routes', () => {
+    expect(() => getTagListUrl('en', '  ', 1)).toThrow(/non-empty tag/);
   });
 });

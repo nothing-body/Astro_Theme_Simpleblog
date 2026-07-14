@@ -7,6 +7,8 @@ import {
 } from '../lib/categories';
 import { POSTS_PAGE_SIZE, getTotalPages, type BlogPost } from '../lib/posts';
 import {
+  decodeRouteSegment,
+  decodeRouteSegments,
   getPostsListUrl,
   getPostsPageUrl,
   getTagListUrl,
@@ -31,6 +33,9 @@ export function useTranslations(lang: Lang) {
 
 export function useTranslatedPath(lang: Lang) {
   return function translatePath(path: string, targetLang: Lang = lang): string {
+    if (!path.startsWith('/') || path.startsWith('//')) {
+      throw new Error(`Translated paths must be site-relative: ${path}`);
+    }
     if (targetLang === defaultLang) {
       return path;
     }
@@ -57,6 +62,14 @@ export function buildDynamicCategoryMapping(
     const labelMapping = (mapping[sourceLabel] ??= {});
     const routeMapping = (mapping[sourceRoute] ??= {});
 
+    for (const current of [labelMapping[targetLang], routeMapping[targetLang]]) {
+      if (current && current !== targetLabel) {
+        throw new Error(
+          `Conflicting category translation for '${sourceLabel}' (${targetLang}): '${current}' and '${targetLabel}'.`
+        );
+      }
+    }
+
     labelMapping[targetLang] = targetLabel;
     routeMapping[targetLang] = targetLabel;
   };
@@ -71,7 +84,7 @@ export function buildDynamicCategoryMapping(
     postsByPath[relativePath] ??= {};
 
     if (locale && locale in ui) {
-      postsByPath[relativePath][locale] = getNormalizedPostCategoryPath(post, allPosts).join('/');
+      postsByPath[relativePath][locale] = getNormalizedPostCategoryPath(post).join('/');
     }
   }
 
@@ -105,7 +118,7 @@ export function buildDynamicTagMapping(
 
   for (const post of allPosts) {
     const [locale, ...relativeParts] = post.id.split('/');
-    if (!(locale in ui) || relativeParts.length === 0) continue;
+    if (!locale || !(locale in ui) || relativeParts.length === 0) continue;
 
     const relativePath = relativeParts.join('/');
     const translations = postsByPath.get(relativePath) ?? {};
@@ -122,7 +135,14 @@ export function buildDynamicTagMapping(
 
         for (const [targetLang, targetPost] of Object.entries(translations)) {
           const targetTag = targetPost?.data.tags[index];
-          if (targetTag) targetByLanguage[targetLang] = targetTag;
+          if (!targetTag) continue;
+          const current = targetByLanguage[targetLang];
+          if (current && current !== targetTag) {
+            throw new Error(
+              `Conflicting tag translation for '${sourceTag}' (${targetLang}): '${current}' and '${targetTag}'.`
+            );
+          }
+          targetByLanguage[targetLang] = targetTag;
         }
       });
     }
@@ -153,13 +173,15 @@ export function getTargetLangRoute(
   const parts = stripLocalePathParts(currentUrl.pathname.split('/').filter(Boolean));
 
   if (parts[0] === 'posts' && parts.length > 1) {
-    const slug = decodeURIComponent(parts.slice(1).join('/'));
+    const slugParts = decodeRouteSegments(parts.slice(1));
+    if (!slugParts) return unavailableRoute(targetLang);
+    const slug = slugParts.join('/');
     const targetPost = targetPosts.find(post => getCleanSlug(post.id) === slug);
     return targetPost ? route(getPostUrl(targetPost.id, targetLang)) : unavailableRoute(targetLang);
   }
 
   if (parts[0] === 'posts') {
-    return route(getPostsListUrl(targetLang, 1), getPostsPageUrl(targetLang, 1));
+    return route(getPostsListUrl(targetLang, 1));
   }
 
   if (parts[0] === 'page' && parts[1] && /^\d+$/.test(parts[1])) {
@@ -171,18 +193,20 @@ export function getTargetLangRoute(
     const categoryParts = parts.slice(1);
     const lastPart = categoryParts.at(-1);
     const pathParts = lastPart && /^\d+$/.test(lastPart) ? categoryParts.slice(0, -1) : categoryParts;
-    const currentCat = pathParts.map(decodeURIComponent).join('/');
+    const decodedPath = decodeRouteSegments(pathParts);
+    if (!decodedPath) return unavailableRoute(targetLang);
+    const currentCat = decodedPath.join('/');
     const targetCat = categoryMapping[currentCat]?.[targetLang];
 
     if (targetCat) {
       const targetPath = targetCat.split('/').filter(Boolean);
       const hasPosts = targetPosts.some(p =>
-        categoryPathStartsWith(getNormalizedPostCategoryPath(p, allPosts), targetPath)
+        categoryPathStartsWith(getNormalizedPostCategoryPath(p), targetPath)
       );
       if (hasPosts) {
         const requestedPage = lastPart && /^\d+$/.test(lastPart) ? Number(lastPart) : 1;
         const matchingPosts = targetPosts.filter(p =>
-          categoryPathStartsWith(getNormalizedPostCategoryPath(p, allPosts), targetPath)
+          categoryPathStartsWith(getNormalizedPostCategoryPath(p), targetPath)
         );
         const page = Math.min(requestedPage, getTotalPages(matchingPosts.length, POSTS_PAGE_SIZE));
         return route(getCategoryUrl(targetLang, targetPath, page));
@@ -192,15 +216,15 @@ export function getTargetLangRoute(
   }
 
   if (parts[0] === 'tags' && parts[1]) {
-    const currentTag = decodeURIComponent(parts[1]);
+    const currentTag = decodeRouteSegment(parts[1]);
+    if (!currentTag) return unavailableRoute(targetLang);
     const targetTag = targetPosts.some(p => p.data.tags.includes(currentTag))
       ? currentTag
       : tagMapping[currentTag]?.[targetLang];
     const matchingPosts = targetTag
       ? targetPosts.filter(p => p.data.tags.includes(targetTag))
       : [];
-    const hasPosts = matchingPosts.length > 0;
-    if (hasPosts) {
+    if (targetTag && matchingPosts.length > 0) {
       const requestedPage = parts[2] && /^\d+$/.test(parts[2]) ? Number(parts[2]) : 1;
       const page = Math.min(requestedPage, getTotalPages(matchingPosts.length, POSTS_PAGE_SIZE));
       return route(getTagListUrl(targetLang, targetTag, page));

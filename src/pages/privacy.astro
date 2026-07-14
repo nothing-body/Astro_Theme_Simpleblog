@@ -26,14 +26,14 @@ const jsonLd = {
 
 <BaseLayout title="Privacy Policy" description="Privacy policy for the SimpleBlog blog.">
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
-  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+  <div class="page-container content-page">
     <div class="content-wrapper">
       <AboutSidebar lang="en" currentPath={currentPath} />
       <div class="main-content">
-        <article class="glass-card" style="padding: 2.5rem;">
+        <article class="glass-card content-article">
           <div class="article-entry">
             <h1>Privacy Policy</h1>
-            <p style="color:var(--text-muted); font-size:0.88rem;">Last updated: {today}</p>
+            <p class="content-updated">Last updated: {today}</p>
             <p>
               This site takes your privacy seriously. This policy explains how we collect and use
               data.

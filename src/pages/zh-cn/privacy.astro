@@ -26,14 +26,14 @@ const jsonLd = {
 
 <BaseLayout title="隐私权政策" description="本站隐私权政策，说明数据收集与处理方式。">
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
-  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+  <div class="page-container content-page">
     <div class="content-wrapper">
       <AboutSidebar lang="zh-cn" currentPath={currentPath} />
       <div class="main-content">
-        <article class="glass-card" style="padding: 2.5rem;">
+        <article class="glass-card content-article">
           <div class="article-entry">
             <h1>隐私权政策</h1>
-            <p style="color:var(--text-muted); font-size:0.88rem;">最后更新：{today}</p>
+            <p class="content-updated">最后更新：{today}</p>
             <p>本站承诺保护使用者的隐私。以下内容说明本站处理使用者数据的相关政策：</p>
 
             <h2>信息收集</h2>

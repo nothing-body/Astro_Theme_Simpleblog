@@ -24,13 +24,15 @@ const t = useTranslations(lang);
   </button>
 </div>
 
-<script is:inline src="/scripts/bb-settings-inline.js" defer></script>
+<script>
+  import '../scripts/settings-inline';
+</script>
 
 <style is:global>
   .site-settings-inline {
     border: 1.5px solid var(--border-color);
     padding: 1.5rem;
-    border-radius: 12px;
+    border-radius: 8px;
     background: rgba(245, 240, 232, 0.5);
     margin: 1rem 0 1.5rem;
     display: flex;

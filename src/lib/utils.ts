@@ -10,12 +10,17 @@ export function formatDate(date: Date, lang: Lang = 'zh-tw'): string {
 }
 
 export function getCleanSlug(postId: string): string {
-  return postId.replace(/\.mdx?$/, '').replace(/^(zh-tw|en|zh-cn)\//, '');
+  return postId.replace(/\.md$/, '').replace(/^(zh-tw|en|zh-cn)\//, '');
 }
 
 export function getPostUrl(slug: string, lang: Lang): string {
-  const cleanSlug = slug.replace(/^(zh-tw|en|zh-cn)\//, '').replace(/\.mdx?$/, '');
-  return lang === 'en' ? `/posts/${cleanSlug}` : `/${lang}/posts/${cleanSlug}`;
+  const cleanSlug = slug.replace(/^(zh-tw|en|zh-cn)\//, '').replace(/\.md$/, '');
+  const segments = cleanSlug.split('/').filter(Boolean);
+  if (segments.length === 0 || segments.some(segment => segment === '.' || segment === '..')) {
+    throw new Error(`Invalid post slug: ${slug}`);
+  }
+  const encodedSlug = segments.map(encodeURIComponent).join('/');
+  return lang === 'en' ? `/posts/${encodedSlug}` : `/${lang}/posts/${encodedSlug}`;
 }
 
 export function stripMarkdown(value: string): string {
@@ -53,5 +58,7 @@ export function safeJsonStringify(obj: unknown): string {
   return JSON.stringify(obj)
     .replace(/</g, '\\u003c')
     .replace(/>/g, '\\u003e')
-    .replace(/&/g, '\\u0026');
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
 }

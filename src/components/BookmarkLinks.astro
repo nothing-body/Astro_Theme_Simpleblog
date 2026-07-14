@@ -201,7 +201,6 @@ const bookmarkRows = [
     border: 1px solid rgba(196, 122, 101, 0.22);
     border-radius: 99px;
     background: rgba(255, 252, 248, 0.88);
-    backdrop-filter: blur(4px);
     color: var(--primary-red-dark, #9b4f3f);
     display: flex;
     align-items: center;
@@ -240,7 +239,7 @@ const bookmarkRows = [
   }
 
   .scroll-arrow:active {
-    transform: translateX(-50%) scale(0.92) !important;
+    opacity: 0.82 !important;
   }
 
   .bookmark-rows {
@@ -366,4 +365,6 @@ const bookmarkRows = [
   }
 </style>
 
-<script is:inline src="/scripts/bb-bookmarks.js" defer></script>
+<script>
+  import '../scripts/bookmarks';
+</script>

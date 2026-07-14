@@ -50,14 +50,12 @@ const pinnedLabel = t('post.pinned');
     content-visibility: auto;
     contain-intrinsic-size: auto 180px;
     transition:
-      transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
       box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
       border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @media (hover: hover) {
     .post-card:hover {
-      transform: translateY(-4px);
       box-shadow: var(--shadow-card-hover);
       border-color: var(--glass-border);
     }
@@ -172,14 +170,11 @@ const pinnedLabel = t('post.pinned');
     font-weight: 600;
     opacity: 0.8;
     white-space: nowrap;
-    transition:
-      opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .post-card-tag:hover {
     opacity: 1;
-    transform: scale(1.05);
   }
 
   .post-card-read {
@@ -187,27 +182,18 @@ const pinnedLabel = t('post.pinned');
     font-size: 0.82rem;
     font-weight: 700;
     opacity: 0.8;
-    transform: translateX(-2px);
     white-space: nowrap;
-    transition:
-      opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .post-card-read::after {
     content: ' ->';
     display: inline-block;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @media (hover: hover) {
     .post-card:hover .post-card-read {
       opacity: 1;
-      transform: translateX(0);
-    }
-
-    .post-card:hover .post-card-read::after {
-      transform: translateX(4px);
     }
   }
 
@@ -219,7 +205,6 @@ const pinnedLabel = t('post.pinned');
 
     .post-card-read {
       opacity: 1;
-      transform: none;
     }
   }
 </style>

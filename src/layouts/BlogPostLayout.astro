@@ -6,12 +6,13 @@ import Breadcrumbs from '../components/Breadcrumbs.astro';
 import PostCopyright from '../components/PostCopyright.astro';
 import {
   buildDynamicCategoryMapping,
+  buildDynamicTagMapping,
   getLangFromUrl,
   useTranslatedPath,
   useTranslations,
 } from '../i18n/utils';
 import { formatDate, safeJsonStringify, summarizePlainText } from '../lib/utils';
-import { DEFAULT_AUTHOR, SITE_NAME, getSiteUrl } from '../lib/site';
+import { DEFAULT_AUTHOR, getSiteUrl } from '../lib/site';
 import {
   getCategoryPathFromData,
   getCategoryUrl,
@@ -24,14 +25,14 @@ export interface Props {
   post?: CollectionEntry<'blog'>;
   frontmatter: {
     title: string;
-    description?: string;
+    description?: string | undefined;
     pubDate: Date;
-    updatedDate?: Date;
-    category?: string;
-    categoryPath?: string[];
-    tags?: string[];
-    author?: string;
-    ogImage?: string;
+    updatedDate?: Date | undefined;
+    category?: string | undefined;
+    categoryPath?: string[] | undefined;
+    tags?: string[] | undefined;
+    author?: string | undefined;
+    ogImage?: string | undefined;
   };
 }
 
@@ -48,8 +49,9 @@ const currentCategoryPath = getCategoryPathFromData({
 });
 const allBlogPosts = await getCollection('blog', ({ data }) => !data.draft);
 const categoryMapping = buildDynamicCategoryMapping(allBlogPosts);
+const tagMapping = buildDynamicTagMapping(allBlogPosts);
 const normalizedCategoryPath = post
-  ? getNormalizedPostCategoryPath(post, allBlogPosts)
+  ? getNormalizedPostCategoryPath(post)
   : currentCategoryPath;
 const currentCategoryLabel = normalizedCategoryPath.join(' / ');
 const currentCategoryHref = getCategoryUrl(lang, normalizedCategoryPath, 1);
@@ -104,8 +106,8 @@ const breadcrumbs = [
       },
       publisher: {
         '@type': 'Person',
-        name: SITE_NAME,
-        url: siteUrl,
+        '@id': `${siteUrl}/#author`,
+        name: DEFAULT_AUTHOR,
       },
       articleSection: currentCategoryLabel,
       keywords: (frontmatter.tags ?? []).join(', '),
@@ -186,9 +188,16 @@ const breadcrumbs = [
   is:inline
   type="application/json"
   id="bb-post-back-config"
-  set:html={safeJsonStringify({ lang, categoryMapping, currentCategory: currentCategoryLabel })}
+  set:html={safeJsonStringify({
+    lang,
+    categoryMapping,
+    tagMapping,
+    currentCategory: currentCategoryLabel,
+  })}
 />
-<script is:inline src="/scripts/bb-post-back.js" defer></script>
+<script>
+  import '../scripts/post-back';
+</script>
 
 <style is:global>
   .immersion-read-container {
@@ -228,7 +237,9 @@ const breadcrumbs = [
     letter-spacing: 0.12em;
     text-decoration: none;
     text-transform: uppercase;
-    transition: all 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
   }
 
   .post-category-badge:hover {
@@ -252,11 +263,11 @@ const breadcrumbs = [
   .post-main-title {
     margin: 0.5rem 0 1.2rem;
     color: var(--text-heading);
-    font-size: clamp(2rem, 5.5vw, 3rem);
+    font-size: 2.5rem;
     font-weight: 900;
     letter-spacing: 0;
     line-height: 1.22;
-    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
 
@@ -285,14 +296,11 @@ const breadcrumbs = [
     font-weight: 600;
     text-decoration: none;
     white-space: nowrap;
-    transition:
-      opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .inline-tag:hover {
     opacity: 1;
-    transform: scale(1.05);
   }
 
   .post-divider {
@@ -326,11 +334,10 @@ const breadcrumbs = [
     font-size: 0.95rem;
     font-weight: 700;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease;
   }
 
   .back-link:hover {
-    gap: 0.5rem;
     color: var(--primary-red-dark);
   }
 
@@ -346,7 +353,7 @@ const breadcrumbs = [
 
     .post-main-title {
       margin: 0.3rem 0 0.8rem;
-      font-size: clamp(1.5rem, 6vw, 2rem);
+      font-size: 1.75rem;
     }
 
     .post-meta-row {

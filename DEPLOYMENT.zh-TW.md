@@ -9,17 +9,18 @@
 ```bash
 node --version
 pnpm --version
-npm --version
 ```
 
-建議使用 Node.js 22.12.0 或更新版本。專案偏好 pnpm，但也支援 npm。
+需要 Node.js 22.12.0 或更新版本。專案附有 `pnpm-lock.yaml`，因此優先使用 `package.json` 鎖定的 pnpm；若找不到 pnpm，腳本會自動使用 Node.js 內附的 npm。
 
 如果尚未安裝 pnpm：
 
 ```bash
 corepack enable
-corepack prepare pnpm@latest --activate
+corepack prepare pnpm@10.33.4 --activate
 ```
+
+安裝 pnpm 並非必要。只有 npm 的環境可使用 `npm install`、`npm run build` 與 `npm run deploy:menu`。以 npm 傳遞腳本參數時需保留分隔符，例如 `npm run deploy:switch -- --mode=direct:cf`。
 
 ## 2. 需要哪些檔案
 
@@ -73,22 +74,11 @@ test-results/
 
 ## 3. 安裝、檢查、建置
 
-pnpm：
-
 ```bash
 pnpm install
 pnpm check
 pnpm lint
 pnpm build
-```
-
-npm：
-
-```bash
-npm install
-npm run check
-npm run lint
-npm run build
 ```
 
 `build` 會產生部署用的 `dist/` 目錄。
@@ -158,8 +148,11 @@ PUBLIC_SITE_URL=https://example.com
 
 ```bash
 pnpm deploy:cf:only
-npm run deploy:cf:only
 ```
+
+安全標頭依平台套用：Cloudflare Pages 讀取 `public/_headers`，Vercel 讀取根目錄的 `vercel.json`。Nginx VPS 必須在 HTTPS `server` 區塊 include `deploy/nginx-security-headers.conf`，先以 `nginx -t` 驗證後再 reload；只上傳 `dist/` 無法改變 VPS 回應標頭。
+
+在 Pages 啟用 Cloudflare Web Analytics 自動安裝後，Cloudflare 會自動注入一份官方 Beacon。`public/_headers` 的 Cloudflare 專用 CSP 僅放行 Beacon 檔案及其版本化 `/beacon.min.js/...` 路徑，而同源的 `/cdn-cgi/rum` 回報由 `connect-src 'self'` 涵蓋；不要再手動加入第二份 Beacon。若停用 Web Analytics，應移除這兩個 Beacon script 來源以維持最小權限。
 
 ## 8. VPS
 
@@ -192,7 +185,6 @@ VPS_SSH_PASSPHRASE=your_private_key_passphrase
 
 ```bash
 pnpm deploy:vps:only
-npm run deploy:vps:only
 ```
 
 ## 9. Vercel
@@ -221,7 +213,6 @@ VERCEL_PROJECT_ID=your_project_id
 
 ```bash
 pnpm deploy:vercel:only
-npm run deploy:vercel:only
 ```
 
 ## 10. 雙語部署選單
@@ -230,7 +221,6 @@ npm run deploy:vercel:only
 
 ```bash
 pnpm deploy:menu
-npm run deploy:menu
 ```
 
 指定介面語言：
@@ -274,7 +264,7 @@ pnpm selfcheck -- --quick
 pnpm analyze
 ```
 
-自檢腳本會檢查常見危險語法、必要元件串接、重要 public scripts、`.gitignore` 規則與可疑敏感檔案。同步公開版或發布前建議先跑一次。
+自檢腳本會檢查常見危險語法、必要元件串接、重要 public scripts、`.gitignore` 規則、可疑敏感檔案與依賴套件安全公告。依賴審計需要連線至套件註冊站，無法連線時會明確失敗。同步公開版或發布前建議先跑一次。
 
 ## 12. 書籤
 
@@ -303,14 +293,14 @@ Markdown 內指向外部 origin 的 HTTP/HTTPS 連結，建置時會自動改寫
 相關檔案：
 
 ```text
-astro.config.mjs                         remark 改寫與建置後語系修正
+astro.config.ts                          remark 改寫與建置後語系修正
 src/components/LeavingNotice.astro       提示頁文字與目標 URL 驗證
 src/pages/leaving.astro                  英文路由
 src/pages/zh-tw/leaving.astro            繁體中文路由
 src/pages/zh-cn/leaving.astro            簡體中文路由
 ```
 
-要改提示文字，編輯 `src/components/LeavingNotice.astro`。要調整哪些連結會被改寫，編輯 `astro.config.mjs` 的 helper functions，然後執行 `pnpm build` 並檢查 `dist/` 內產生的連結。
+要改提示文字，編輯 `src/components/LeavingNotice.astro`。要調整哪些連結會被改寫，編輯 `astro.config.ts` 的 helper functions，然後執行 `pnpm build` 並檢查 `dist/` 內產生的連結。
 
 ## 14. GitHub、GitLab、Codeberg CI/CD
 
@@ -324,15 +314,15 @@ Git 供應商模式只推送原始碼，實際建置與部署由 CI/CD 執行。
 
 ## 15. 腳本角色
 
-- `deploy_menu.mjs`：互動式部署選單。
-- `deploy_switch.mjs`：命令列部署模式切換器。
-- `deploy_i18n.mjs`：英文與繁中主控台訊息。
-- `deploy_lib.mjs`：部署模式、組合與指令產生。
-- `deploy_runtime.mjs`：Node.js、pnpm、npm 與跨平台 runner 偵測。
-- `deploy_safety.mjs`：部署前 `.gitignore` 與敏感檔案檢查。
-- `uploaddist_cf.mjs`、`uploaddist_vps.mjs`、`uploaddist_vercel.mjs`：各平台部署。
-- `upgrade_astro.mjs`：Astro 套件安全升級。
-- `analysis.mjs`、`run-e2e.mjs`：全域分析與瀏覽器測試。
+- `deploy_menu.ts`：互動式部署選單。
+- `deploy_switch.ts`：命令列部署模式切換器。
+- `deploy_i18n.ts`：英文與繁中主控台訊息。
+- `deploy_lib.ts`：部署模式、組合與指令產生。
+- `deploy_runtime.ts`：Node.js 與跨平台 pnpm/npm runner 偵測。
+- `deploy_safety.ts`：部署前 `.gitignore` 與敏感檔案檢查。
+- `uploaddist_cf.ts`、`uploaddist_vps.ts`、`uploaddist_vercel.ts`：各平台部署。
+- `upgrade_astro.ts`：Astro 套件安全升級。
+- `analysis.ts`、`run-e2e.ts`：全域分析與瀏覽器測試。
 
 ## 16. 安全升級 Astro
 

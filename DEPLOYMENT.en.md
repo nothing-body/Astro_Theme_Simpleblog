@@ -9,17 +9,18 @@ Recommended runtime:
 ```bash
 node --version
 pnpm --version
-npm --version
 ```
 
-Node.js 22.12.0 or newer is recommended. pnpm is preferred, but npm is supported.
+Node.js 22.12.0 or newer is required. The pnpm version pinned in `package.json` is preferred because the repository includes `pnpm-lock.yaml`; when pnpm is unavailable, the scripts automatically use the npm bundled with Node.js.
 
 If pnpm is missing:
 
 ```bash
 corepack enable
-corepack prepare pnpm@latest --activate
+corepack prepare pnpm@10.33.4 --activate
 ```
+
+Installing pnpm is optional. npm-only systems can use `npm install`, `npm run build`, and `npm run deploy:menu`. When passing script arguments with npm, keep the separator, for example `npm run deploy:switch -- --mode=direct:cf`.
 
 ## 1.1 Files You Need
 
@@ -73,22 +74,11 @@ test-results/
 
 ## 2. Install, Check, Build
 
-pnpm:
-
 ```bash
 pnpm install
 pnpm check
 pnpm lint
 pnpm build
-```
-
-npm:
-
-```bash
-npm install
-npm run check
-npm run lint
-npm run build
 ```
 
 `build` generates the deployment output directory. The default is `dist`.
@@ -189,6 +179,10 @@ Notes:
 
 Place Cloudflare Pages headers in `public/_headers`. Astro copies it to `dist/_headers` during build, and Cloudflare Pages applies it automatically. If you do not use GA4, remove the Google Tag Manager and Google Analytics domains from the CSP.
 
+When Cloudflare Web Analytics is enabled with the Pages automatic setup, Cloudflare injects one official Beacon script. The Cloudflare-specific CSP in `public/_headers` permits only the Beacon file and its versioned `/beacon.min.js/...` path; `connect-src 'self'` permits its same-origin `/cdn-cgi/rum` report. Do not add a second Beacon snippet manually. If Web Analytics is disabled, remove both Beacon script sources to keep the policy minimal.
+
+Header configuration is platform-specific: Vercel reads the committed `vercel.json`, while an Nginx-based VPS must include `deploy/nginx-security-headers.conf` inside its HTTPS `server` block and reload Nginx after `nginx -t` succeeds. Uploading `dist/` alone cannot change VPS response headers.
+
 Secure example:
 
 ```text
@@ -201,7 +195,7 @@ Secure example:
   Cross-Origin-Resource-Policy: same-origin
   Cross-Origin-Embedder-Policy: credentialless
   Permissions-Policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), cross-origin-isolated=(), display-capture=(), document-domain=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), keyboard-map=(), magnetometer=(), microphone=(), midi=(), navigation-override=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; script-src-attr 'none'; connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; script-src-attr 'none'; style-src 'self'; style-src-attr 'none'; connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com; img-src 'self' data:; font-src 'self'; media-src 'self'; manifest-src 'self'; worker-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
   Cache-Control: public, max-age=300, stale-while-revalidate=86400
 
 /_astro/*
@@ -218,7 +212,6 @@ Deploy:
 
 ```bash
 pnpm deploy:cf:only
-npm run deploy:cf:only
 ```
 
 ## 7. VPS
@@ -254,7 +247,6 @@ Deploy:
 
 ```bash
 pnpm deploy:vps:only
-npm run deploy:vps:only
 ```
 
 ## 8. Vercel
@@ -283,7 +275,6 @@ Deploy:
 
 ```bash
 pnpm deploy:vercel:only
-npm run deploy:vercel:only
 ```
 
 ## 9. Bilingual Deployment Menu
@@ -292,7 +283,6 @@ Interactive menu:
 
 ```bash
 pnpm deploy:menu
-npm run deploy:menu
 ```
 
 Choose a language first, then choose the deployment area.
@@ -302,7 +292,6 @@ Direct language selection:
 ```bash
 pnpm deploy:menu -- --lang=en
 pnpm deploy:menu -- --lang=zh-tw
-npm run deploy:menu -- --lang=en
 ```
 
 Non-interactive language selection:
@@ -341,7 +330,7 @@ Full project analysis:
 pnpm analyze
 ```
 
-The analysis script checks common risky patterns, required component wiring, important public scripts, `.gitignore` coverage, and suspicious sensitive files. Run it before publishing a public template update.
+The analysis script checks common risky patterns, required component wiring, important public scripts, `.gitignore` coverage, suspicious sensitive files, and dependency advisories. The dependency audit needs package-registry access and fails explicitly when the registry is unavailable. Run it before publishing a public template update.
 
 ## 12. Bookmarks
 
@@ -370,14 +359,14 @@ Routes:
 Files:
 
 ```text
-astro.config.mjs                         remark rewrite and post-build localization
+astro.config.ts                          remark rewrite and post-build localization
 src/components/LeavingNotice.astro       page wording and validation
 src/pages/leaving.astro                  English route
 src/pages/zh-tw/leaving.astro            Traditional Chinese route
 src/pages/zh-cn/leaving.astro            Simplified Chinese route
 ```
 
-To change the message, edit `src/components/LeavingNotice.astro`. To change route behavior or which links are rewritten, edit the helper functions in `astro.config.mjs`, then run `pnpm build` and check generated links in `dist/`.
+To change the message, edit `src/components/LeavingNotice.astro`. To change route behavior or which links are rewritten, edit the helper functions in `astro.config.ts`, then run `pnpm build` and check generated links in `dist/`.
 
 Dry run:
 
@@ -400,18 +389,18 @@ Configure platform variables/secrets for `PUBLIC_SITE_URL`, `PUBLIC_CONTACT_EMAI
 
 ## 15. Script Roles
 
-- `deploy_menu.mjs`: interactive deployment menu with language selection.
-- `deploy_switch.mjs`: command-line deployment switcher.
-- `deploy_i18n.mjs`: shared i18n dictionary for Traditional Chinese and English.
-- `deploy_lib.mjs`: deployment modes, combinations, and command generation.
-- `deploy_runtime.mjs`: Node.js, pnpm, npm, and cross-platform runner detection.
-- `deploy_safety.mjs`: `.gitignore` and sensitive-file pre-deployment safety checks.
-- `uploaddist_cf.mjs`: builds and uploads output to Cloudflare Pages.
-- `uploaddist_vps.mjs`: builds and uploads output to VPS over SSH/rsync.
-- `uploaddist_vercel.mjs`: builds/deploys through Vercel CLI.
-- `upgrade_astro.mjs`: safely upgrades Astro-related packages.
-- `analysis.mjs`: project analysis and checks.
-- `run-e2e.mjs`: end-to-end test entry.
+- `deploy_menu.ts`: interactive deployment menu with language selection.
+- `deploy_switch.ts`: command-line deployment switcher.
+- `deploy_i18n.ts`: shared i18n dictionary for Traditional Chinese and English.
+- `deploy_lib.ts`: deployment modes, combinations, and command generation.
+- `deploy_runtime.ts`: Node.js, pnpm, and cross-platform runner detection.
+- `deploy_safety.ts`: `.gitignore` and sensitive-file pre-deployment safety checks.
+- `uploaddist_cf.ts`: builds and uploads output to Cloudflare Pages.
+- `uploaddist_vps.ts`: builds and uploads output to VPS over SSH/rsync.
+- `uploaddist_vercel.ts`: builds/deploys through Vercel CLI.
+- `upgrade_astro.ts`: safely upgrades Astro-related packages.
+- `analysis.ts`: project analysis and checks.
+- `run-e2e.ts`: end-to-end test entry.
 
 ## 16. Safe Astro Upgrade
 
@@ -419,7 +408,6 @@ Configure platform variables/secrets for `PUBLIC_SITE_URL`, `PUBLIC_CONTACT_EMAI
 pnpm upgrade:astro -- --lang=en --dry-run
 pnpm upgrade:astro -- --lang=en --dry-run --clean-install
 pnpm upgrade:astro -- --lang=zh-tw
-npm run upgrade:astro -- --lang=en --yes
 ```
 
 Safety behavior:

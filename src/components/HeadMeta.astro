@@ -10,19 +10,19 @@ import {
 
 export interface Props {
   title: string;
-  description?: string;
-  lang?: Lang;
-  canonicalUrl?: string;
-  ogImage?: string;
-  pubDate?: Date;
-  updatedDate?: Date;
-  type?: 'website' | 'article';
-  tags?: string[];
-  category?: string;
-  author?: string;
-  ga4Id?: string;
-  robots?: string;
-  alternates?: boolean;
+  description?: string | undefined;
+  lang?: Lang | undefined;
+  canonicalUrl?: string | undefined;
+  ogImage?: string | undefined;
+  pubDate?: Date | undefined;
+  updatedDate?: Date | undefined;
+  type?: 'website' | 'article' | undefined;
+  tags?: string[] | undefined;
+  category?: string | undefined;
+  author?: string | undefined;
+  ga4Id?: string | undefined;
+  robots?: string | undefined;
+  alternates?: boolean | undefined;
   languageRoutes: Record<Lang, LanguageRoute>;
 }
 
@@ -48,7 +48,7 @@ const siteUrl = getSiteUrl(Astro.site);
 const normalizedPath = Astro.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/';
 const currentUrl = canonicalUrl ?? new URL(normalizedPath, siteUrl).href;
 const fullTitle = title === SITE_NAME ? title : `${title} | ${SITE_NAME}`;
-const ogImageUrl = ogImage ? new URL(ogImage, siteUrl).href : undefined;
+const ogImageUrl = ogImage ? new URL(ogImage, siteUrl).href : `${siteUrl}/og-default.png`;
 const isDuplicateEnRoute = Astro.url.pathname === '/en' || Astro.url.pathname.startsWith('/en/');
 const alternateLinks = (Object.entries(languageRoutes) as [Lang, LanguageRoute][])
   .filter(([, item]) => item.available)
@@ -92,25 +92,19 @@ const safeGa4Id =
 <meta property="og:url" content={currentUrl} />
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
-{
-  ogImageUrl && (
-    <>
-      <meta property="og:image" content={ogImageUrl} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-    </>
-  )
-}
+<meta property="og:image" content={ogImageUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
 <meta property="og:site_name" content={SITE_NAME} />
 <meta
   property="og:locale"
   content={lang === 'en' ? 'en_US' : lang === 'zh-cn' ? 'zh_CN' : 'zh_TW'}
 />
 
-<meta name="twitter:card" content={ogImageUrl ? 'summary_large_image' : 'summary'} />
+<meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={fullTitle} />
 <meta name="twitter:description" content={description} />
-{ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
+<meta name="twitter:image" content={ogImageUrl} />
 
 {
   type === 'article' && pubDate && (
@@ -127,5 +121,5 @@ const safeGa4Id =
 }
 
 <meta name="referrer" content="strict-origin-when-cross-origin" />
-<script is:inline src="/scripts/bb-settings-bootstrap.js"></script>
-{safeGa4Id && <script is:inline src="/scripts/bb-ga4.js" data-ga4-id={safeGa4Id} defer />}
+
+{safeGa4Id && <meta name="bb-ga4-id" content={safeGa4Id} />}

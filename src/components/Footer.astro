@@ -50,8 +50,6 @@ const year = new Date().getFullYear();
   </div>
 </footer>
 
-<script is:inline src="/scripts/bb-footer-prefs.js" defer></script>
-
 <style is:global>
   .site-footer {
     margin-top: 4rem;
@@ -114,7 +112,10 @@ const year = new Date().getFullYear();
     cursor: pointer;
     padding: 0.3rem 0.8rem;
     border-radius: 99px;
-    transition: all 0.25s ease;
+    transition:
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.25s ease;
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;

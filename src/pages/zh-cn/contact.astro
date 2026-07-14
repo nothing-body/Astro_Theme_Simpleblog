@@ -22,11 +22,11 @@ const jsonLd = {
 
 <BaseLayout title="联系我们" description="联系本站作者的方式。">
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
-  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+  <div class="page-container content-page">
     <div class="content-wrapper">
       <AboutSidebar lang="zh-cn" currentPath={currentPath} />
       <div class="main-content">
-        <article class="glass-card" style="padding: 2.5rem;">
+        <article class="glass-card content-article">
           <div class="article-entry">
             <h1>联系我们</h1>
             <p>若您对本站内容有任何疑问、建议或版权相关问题，欢迎通过以下方式与我联系。</p>

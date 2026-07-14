@@ -1,0 +1,34 @@
+---
+import type { Lang } from '../i18n/ui';
+import { getRecentPostsForLang } from '../lib/posts';
+import { DEFAULT_AUTHOR, SITE_NAME, getSiteUrl } from '../lib/site';
+import { safeJsonStringify } from '../lib/utils';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HomeHero from './HomeHero.astro';
+import HomeLatestPosts from './HomeLatestPosts.astro';
+
+interface Props {
+  lang: Lang;
+  description: string;
+}
+
+const { lang, description } = Astro.props;
+const recentPosts = await getRecentPostsForLang(lang);
+const siteUrl = getSiteUrl(Astro.site);
+const pageUrl = new URL(Astro.url.pathname, siteUrl).href;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  '@id': `${siteUrl}/#blog`,
+  name: SITE_NAME,
+  description,
+  url: pageUrl,
+  publisher: { '@type': 'Person', '@id': `${siteUrl}/#author`, name: DEFAULT_AUTHOR },
+};
+---
+
+<BaseLayout title={SITE_NAME} description={description}>
+  <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
+  <HomeHero lang={lang} />
+  <HomeLatestPosts lang={lang} posts={recentPosts} />
+</BaseLayout>

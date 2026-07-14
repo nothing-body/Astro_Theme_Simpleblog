@@ -1,0 +1,66 @@
+---
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+import { getCategoryUrl } from '../lib/categories';
+import { paginatePosts, type BlogPost } from '../lib/posts';
+import { getTagListUrl } from '../lib/routes';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Pagination from './Pagination.astro';
+import PostCard from './PostCard.astro';
+import Sidebar from './Sidebar.astro';
+
+interface Props {
+  kind: 'category' | 'tag';
+  lang: Lang;
+  allPosts: BlogPost[];
+  filteredPosts: BlogPost[];
+  label: string;
+  categoryPath?: string[] | undefined;
+  currentPage: number;
+  totalPages: number;
+}
+
+const { kind, lang, allPosts, filteredPosts, label, categoryPath, currentPage, totalPages } =
+  Astro.props;
+const t = useTranslations(lang);
+const posts = paginatePosts(filteredPosts, currentPage);
+const archiveLabel = kind === 'tag' ? t('sidebar.tags') : t('sidebar.categories');
+const title = kind === 'tag' ? `#${label} - ${archiveLabel}` : `${label} - ${archiveLabel}`;
+const heading = `${archiveLabel}: ${label}`;
+if (kind === 'category' && !categoryPath?.length) {
+  throw new Error('Category archive pages require a category path.');
+}
+const getPageUrl = (page: number) =>
+  kind === 'tag'
+    ? getTagListUrl(lang, label, page)
+    : getCategoryUrl(lang, categoryPath ?? [], page);
+---
+
+<BaseLayout title={title}>
+  <div class="page-container content-page">
+    <div class="content-wrapper">
+      <Sidebar
+        allPosts={allPosts}
+        lang={lang}
+        activeTag={kind === 'tag' ? label : undefined}
+        activeCategoryPath={kind === 'category' ? categoryPath : undefined}
+      />
+      <div class="main-content">
+        <h1 class="archive-title">{heading}</h1>
+        {posts.map(post => <PostCard post={post} lang={lang} />)}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          prevUrl={currentPage > 1 ? getPageUrl(currentPage - 1) : undefined}
+          nextUrl={currentPage < totalPages ? getPageUrl(currentPage + 1) : undefined}
+          getPageUrl={getPageUrl}
+          lang={lang}
+        />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import '../scripts/last-list';
+  </script>
+</BaseLayout>

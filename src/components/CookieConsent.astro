@@ -61,8 +61,6 @@ const i = {
   </div>
 </div>
 
-<script is:inline src="/scripts/bb-prefs-modal.js" defer></script>
-
 <style is:global>
   .site-prefs-layer {
     position: fixed;
@@ -87,7 +85,7 @@ const i = {
   .site-prefs-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 18px;
+    border-radius: 8px;
     padding: 2rem 2.2rem;
     max-width: 500px;
     width: 90%;
@@ -152,12 +150,11 @@ const i = {
     font-weight: 700;
     font-size: 0.88rem;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: background-color 0.25s ease;
   }
 
   .site-prefs-layer .btn-save:hover {
     background: var(--primary-red-dark);
-    transform: translateY(-2px);
   }
 
   .site-prefs-layer .btn-dismiss {
@@ -169,11 +166,10 @@ const i = {
     font-weight: 600;
     font-size: 0.88rem;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: background-color 0.25s ease;
   }
 
   .site-prefs-layer .btn-dismiss:hover {
     background: var(--cream-200, #f4ede3);
-    transform: translateY(-2px);
   }
 </style>

@@ -4,16 +4,16 @@
 
 ## 部署脚本
 
-- `deploy_menu.mjs`：交互式部署菜单。
-- `deploy_switch.mjs`：命令行部署模式切换器，适合直接命令或 CI/CD。
-- `deploy_i18n.mjs`：部署脚本共用语言字典，目前支持英文与繁体中文输出。
-- `deploy_lib.mjs`：共用部署模式与命令生成逻辑。
-- `deploy_runtime.mjs`：检测 Node.js、npm、pnpm 与跨平台 package runner。
-- `deploy_safety.mjs`：部署前 `.gitignore` 与敏感文件检查。
-- `uploaddist_cf.mjs`：构建并部署 `dist/` 到 Cloudflare Pages。
-- `uploaddist_vps.mjs`：通过 SSH/rsync 上传 `dist/` 到 VPS。
-- `uploaddist_vercel.mjs`：通过 Vercel CLI 构建或部署。
-- `upgrade_astro.mjs`：升级 Astro 相关包，并执行 `check`、`lint` 与 `build`。
+- `deploy_menu.ts`：交互式部署菜单。
+- `deploy_switch.ts`：命令行部署模式切换器，适合直接命令或 CI/CD。
+- `deploy_i18n.ts`：部署脚本共用语言字典，目前支持英文与繁体中文输出。
+- `deploy_lib.ts`：共用部署模式与命令生成逻辑。
+- `deploy_runtime.ts`：检测 Node.js 与跨平台 pnpm/npm package runner。
+- `deploy_safety.ts`：部署前 `.gitignore` 与敏感文件检查。
+- `uploaddist_cf.ts`：构建并部署 `dist/` 到 Cloudflare Pages。
+- `uploaddist_vps.ts`：通过 SSH/rsync 上传 `dist/` 到 VPS。
+- `uploaddist_vercel.ts`：通过 Vercel CLI 构建或部署。
+- `upgrade_astro.ts`：升级 Astro 相关包，并执行 `check`、`lint` 与 `build`。
 
 ## 根目录配置文件
 
@@ -73,18 +73,19 @@ pnpm deploy:vercel:only
 pnpm deploy:all
 ```
 
-部署脚本会先运行项目 `build`。真实部署前应先执行：
+部署脚本会先运行项目 `check`，通过后才执行 `build`。真实部署前仍建议执行：
 
 ```bash
 pnpm selfcheck -- --quick
 pnpm analyze
+pnpm audit:security
 ```
 
-自检会验证 9 个部署脚本的语法，并使用安全占位值运行隔离 dry-run，不会连接或上传到真实平台。
+自检会验证 9 个部署脚本的语法，并使用安全占位值运行隔离 dry-run，不会连接或上传到真实平台。自检也会查询依赖软件包安全公告；该步骤需要连接软件包注册站，无法连接时会明确失败而不会静默跳过。
 
 ## 软件包管理器与语言
 
-部署脚本支持 pnpm 与 npm。交互式菜单、`--lang` 或 `DEPLOY_LANG` 可切换英文与繁体中文控制台消息；这不会改变网站内容语言或部署目标。
+部署脚本优先使用 `package.json` 的 `packageManager` 所锁定的 pnpm；找不到 pnpm 时会自动使用 npm。由于项目锁文件是 `pnpm-lock.yaml`，仍建议优先使用 pnpm。交互式菜单、`--lang` 或 `DEPLOY_LANG` 可切换英文与繁体中文控制台消息；这不会改变网站内容语言或部署目标。
 
 ```bash
 pnpm deploy:menu -- --lang=en
@@ -94,7 +95,7 @@ pnpm deploy:switch --mode=direct:cf --lang=en --dry-run
 
 ## 构建输出
 
-直接部署会先执行 package `build`，再部署 `dist/`。Cloudflare 与 VPS 可以使用 `--dist=<dir>` 指定其他输出目录。构建脚本会先清理旧 `.astro` 与 `dist`，防止旧文章缓存混入新输出。
+直接部署会先执行 package `check` 与 `build`，再部署 `dist/`。Cloudflare 与 VPS 可以使用 `--dist=<dir>` 指定其他输出目录。构建脚本会先清理旧 `.astro` 与 `dist`，防止旧文章缓存混入新输出。
 
 ## 安全升级 Astro
 
@@ -107,9 +108,9 @@ pnpm upgrade:astro -- --lang=zh-tw --dry-run --clean-install
 
 ## 非部署脚本
 
-- `analysis.mjs`：完整项目检查，覆盖代码、CSS、SEO、安全、隐私、内容来源、部署与文档。
-- `clean-generated.mjs`：只清理项目根目录的 `.astro` 与 `dist`，防止旧内容缓存进入新构建。
-- `run-e2e.mjs`：启动本地 preview 并运行 Playwright，输出放到系统临时目录。
+- `analysis.ts`：完整项目检查，覆盖代码、CSS、SEO、安全、隐私、内容来源、部署与文档。
+- `clean-generated.ts`：只清理项目根目录的 `.astro` 与 `dist`，防止旧内容缓存进入新构建。
+- `run-e2e.ts`：启动本地 preview 并运行 Playwright，输出放到系统临时目录。
 
 ## VPS 权限
 

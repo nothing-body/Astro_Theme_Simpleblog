@@ -6,6 +6,10 @@ describe('safeJsonStringify', () => {
       '{"value":"\\u003cscript\\u003e\\u0026\\u003c/script\\u003e"}'
     );
   });
+
+  test('escapes JavaScript line separators', () => {
+    expect(safeJsonStringify({ value: '\u2028\u2029' })).toContain('\\u2028\\u2029');
+  });
 });
 
 describe('truncate', () => {

@@ -1,5 +1,5 @@
 # SimpleBlog
-Personal Astro static blog with multilingual content, Markdown/MDX posts, SEO metadata, external-link warning pages, deployment automation, and project self-check scripts.
+Personal Astro static blog with multilingual Markdown posts, SEO metadata, external-link warning pages, deployment automation, and project self-check scripts.
 
 <p align="center">
   <a href="https://blog.gkbb.de/">Live Demo</a>
@@ -39,7 +39,7 @@ These generate `/posts/getting-started`, `/zh-tw/posts/getting-started`, and `/z
 
 ## Content Features
 
-- Markdown/MDX posts with categories, tags, pagination, and RSS-friendly metadata
+- Markdown posts with categories, tags, pagination, and RSS-friendly metadata
 - Pinned posts with `pinned: true`
 - Draft posts with `draft: true`
 - External HTTP/HTTPS links in Markdown are rewritten at build time to language-aware leaving notice pages
@@ -100,6 +100,15 @@ pnpm check
 pnpm build
 ```
 
+pnpm is the primary and recommended package manager because `package.json` pins its version and this repository commits `pnpm-lock.yaml`. The scripts can fall back to npm on systems where pnpm is unavailable:
+
+```bash
+npm install
+npm run dev
+npm run check
+npm run build
+```
+
 ## Configuration
 
 Use example files as templates, then keep real credentials local:
@@ -112,6 +121,8 @@ Use example files as templates, then keep real credentials local:
 ```
 
 Do not commit real `.env` files, API tokens, private keys, provider account IDs, or site verification files.
+
+Set the production domain with `PUBLIC_SITE_URL` and optional GA4 measurement with `PUBLIC_GA4_ID` in the uncommitted `.env` or hosting-platform variables. Do not hard-code either value in `astro.config.ts`. Cross-platform security headers live in `public/_headers`, `vercel.json`, and `deploy/nginx-security-headers.conf`.
 
 ## Deployment
 

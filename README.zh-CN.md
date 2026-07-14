@@ -1,6 +1,6 @@
 # SimpleBlog
 
-使用 Astro 构建的多语言静态博客模板，支持 Markdown/MDX 文章、SEO metadata、外部链接提示页、部署辅助脚本与完整项目自检。
+使用 Astro 构建的多语言静态博客模板，支持 Markdown 文章、SEO metadata、外部链接提示页、部署辅助脚本与完整项目自检。
 
 <p align="center">
   <a href="https://blog.gkbb.de/">Live Demo</a>
@@ -71,6 +71,8 @@ PUBLIC_GA4_ID=
 
 实际搭建时替换前两个值；不使用 GA4 时保持空值。
 
+正式域名由 `.env` 或托管平台变量中的 `PUBLIC_SITE_URL` 设置，GA4 Measurement ID 填入 `PUBLIC_GA4_ID`；两者都不要写死在 `astro.config.ts`。Cloudflare、Vercel 与 Nginx 的安全响应头分别位于 `public/_headers`、`vercel.json`、`deploy/nginx-security-headers.conf`。
+
 ## 常用命令
 
 ```bash
@@ -79,6 +81,15 @@ pnpm dev
 pnpm build
 pnpm selfcheck -- --quick
 pnpm analyze
+```
+
+pnpm 是本项目主要且建议使用的包管理器，因为 `package.json` 已锁定版本，仓库也提交 `pnpm-lock.yaml`。只有在系统没有 pnpm 时才使用 npm：
+
+```bash
+npm install
+npm run dev
+npm run check
+npm run build
 ```
 
 部署命令：

@@ -9,17 +9,18 @@
 ```bash
 node --version
 pnpm --version
-npm --version
 ```
 
-建议使用 Node.js 22.12.0 或更新版本。项目优先使用 pnpm，也支持 npm。
+需要 Node.js 22.12.0 或更新版本。项目包含 `pnpm-lock.yaml`，因此优先使用 `package.json` 锁定的 pnpm；如果找不到 pnpm，脚本会自动使用 Node.js 自带的 npm。
 
 尚未安装 pnpm 时：
 
 ```bash
 corepack enable
-corepack prepare pnpm@latest --activate
+corepack prepare pnpm@10.33.4 --activate
 ```
+
+安装 pnpm 并非必要。只有 npm 的环境可使用 `npm install`、`npm run build` 与 `npm run deploy:menu`。以 npm 传递脚本参数时需要保留分隔符，例如 `npm run deploy:switch -- --mode=direct:cf`。
 
 ## 2. 配置文件与隐私
 
@@ -73,22 +74,11 @@ test-results/
 
 ## 3. 安装、检查与构建
 
-pnpm：
-
 ```bash
 pnpm install
 pnpm check
 pnpm lint
 pnpm build
-```
-
-npm：
-
-```bash
-npm install
-npm run check
-npm run lint
-npm run build
 ```
 
 `build` 会先清理旧 `.astro` 与 `dist/`，再生成新的部署文件，防止旧内容缓存混入公开构建。
@@ -156,6 +146,10 @@ PUBLIC_SITE_URL=https://example.com
 ```bash
 pnpm deploy:cf:only
 ```
+
+安全响应头按平台生效：Cloudflare Pages 读取 `public/_headers`，Vercel 读取根目录的 `vercel.json`。Nginx VPS 必须在 HTTPS `server` 区块 include `deploy/nginx-security-headers.conf`，先通过 `nginx -t` 验证再 reload；仅上传 `dist/` 无法修改 VPS 响应头。
+
+在 Pages 启用 Cloudflare Web Analytics 自动安装后，Cloudflare 会自动注入一份官方 Beacon。`public/_headers` 的 Cloudflare 专用 CSP 仅放行 Beacon 文件及其版本化 `/beacon.min.js/...` 路径，同源的 `/cdn-cgi/rum` 上报由 `connect-src 'self'` 覆盖；不要再手动加入第二份 Beacon。若停用 Web Analytics，应删除这两个 Beacon script 来源以保持最小权限。
 
 ## 8. VPS
 
@@ -246,6 +240,7 @@ pnpm analyze
 完整自检包括：
 
 - Astro 类型检查、ESLint、Stylelint、单元测试与 E2E。
+- 通过软件包注册站检查依赖安全公告；无法连接时明确失败。
 - 干净构建、来源文章与构建文章数量核对。
 - 三语路由、hreflang、sitemap、canonical 与 robots.txt。
 - CSP、安全标头、危险语法、原始 HTML、外部链接与隐私设置。
@@ -282,15 +277,15 @@ Git 提供商模式只推送源代码，构建与部署由 CI/CD 执行。项目
 
 ## 14. 脚本职责
 
-- `deploy_menu.mjs`：交互式部署菜单。
-- `deploy_switch.mjs`：命令行部署模式切换器。
-- `deploy_i18n.mjs`：英文与繁体中文控制台消息。
-- `deploy_lib.mjs`：部署模式、组合与命令生成。
-- `deploy_runtime.mjs`：Node.js、pnpm、npm 与跨平台 runner 检测。
-- `deploy_safety.mjs`：部署前 `.gitignore` 与敏感文件检查。
-- `uploaddist_cf.mjs`、`uploaddist_vps.mjs`、`uploaddist_vercel.mjs`：各平台部署。
-- `upgrade_astro.mjs`：Astro 软件包安全升级。
-- `analysis.mjs`、`run-e2e.mjs`：全局分析与浏览器测试。
+- `deploy_menu.ts`：交互式部署菜单。
+- `deploy_switch.ts`：命令行部署模式切换器。
+- `deploy_i18n.ts`：英文与繁体中文控制台消息。
+- `deploy_lib.ts`：部署模式、组合与命令生成。
+- `deploy_runtime.ts`：Node.js 与跨平台 pnpm/npm runner 检测。
+- `deploy_safety.ts`：部署前 `.gitignore` 与敏感文件检查。
+- `uploaddist_cf.ts`、`uploaddist_vps.ts`、`uploaddist_vercel.ts`：各平台部署。
+- `upgrade_astro.ts`：Astro 软件包安全升级。
+- `analysis.ts`、`run-e2e.ts`：全局分析与浏览器测试。
 
 ## 15. 安全升级 Astro
 

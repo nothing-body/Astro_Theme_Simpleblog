@@ -1,6 +1,6 @@
 # SimpleBlog 內容與設定指南
 
-本指南完整說明 Markdown/MDX 文章、多語系路由、文章置頂、專案設定、隱私、自檢與自動部署。
+本指南完整說明 Markdown 文章、多語系路由、文章置頂、專案設定、隱私、自檢與自動部署。
 
 其他語言：[English](./MARKDOWN_GUIDE.en.md) | [简体中文](./MARKDOWN_GUIDE.zh-CN.md)
 
@@ -13,6 +13,8 @@ pnpm dev
 ```
 
 Windows PowerShell 可使用 `Copy-Item .env.example .env`。至少設定：
+
+本專案主要且建議使用 pnpm，因為 `package.json` 已鎖定 pnpm 版本，儲存庫也提交 `pnpm-lock.yaml`。只有在系統無法使用 pnpm 時才改用 npm。
 
 ```env
 PUBLIC_SITE_URL=https://example.com
@@ -34,8 +36,10 @@ PUBLIC_GA4_ID=
 | `src/i18n/ui.ts` | 三語系介面文字 |
 | `src/components/BookmarkLinks.astro` | 預設書籤分類與連結 |
 | `public/_headers` | Cloudflare 安全與快取標頭 |
+| `vercel.json` | Vercel 安全與快取標頭 |
+| `deploy/nginx-security-headers.conf` | VPS 使用 Nginx 時的安全標頭 include 檔 |
 | `public/_redirects` | 靜態重新導向 |
-| `astro.config.mjs` | Astro、Markdown、sitemap、SEO 與建置整合 |
+| `astro.config.ts` | Astro、Markdown、sitemap、SEO 與建置整合 |
 | `.env.example` | 公開網站設定範本 |
 | `.env.cloudflare.example` | Cloudflare 部署範本 |
 | `.env.vps.example` | VPS 部署範本 |
@@ -43,7 +47,7 @@ PUBLIC_GA4_ID=
 | `.github/workflows/deploy.yml` | GitHub Actions 部署 |
 | `.gitlab-ci.yml` | GitLab CI 部署 |
 | `.woodpecker.yml` | Woodpecker/Codeberg 部署 |
-| `scripts/analysis.mjs` | 全專案自檢 |
+| `scripts/analysis.ts` | 全專案自檢 |
 
 只能提交 `.example` 環境範本。不可提交真實 token、金鑰、Account ID、SSH passphrase、私人文章、個人圖片、`dist` 或 `.astro` 快取。
 
@@ -86,13 +90,12 @@ ogImage: 'https://example.com/images/post-cover.png'
 ---
 ```
 
-- `title`、`pubDate` 必填。
-- `description` 選填，但建議為 SEO 提供。
+- `title`、`description`、`pubDate` 必填；描述需為 12 到 300 個字元。
 - `categoryPath` 支援一到五層非空分類。
 - `tags` 必須是 YAML 陣列。
 - `pinned`、`draft` 是布林值，不可寫成有引號的字串。
 - `pinOrder` 必須是 1 到 9999 的整數。
-- `ogImage` 必須是絕對網址；沒有公開圖片時直接省略。
+- `ogImage` 必須使用 `/images/...` 路徑或 HTTPS 網址；沒有公開圖片時直接省略。
 - `draft: true` 會讓文章不進入公開建置結果。
 
 ## 5. 如何置頂文章
@@ -106,12 +109,12 @@ pinOrder: 1
 
 同一篇文章的三語翻譯應使用相同 `pinOrder`，避免不同語系排序不一致。
 
-## 6. Markdown 與 MDX 安全
+## 6. Markdown 安全
 
 - 優先使用標準 Markdown 連結，不要隨意加入 raw HTML。
 - 外部 HTTP/HTTPS 連結會經過對應語系的離站提醒頁。
 - 不要把 script、API key、token、私人 hostname、內網 IP 或個人檔案路徑貼進文章。
-- 只有確實需要元件時才使用 MDX；匯入元件會在建置期間執行，必須視為程式碼審查。
+- 文章統一使用 `.md`，不支援可執行的 import、export、JSX 或嵌入式 script；需要共用排版功能時，應加入已審查的共用 layout 或 Markdown processor。
 - 公開資產放在 `public/`；不要把私人照片或私人站圖片目錄複製到公開模板。
 
 ## 7. 網站客製設定
@@ -147,7 +150,7 @@ pnpm deploy:vercel:only
 pnpm deploy:all
 ```
 
-部署腳本會先建置，只上傳生成結果。Process/CI 注入的環境變數優先於本機 env 檔，避免過期的本機值靜默覆寫 CI secret。
+部署腳本會先執行專案的 `check` 與 `build` 指令，通過後才上傳生成結果。Process/CI 注入的環境變數優先於本機 env 檔，避免過期的本機值靜默覆寫 CI secret。
 
 機密應設定在 Git 平台，不可寫入 YAML：
 

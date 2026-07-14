@@ -20,11 +20,11 @@ const jsonLd = {
 
 <BaseLayout title="免責聲明" description="本站免責聲明，說明內容使用與責任範圍。">
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
-  <div class="page-container" style="padding-top: 2rem; padding-bottom: 4rem;">
+  <div class="page-container content-page">
     <div class="content-wrapper">
       <AboutSidebar lang="zh-tw" currentPath={currentPath} />
       <div class="main-content">
-        <article class="glass-card" style="padding: 2.5rem;">
+        <article class="glass-card content-article">
           <div class="article-entry">
             <h1>免責聲明</h1>
             <p>請在閱讀與使用本網站內容前，詳細閱讀以下免責聲明：</p>

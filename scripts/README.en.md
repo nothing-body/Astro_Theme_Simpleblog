@@ -4,16 +4,16 @@ This directory contains cross-platform Node.js scripts for deployment, analysis,
 
 ## Deployment Scripts
 
-- `deploy_menu.mjs`: interactive deployment menu. Use it when you want to choose deployment targets and options step by step.
-- `deploy_switch.mjs`: command-line deployment mode switcher. Use it for direct commands and CI/CD.
-- `deploy_i18n.mjs`: shared language dictionary for deployment scripts. Supports Traditional Chinese and English output from the same scripts.
-- `deploy_lib.mjs`: shared deployment mode definitions and command generation logic. Internal module.
-- `deploy_runtime.mjs`: shared Node.js, npm, pnpm, and cross-platform package-runner detection logic. Internal module.
-- `deploy_safety.mjs`: pre-deployment `.gitignore` and sensitive-file safety checker. Internal module.
-- `uploaddist_cf.mjs`: builds the Astro site and deploys `dist` to Cloudflare Pages.
-- `uploaddist_vps.mjs`: builds the Astro site and uploads `dist` to a VPS with SSH/rsync.
-- `uploaddist_vercel.mjs`: builds/deploys through the Vercel CLI.
-- `upgrade_astro.mjs`: safely upgrades Astro-related packages, then runs the existing package `check`, `lint`, and `build` scripts.
+- `deploy_menu.ts`: interactive deployment menu. Use it when you want to choose deployment targets and options step by step.
+- `deploy_switch.ts`: command-line deployment mode switcher. Use it for direct commands and CI/CD.
+- `deploy_i18n.ts`: shared language dictionary for deployment scripts. Supports Traditional Chinese and English output from the same scripts.
+- `deploy_lib.ts`: shared deployment mode definitions and command generation logic. Internal module.
+- `deploy_runtime.ts`: shared Node.js and cross-platform pnpm/npm runner detection logic. Internal module.
+- `deploy_safety.ts`: pre-deployment `.gitignore` and sensitive-file safety checker. Internal module.
+- `uploaddist_cf.ts`: builds the Astro site and deploys `dist` to Cloudflare Pages.
+- `uploaddist_vps.ts`: builds the Astro site and uploads `dist` to a VPS with SSH/rsync.
+- `uploaddist_vercel.ts`: builds/deploys through the Vercel CLI.
+- `upgrade_astro.ts`: safely upgrades Astro-related packages, then runs the existing package `check`, `lint`, and `build` scripts.
 
 ## Required Root Files
 
@@ -61,9 +61,9 @@ Vercel:
 
 ## Non-Deployment Scripts
 
-- `analysis.mjs`: checks code, CSS, SEO, security, privacy, content provenance, deployment paths, and documentation.
-- `clean-generated.mjs`: removes only the project `.astro` and `dist` directories before a clean build.
-- `run-e2e.mjs`: runs end-to-end tests and keeps browser output outside the repository.
+- `analysis.ts`: checks code, CSS, SEO, security, privacy, content provenance, deployment paths, and documentation.
+- `clean-generated.ts`: removes only the project `.astro` and `dist` directories before a clean build.
+- `run-e2e.ts`: runs end-to-end tests and keeps browser output outside the repository.
 
 Run the fast self-check before publishing template changes:
 
@@ -75,20 +75,14 @@ Run the full analysis when checking a larger change:
 
 ```bash
 pnpm analyze
+pnpm audit:security
 ```
 
-The analysis script checks `.gitignore` coverage, dangerous code patterns, important component wiring, public scripts, suspicious sensitive files, built-content provenance, local documentation links, and documented package commands.
+The analysis script checks `.gitignore` coverage, dangerous code patterns, important component wiring, public scripts, suspicious sensitive files, built-content provenance, local documentation links, documented package commands, and dependency advisories. The dependency audit contacts the package registry, so an unavailable registry correctly causes the comprehensive self-check to fail instead of silently skipping the audit.
 
-## Package Manager Support
+## Package Manager
 
-The deployment scripts support both pnpm and npm.
-
-```bash
-pnpm deploy:menu
-npm run deploy:menu
-```
-
-When pnpm is missing but npm is available, the scripts continue with npm and print a recommendation to install pnpm.
+Deployment prefers the pnpm version pinned by `packageManager` in `package.json`. If pnpm is unavailable, the shared runner uses npm automatically. pnpm remains recommended because `pnpm-lock.yaml` is the repository lockfile.
 
 ## Language Support
 
@@ -103,7 +97,7 @@ DEPLOY_LANG=en pnpm deploy:cf:only
 
 ## Build Output
 
-Direct deployment scripts run the package `build` script first and deploy the generated output directory. The default output directory is `dist`, and `--dist=<dir>` can be used for Cloudflare/VPS deployments so the scripts are not tightly coupled to Astro.
+Direct deployment scripts run the package `check` and `build` scripts before deploying the generated output directory. The default output directory is `dist`, and `--dist=<dir>` can be used for Cloudflare/VPS deployments so the scripts are not tightly coupled to Astro.
 
 ## Safe Astro Upgrade
 
@@ -113,10 +107,9 @@ Use the bilingual upgrade helper to update Astro-related packages safely:
 pnpm upgrade:astro -- --lang=en --dry-run
 pnpm upgrade:astro -- --lang=en --dry-run --clean-install
 pnpm upgrade:astro -- --lang=zh-tw
-npm run upgrade:astro -- --lang=en --yes
 ```
 
-The script detects Astro-related dependencies from `package.json`, refuses to run on a dirty git working tree unless `--allow-dirty` is passed, updates with pnpm or npm, then verifies with the existing package scripts instead of hard-coding Astro commands. Optional flags:
+The script detects Astro-related dependencies from `package.json`, refuses to run on a dirty git working tree unless `--allow-dirty` is passed, updates with the available package manager, then verifies with the existing package scripts instead of hard-coding Astro commands. Optional flags:
 
 `--lang` only changes console output language. It does not change the upgrade target, package manager behavior, deployment target, or site content language. Use `--lang=en` for English script messages and `--lang=zh-tw` for Traditional Chinese script messages.
 
