@@ -35,6 +35,10 @@ test.describe('layout regression checks', () => {
       await expect(target).toHaveCSS('transform', 'none');
     }
 
+    await postCard.hover();
+    await expect(postCard).toHaveCSS('border-color', 'rgb(184, 90, 68)');
+    await expect(postCard).toHaveCSS('outline-width', '3px');
+    await expect(postCard).toHaveCSS('filter', 'none');
     await expect(postCard).toHaveCSS('backdrop-filter', 'none');
   });
 

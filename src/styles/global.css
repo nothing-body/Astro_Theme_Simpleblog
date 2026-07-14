@@ -217,11 +217,6 @@ code:not([class*='language-']) {
   box-shadow: var(--shadow-card-hover);
 }
 
-.post-card.glass-card:hover {
-  border-color: var(--glass-border);
-  box-shadow: var(--shadow-card-hover);
-}
-
 .breadcrumbs {
   margin-bottom: 1.65rem;
   color: var(--text-muted);
