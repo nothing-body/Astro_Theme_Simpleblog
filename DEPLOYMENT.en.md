@@ -1,17 +1,20 @@
-# Pre-Deployment Guide
+# Deployment Guide
 
-This guide explains how to prepare, verify, upgrade, and deploy this Astro blog project. The scripts are written for this project, but they avoid unnecessary coupling: direct deployment runs the package `build` script and uploads the generated output directory, which defaults to `dist`.
+This guide is written for first-time users. Complete the shared setup first, then follow only the provider section you need.
 
 ## 1. Requirements
 
-Recommended runtime:
+- Node.js 22.12 or newer
+- Git
+- pnpm recommended; npm supported as fallback
+- OpenSSH client for VPS deployment
+- Docker Engine and Docker Compose on the VPS for the Docker target
 
 ```bash
 node --version
+git --version
 pnpm --version
 ```
-
-Node.js 22.12.0 or newer is required. The pnpm version pinned in `package.json` is preferred because the repository includes `pnpm-lock.yaml`; when pnpm is unavailable, the scripts automatically use the npm bundled with Node.js.
 
 If pnpm is missing:
 
@@ -20,193 +23,109 @@ corepack enable
 corepack prepare pnpm@10.33.4 --activate
 ```
 
-Installing pnpm is optional. npm-only systems can use `npm install`, `npm run build`, and `npm run deploy:menu`. When passing script arguments with npm, keep the separator, for example `npm run deploy:switch -- --mode=direct:cf`.
-
-## 1.1 Files You Need
-
-Keep these files in the project root:
-
-```text
-.env.example                 committed public example
-.env.cloudflare.example      committed Cloudflare example
-.env.vps.example             committed VPS example
-.env.vercel.example          committed Vercel example
-.env                         local public site settings, not committed
-.env.cloudflare              local Cloudflare deploy settings, not committed
-.env.vps                     local VPS deploy settings, not committed
-.env.vercel                  local Vercel deploy settings, not committed
-.gitignore                   blocks secrets, build output, local state, and reports
-```
-
-Create real local files by copying the examples:
-
-```bash
-cp .env.example .env
-cp .env.cloudflare.example .env.cloudflare
-cp .env.vps.example .env.vps
-cp .env.vercel.example .env.vercel
-```
-
-Commit only the `.example` files. Never commit real tokens, private keys, account IDs, SSH passphrases, provider project IDs, or site verification files.
-
-Recommended `.gitignore` coverage:
-
-```text
-.env*
-!.env.example
-!.env.*.example
-.npmrc
-.yarnrc
-.pnpmrc
-.ssh/
-*.pem
-*.key
-id_rsa
-id_ed25519
-dist/
-.astro/
-node_modules/
-.wrangler/
-.vercel/
-playwright-report/
-test-results/
-```
-
-## 2. Install, Check, Build
+## 2. Install And Create Local Configuration
 
 ```bash
 pnpm install
-pnpm check
-pnpm lint
-pnpm build
+cp .env.example .env
 ```
 
-`build` generates the deployment output directory. The default is `dist`.
+PowerShell:
 
-## 3. Site URL, SEO, and Robots
+```powershell
+pnpm install
+Copy-Item .env.example .env
+```
 
-Set the public URL and contact email required by the build:
+Edit `.env`:
 
 ```env
 PUBLIC_SITE_URL=https://example.com
+PUBLIC_SITE_NAME=My Blog
+PUBLIC_SITE_AUTHOR=Your Name
+PUBLIC_SITE_DESCRIPTION=Notes and guides from my website.
 PUBLIC_CONTACT_EMAIL=contact@example.com
+PUBLIC_GA4_ID=
 ```
 
-Replace both placeholders in your local `.env` or hosting-platform variables. The public template keeps example values only.
+Rules:
 
-For a public website, `robots.txt` should allow normal search engines while blocking only unwanted AI/data crawlers. The intended behavior is:
+- `PUBLIC_SITE_URL` must be a clean HTTPS origin without a trailing slash.
+- `PUBLIC_CONTACT_EMAIL` is displayed publicly.
+- `PUBLIC_GA4_ID` is optional and must look like `G-XXXXXXXXXX`.
+- Real `.env*` files are ignored. Commit only `.example` files.
+- Examples such as `example.com` and `203.0.113.10` are documentation placeholders.
 
-```txt
-User-agent: Googlebot
-Allow: /
+Verify before deployment:
 
-User-agent: *
-Allow: /
-
-User-agent: Google-Extended
-Disallow: /
+```bash
+pnpm check
+pnpm build
+pnpm selfcheck -- --quick
 ```
 
-`Google-Extended` only opts out of Gemini AI training. It does **not** block Google Search indexing (`Googlebot`).
+## 3. Domain, SEO, Search Console, And GA4
 
-On Cloudflare, **Managed robots.txt** may prepend additional rules and `Content-Signal` lines. Search Console may show syntax warnings or "blocked by robots.txt" for AI crawlers; verify affected URLs with the URL Inspection tool. If the inspected crawler is `Googlebot`, fix crawl rules. If it is `Google-Extended`, the block is intentional unless you want AI training.
+Set the final domain in `PUBLIC_SITE_URL` before the production build. The value is used for canonical URLs, hreflang, sitemap, robots.txt, Open Graph, and JSON-LD.
 
-If `User-agent: *` is set to `Disallow: /`, Google Search Console may report that indexing is blocked, and the site may not appear in Google search even when searching the exact URL.
+After the site is online:
 
-## 4. Google Search Console Verification
+1. Add the domain to Google Search Console.
+2. Submit `https://example.com/sitemap-index.xml`.
+3. Use URL Inspection for the home page and one article.
+4. Request indexing again only after a failed URL was fixed or an important page changed. You do not need to request every generated page individually.
 
-For HTML file verification, put the file provided by Google Search Console in `public/`.
+For HTML-file verification, place Google's file in `public/`, build, deploy, and confirm it is reachable at the site root. Verification files are site-specific; review them before publishing a template fork.
 
-Example:
+GA4:
 
-```text
-public/google-site-verification-example.html
-```
+1. Create a GA4 web data stream.
+2. Copy the Measurement ID beginning with `G-`.
+3. Set `PUBLIC_GA4_ID` in `.env` or the hosting platform's build variables.
+4. Visitors must consent in the site's privacy panel before GA4 loads.
 
-The file content should match Google's required format:
+Cloudflare Web Analytics and GA4 can both be enabled. They are separate systems. Do not manually add a second Cloudflare Beacon when Pages automatic Web Analytics is already enabled.
 
-```text
-google-site-verification: google-site-verification-example.html
-```
+## 4. Security Headers
 
-After `pnpm build`, Astro copies files from `public/` to the site root. After deployment, this URL must be reachable:
+The repository maintains equivalent baselines for:
 
-```text
-https://example.com/google-site-verification-example.html
-```
+- Cloudflare Pages: `public/_headers`
+- Vercel: `vercel.json`
+- Nginx/VPS: `deploy/nginx-security-headers.conf`
 
-Then click Verify in Google Search Console.
+They include CSP, `X-Content-Type-Options: nosniff`, framing protection, referrer policy, permissions policy, and HSTS. Keep the three CSP values synchronized. Do not add `unsafe-inline`.
 
-## 5. Google Analytics
+The default HSTS intentionally omits `includeSubDomains` and `preload`. Enable them only when every subdomain is permanently HTTPS-only.
 
-GA4 is controlled by:
+## 5. Cloudflare Pages
 
-```env
-PUBLIC_GA4_ID=G-XXXXXXXXXX
-```
-
-The project only loads GA4 when:
-
-- `PUBLIC_GA4_ID` is set and matches the `G-...` format.
-- The visitor allows analytics in the privacy/cookie settings.
-- `public/_headers` CSP allows Google Tag Manager and Google Analytics. This project already includes the needed Google domains.
-
-## 6. Cloudflare Pages
-
-Create `.env.cloudflare`:
+Create the local file:
 
 ```bash
 cp .env.cloudflare.example .env.cloudflare
 ```
 
-Typical values:
+Required values:
 
 ```env
-CLOUDFLARE_API_TOKEN=your_cloudflare_api_token
-CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
-CLOUDFLARE_PAGES_PROJECT_NAME=your-pages-project-name
+CLOUDFLARE_API_TOKEN=
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_PAGES_PROJECT_NAME=my-blog
 PUBLIC_SITE_URL=https://example.com
+PUBLIC_SITE_NAME=My Blog
+PUBLIC_SITE_AUTHOR=Your Name
+PUBLIC_SITE_DESCRIPTION=My website description.
+PUBLIC_CONTACT_EMAIL=contact@example.com
 ```
 
-Notes:
+How to obtain them:
 
-- `CLOUDFLARE_PAGES_PROJECT_NAME` is the Cloudflare Pages project name.
-- Create an API token at Cloudflare Dashboard > My Profile > API Tokens > Create Token.
-- Minimum permission for this template is Cloudflare Pages edit access on the target account.
-- Find the Account ID in the Cloudflare dashboard account sidebar.
-- If the project does not exist, the script creates it, writes the name back to `.env.cloudflare`, and continues.
-- Review `public/_headers` before production deployment.
-
-Place Cloudflare Pages headers in `public/_headers`. Astro copies it to `dist/_headers` during build, and Cloudflare Pages applies it automatically. If you do not use GA4, remove the Google Tag Manager and Google Analytics domains from the CSP.
-
-When Cloudflare Web Analytics is enabled with the Pages automatic setup, Cloudflare injects one official Beacon script. The Cloudflare-specific CSP in `public/_headers` permits only the Beacon file and its versioned `/beacon.min.js/...` path; `connect-src 'self'` permits its same-origin `/cdn-cgi/rum` report. Do not add a second Beacon snippet manually. If Web Analytics is disabled, remove both Beacon script sources to keep the policy minimal.
-
-Header configuration is platform-specific: Vercel reads the committed `vercel.json`, while an Nginx-based VPS must include `deploy/nginx-security-headers.conf` inside its HTTPS `server` block and reload Nginx after `nginx -t` succeeds. Uploading `dist/` alone cannot change VPS response headers.
-
-Secure example:
-
-```text
-/*
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
-  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-  Cross-Origin-Opener-Policy: same-origin
-  Cross-Origin-Resource-Policy: same-origin
-  Cross-Origin-Embedder-Policy: credentialless
-  Permissions-Policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), cross-origin-isolated=(), display-capture=(), document-domain=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), keyboard-map=(), magnetometer=(), microphone=(), midi=(), navigation-override=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; script-src-attr 'none'; style-src 'self'; style-src-attr 'none'; connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com; img-src 'self' data:; font-src 'self'; media-src 'self'; manifest-src 'self'; worker-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400
-
-/_astro/*
-  Cache-Control: public, max-age=31536000, immutable
-
-/fonts/*
-  Cache-Control: public, max-age=31536000, immutable
-
-/images/*
-  Cache-Control: public, max-age=86400
-```
+1. Open Cloudflare Dashboard.
+2. Copy the Account ID from the account overview/sidebar.
+3. Open My Profile > API Tokens > Create Token.
+4. Grant the minimum Pages edit permission for the intended account.
+5. Use an existing Pages project name, or choose a valid lowercase name. The script can create the project when it does not exist.
 
 Deploy:
 
@@ -214,42 +133,16 @@ Deploy:
 pnpm deploy:cf:only
 ```
 
-## 7. VPS
+The script checks the project, builds, and runs Wrangler Pages deploy. Secrets remain in `.env.cloudflare` or CI secrets.
 
-Create `.env.vps`:
+Custom domain:
 
-```bash
-cp .env.vps.example .env.vps
-```
+1. Open Workers & Pages > your Pages project > Custom domains.
+2. Add the domain.
+3. Follow the displayed DNS instructions.
+4. Set the same HTTPS origin in `PUBLIC_SITE_URL`, rebuild, and redeploy.
 
-Typical values:
-
-```env
-VPS_HOST=203.0.113.10
-VPS_PORT=22
-VPS_USER=deploy
-VPS_TARGET_DIR=/var/www/example.com
-VPS_SSH_KEY_PATH=~/.ssh/id_ed25519
-VPS_SSH_PASSPHRASE=your_private_key_passphrase
-```
-
-Notes:
-
-- Get `VPS_HOST`, `VPS_PORT`, and the SSH username from your VPS provider panel or server setup notes.
-- Generate an SSH key locally with `ssh-keygen` if you do not already have one, then add the public key to the server user's `~/.ssh/authorized_keys`.
-- `VPS_TARGET_DIR` must be the directory served by your web server, or a staging directory that you later sync into the web root.
-- `VPS_USER` is the SSH/rsync user used for upload. It may be `root`, `deploy`, `ubuntu`, or another account.
-- Prefer `ssh-agent` for passphrase-protected private keys.
-- `VPS_SSH_PASSPHRASE` must only live in a local uncommitted `.env.vps` or CI/CD secret.
-- If `VPS_USER` is not root and cannot write to `/var/www/...`, upload to a directory such as `/home/<user>/site-dist`, then move or sync the build output to the directory served by the web server.
-
-Deploy:
-
-```bash
-pnpm deploy:vps:only
-```
-
-## 8. Vercel
+## 6. Vercel
 
 Create `.env.vercel`:
 
@@ -257,19 +150,22 @@ Create `.env.vercel`:
 cp .env.vercel.example .env.vercel
 ```
 
-Typical values:
-
 ```env
-VERCEL_TOKEN=your_vercel_token
-VERCEL_ORG_ID=your_org_or_user_id
-VERCEL_PROJECT_ID=your_project_id
+VERCEL_TOKEN=
+VERCEL_ORG_ID=
+VERCEL_PROJECT_ID=
+VERCEL_PROJECT_NAME=astro-theme-simpleblog
+PUBLIC_SITE_URL=https://example.com
+PUBLIC_CONTACT_EMAIL=contact@example.com
 ```
 
-Notes:
+How to obtain values:
 
-- Create a token in Vercel Account Settings > Tokens.
-- Get `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` after `vercel link`, or read them from `.vercel/project.json`.
-- Keep `.vercel/` out of git unless you intentionally want to commit project linkage.
+1. Create or import a Vercel project.
+2. Open Account Settings > Tokens and create a limited deployment token.
+3. Copy the Project ID from Project Settings > General.
+4. When deploying to a team, copy the team ID into `VERCEL_ORG_ID`; personal projects may leave it empty if the API token resolves the project.
+5. Keep the project name lowercase.
 
 Deploy:
 
@@ -277,202 +173,299 @@ Deploy:
 pnpm deploy:vercel:only
 ```
 
-## 9. Bilingual Deployment Menu
+The TypeScript deployer uses Vercel's REST file-upload and deployment APIs. It does not require the Vercel CLI and uploads only the reviewed static build output plus a reduced static `vercel.json`.
 
-Interactive menu:
+## 7. Netlify
+
+Create `.env.netlify`:
+
+```bash
+cp .env.netlify.example .env.netlify
+```
+
+```env
+NETLIFY_AUTH_TOKEN=
+NETLIFY_SITE_ID=
+PUBLIC_SITE_URL=https://example.com
+PUBLIC_CONTACT_EMAIL=contact@example.com
+```
+
+How to obtain values:
+
+1. Create a Netlify site.
+2. Open User settings > Applications > Personal access tokens.
+3. Create a token and store it only in `.env.netlify` or CI secrets.
+4. Open the site's Project configuration > General and copy the Project ID/Site ID.
+
+Deploy:
+
+```bash
+pnpm deploy:netlify:only
+```
+
+Use preview mode:
+
+```bash
+pnpm deploy:switch -- --mode=direct:netlify --netlify-preview --yes
+```
+
+The deployer creates a bounded streaming ZIP and sends it through the Netlify API.
+
+## 8. VPS Static Deployment
+
+Generate a key if needed:
+
+```bash
+ssh-keygen -t ed25519 -a 64 -f ~/.ssh/id_ed25519
+```
+
+Install the public key on the VPS:
+
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519.pub deploy@example.com
+```
+
+Create a pinned host-key file:
+
+```bash
+ssh-keyscan -H example.com >> ~/.ssh/known_hosts
+```
+
+Verify the fingerprint through your VPS provider console before trusting it.
+
+Create `.env.vps`:
+
+```env
+VPS_HOST=203.0.113.10
+VPS_USER=deploy
+VPS_PORT=22
+VPS_SSH_KEY_PATH=~/.ssh/id_ed25519
+VPS_KNOWN_HOSTS_FILE=~/.ssh/known_hosts
+VPS_TARGET_DIR=/var/www/example.com
+PUBLIC_SITE_URL=https://example.com
+PUBLIC_CONTACT_EMAIL=contact@example.com
+```
+
+The deploy user needs write access to `VPS_TARGET_DIR`; do not use root unless required. Configure Nginx or another HTTPS server to serve this directory and include `deploy/nginx-security-headers.conf`.
+
+Deploy:
+
+```bash
+pnpm deploy:vps:only
+```
+
+The uploader uses rsync when available and OpenSSH scp otherwise. Both paths upload to a staging directory and atomically replace the current deployment with rollback protection.
+
+## 9. VPS Docker
+
+Install Docker Engine and the Compose plugin on the VPS. Create `.env.vps-docker`:
+
+```env
+VPS_HOST=203.0.113.10
+VPS_USER=deploy
+VPS_PORT=22
+VPS_SSH_KEY_PATH=~/.ssh/id_ed25519
+VPS_KNOWN_HOSTS_FILE=~/.ssh/known_hosts
+VPS_DOCKER_APP_DIR=/opt/astro-simpleblog
+VPS_DOCKER_PROJECT_NAME=astro-simpleblog
+VPS_DOCKER_BIND_ADDRESS=127.0.0.1
+VPS_DOCKER_HTTP_PORT=8080
+VPS_DOCKER_ALLOW_PUBLIC_BIND=0
+PUBLIC_SITE_URL=https://example.com
+PUBLIC_CONTACT_EMAIL=contact@example.com
+```
+
+Deploy:
+
+```bash
+pnpm deploy:vps-docker:only
+```
+
+The container runs Nginx as a non-root user, drops Linux capabilities, uses a read-only filesystem, and binds to loopback by default. Put an HTTPS reverse proxy in front of `127.0.0.1:8080`. Do not set `0.0.0.0` unless the VPS firewall is configured and `VPS_DOCKER_ALLOW_PUBLIC_BIND=1`.
+
+## 10. Supabase Edge Functions
+
+Supabase Edge Functions do **not** host this Astro static site. This target deploys TypeScript backend functions only.
+
+Create:
+
+```text
+supabase/functions/hello/index.ts
+```
+
+Example:
+
+```ts
+Deno.serve(() => Response.json({ status: 'ok' }));
+```
+
+Create `.env.supabase`:
+
+```env
+SUPABASE_ACCESS_TOKEN=
+SUPABASE_PROJECT_REF=
+PUBLIC_SITE_URL=https://example.com
+PUBLIC_CONTACT_EMAIL=contact@example.com
+```
+
+Get the token from Supabase Account Settings > Access Tokens. The project ref is visible in the dashboard URL: `/project/<project-ref>`.
+
+Deploy all functions:
+
+```bash
+pnpm deploy:supabase:only
+```
+
+Deploy one:
+
+```bash
+pnpm deploy:switch -- --mode=direct:supabase --supabase-function=hello --yes
+```
+
+Keep service-role keys and function secrets in Supabase Secrets/Vault, never in `PUBLIC_` variables or committed source.
+
+## 11. GitHub, GitLab, And Codeberg
+
+Included files:
+
+- GitHub Actions: `.github/workflows/deploy.yml`
+- GitLab CI: `.gitlab-ci.yml`
+- Codeberg/Woodpecker: `.woodpecker.yml`
+- Cross-platform validation: `.github/workflows/cross-platform.yml`
+
+Add provider tokens, IDs, and SSH keys in each platform's encrypted Secrets/Variables UI. Do not paste them into YAML.
+
+The Git deployment modes push source to an already configured remote:
+
+```bash
+pnpm deploy:switch -- --mode=github:cf --git-remote=origin --git-branch=main --dry-run
+pnpm deploy:switch -- --mode=gitlab:netlify --dry-run
+pnpm deploy:switch -- --mode=codeberg:vps-docker --dry-run
+```
+
+Review the plan before removing `--dry-run`.
+
+## 12. Menu, Shortcuts, And Combined Deployment
+
+There are three supported ways to deploy.
+
+### Interactive menu
 
 ```bash
 pnpm deploy:menu
-```
-
-Choose a language first, then choose the deployment area.
-
-Direct language selection:
-
-```bash
 pnpm deploy:menu -- --lang=en
 pnpm deploy:menu -- --lang=zh-tw
+pnpm deploy:menu -- --lang=zh-cn
 ```
 
-Non-interactive language selection:
+The menu asks for a language, deployment mode, optional flags, and final confirmation. It shows the exact command before execution. Choose **dry run** first when configuring a new target.
+
+### Single-target shortcuts
+
+| Command                       | Target                       |
+| ----------------------------- | ---------------------------- |
+| `pnpm deploy:cf:only`         | Cloudflare Pages             |
+| `pnpm deploy:vercel:only`     | Vercel production            |
+| `pnpm deploy:netlify:only`    | Netlify production           |
+| `pnpm deploy:vps:only`        | Static VPS directory         |
+| `pnpm deploy:vps-docker:only` | VPS Docker                   |
+| `pnpm deploy:supabase:only`   | Supabase Edge Functions only |
+
+Single-target shortcuts start after environment and project checks; they do not show the `deploy:switch` confirmation prompt.
+
+### Combined shortcuts
+
+| Command                               | Exact targets                                      |
+| ------------------------------------- | -------------------------------------------------- |
+| `pnpm deploy:all`                     | Cloudflare + VPS + Vercel                          |
+| `pnpm deploy:all:static`              | Cloudflare + VPS + VPS Docker + Vercel + Netlify   |
+| `pnpm deploy:all:including-functions` | All static targets above + Supabase Edge Functions |
+
+`deploy:all:including-functions` requires at least one valid `supabase/functions/<name>/index.ts`.
+
+## 13. `deploy:switch` Command Reference
+
+General syntax:
 
 ```bash
-pnpm deploy:switch --mode=direct:cf --lang=en
-pnpm deploy:switch --mode=direct:vps --lang=zh-tw
-DEPLOY_LANG=en pnpm deploy:cf:only
+pnpm deploy:switch -- --mode=<provider>:<target+target> [options]
 ```
 
-## 10. Deployment Combinations
-
-Common commands:
+Use `direct` to deploy from the current computer:
 
 ```bash
-pnpm deploy:cf:only
-pnpm deploy:vps:only
-pnpm deploy:vercel:only
-pnpm deploy:cf:vps
-pnpm deploy:cf:vercel
-pnpm deploy:vps:vercel
-pnpm deploy:all
+pnpm deploy:switch -- --mode=direct:cf+netlify --dry-run
+pnpm deploy:switch -- --mode=direct:cf+netlify --yes
 ```
 
-## 11. Self-Check Scripts
-
-Fast audit:
+Use `github`, `gitlab`, or `codeberg` to push source to an existing Git remote. These modes do not upload the site directly; the matching CI file performs deployment:
 
 ```bash
-pnpm selfcheck -- --quick
+pnpm deploy:switch -- --mode=github:cf+vercel --git-remote=origin --git-branch=main
 ```
 
-Full project analysis:
+Supported options:
+
+| Option                       | Meaning                                                                           |
+| ---------------------------- | --------------------------------------------------------------------------------- |
+| `--dry-run`                  | Print the plan only. It does not build, validate credentials, push, or upload.    |
+| `--yes` / `-y`               | Skip only the `deploy:switch` confirmation. Normal project checks still run.      |
+| `--skip-clean`               | Keep the existing output directory before rebuilding. It does not skip the build. |
+| `--dist=<dir>`               | Use a safe project-local output directory for Cloudflare, Netlify, or static VPS. |
+| `--cf-project=<name>`        | Override the Cloudflare Pages project name.                                       |
+| `--cf-branch=<branch>`       | Override the Cloudflare Pages deployment branch.                                  |
+| `--cf-env=<file>`            | Use another root-level Cloudflare `.env*` file.                                   |
+| `--vps-env=<file>`           | Use another root-level static VPS `.env*` file.                                   |
+| `--vps-docker-env=<file>`    | Use another root-level VPS Docker `.env*` file.                                   |
+| `--vercel-env=<file>`        | Use another root-level Vercel `.env*` file.                                       |
+| `--vercel-preview`           | Create a Vercel preview instead of production deployment.                         |
+| `--netlify-env=<file>`       | Use another root-level Netlify `.env*` file.                                      |
+| `--netlify-preview`          | Create a Netlify draft/preview deployment.                                        |
+| `--supabase-env=<file>`      | Use another root-level Supabase `.env*` file.                                     |
+| `--supabase-function=<name>` | Deploy only one existing TypeScript Edge Function.                                |
+| `--git-remote=<name>`        | Select an already configured Git remote name.                                     |
+| `--git-branch=<name>`        | Select the validated branch to push.                                              |
+| `--git-set-upstream`         | Add `git push --set-upstream`.                                                    |
+| `--git-follow-tags`          | Add `git push --follow-tags`.                                                     |
+| `--lang=<language>`          | Select console language: `en`, `zh-tw`, or `zh-cn`.                               |
+
+Environment overrides accept only regular root-level `.env` or `.env.*` files. Traversal paths and symbolic links are rejected.
+
+For npm, retain the argument separator:
 
 ```bash
+npm run deploy:switch -- --mode=direct:cf --dry-run
+```
+
+Normal direct deployment checks `.gitignore`, runs `pnpm check` once through the switch, then each selected deployer builds and uploads its reviewed output. Run `pnpm analyze` before a release when you also need OSV, production-output, all-mode dry-run, and E2E validation.
+
+## 14. Optional OpenPhish External-Link Check
+
+The public template intentionally contains no private OpenPhish runtime. Follow [OPENPHISH_GUIDE.en.md](./OPENPHISH_GUIDE.en.md) to build it separately.
+
+Important boundaries:
+
+- Check licensing and permitted use first.
+- Keep the raw feed, hash buckets, storage IDs, sync token, and backend secrets private.
+- Frontend debounce is not a security boundary; configure WAF/provider rate limiting.
+- Store destinations in a URL fragment, validate and normalize URLs server-side, use bounded requests/responses, and fail closed.
+- Cloudflare KV requires binding-name-compatible code and metadata-last A/B publication because reads are eventually consistent.
+
+## 15. Pre-Release Verification
+
+```bash
+pnpm check
+pnpm audit:security
+pnpm build
+pnpm test:e2e
 pnpm analyze
 ```
 
-The analysis script checks common risky patterns, required component wiring, important public scripts, `.gitignore` coverage, suspicious sensitive files, and dependency advisories. The dependency audit needs package-registry access and fails explicitly when the registry is unavailable. Run it before publishing a public template update.
-
-## 12. Bookmarks
-
-Bookmarks live in:
-
-```text
-src/components/BookmarkLinks.astro
-```
-
-Add translated group labels in `groupLabels`, then add links to `bookmarkRows`. Prefer `https://` URLs and keep external links using `target="_blank"` with `rel="noopener noreferrer"`.
-
-See [Bookmark guide](./BOOKMARKS_GUIDE.en.md) for examples.
-
-## 13. External-Link Notice Page
-
-Markdown HTTP/HTTPS links are rewritten at build time to a leaving notice page when they point to another origin.
-
-Routes:
-
-```text
-/leaving
-/zh-tw/leaving
-/zh-cn/leaving
-```
-
-Files:
-
-```text
-astro.config.ts                          remark rewrite and post-build localization
-src/components/LeavingNotice.astro       page wording and validation
-src/pages/leaving.astro                  English route
-src/pages/zh-tw/leaving.astro            Traditional Chinese route
-src/pages/zh-cn/leaving.astro            Simplified Chinese route
-```
-
-To change the message, edit `src/components/LeavingNotice.astro`. To change route behavior or which links are rewritten, edit the helper functions in `astro.config.ts`, then run `pnpm build` and check generated links in `dist/`.
-
-Dry run:
+Before pushing a public repository, also run:
 
 ```bash
-pnpm deploy:switch --mode=direct:cf+vps --dry-run
-pnpm deploy:switch --mode=direct:cf+vps+vercel --dry-run --lang=en
+git status --short
+git ls-files
 ```
 
-## 14. GitHub / GitLab / Codeberg CI/CD
-
-Git provider modes only push source code. Build and deployment should happen in CI/CD.
-
-Required files:
-
-- GitHub: `.github/workflows/deploy.yml`
-- GitLab: `.gitlab-ci.yml`
-- Codeberg/Woodpecker: `.woodpecker.yml`
-
-Configure platform variables/secrets for `PUBLIC_SITE_URL`, `PUBLIC_CONTACT_EMAIL`, Cloudflare, VPS, Vercel, SSH keys, and tokens. The committed CI examples already pass these values to the deployment scripts, but the values must be created in the selected Git provider.
-
-## 15. Script Roles
-
-- `deploy_menu.ts`: interactive deployment menu with language selection.
-- `deploy_switch.ts`: command-line deployment switcher.
-- `deploy_i18n.ts`: shared i18n dictionary for Traditional Chinese and English.
-- `deploy_lib.ts`: deployment modes, combinations, and command generation.
-- `deploy_runtime.ts`: Node.js, pnpm, and cross-platform runner detection.
-- `deploy_safety.ts`: `.gitignore` and sensitive-file pre-deployment safety checks.
-- `uploaddist_cf.ts`: builds and uploads output to Cloudflare Pages.
-- `uploaddist_vps.ts`: builds and uploads output to VPS over SSH/rsync.
-- `uploaddist_vercel.ts`: builds/deploys through Vercel CLI.
-- `upgrade_astro.ts`: safely upgrades Astro-related packages.
-- `analysis.ts`: project analysis and checks.
-- `run-e2e.ts`: end-to-end test entry.
-
-## 16. Safe Astro Upgrade
-
-```bash
-pnpm upgrade:astro -- --lang=en --dry-run
-pnpm upgrade:astro -- --lang=en --dry-run --clean-install
-pnpm upgrade:astro -- --lang=zh-tw
-```
-
-Safety behavior:
-
-- Bilingual means console output language only. `--lang=en` prints English prompts, warnings, confirmations, and errors; `--lang=zh-tw` prints Traditional Chinese messages.
-- `--lang` does not change which packages are upgraded, does not change the site content language, and does not create a different upgrade process.
-- `--clean-install` removes reproducible folders (`node_modules`, `.astro`, `dist`) before the real upgrade, then runs the normal upgrade and verification flow.
-- Lockfiles are not deleted automatically because they preserve reproducible installs and make failed upgrades easier to review or revert.
-- Detects Astro-related packages from `package.json`.
-- Stops by default if the git working tree is dirty.
-- Use `--allow-dirty` only when you intentionally want to upgrade with uncommitted changes.
-- Supports `--dry-run`.
-- Verifies with existing `check`, `lint`, and `build` scripts instead of hard-coding Astro CLI commands.
-
-Options:
-
-| Option            | Meaning                                                      |
-| ----------------- | ------------------------------------------------------------ |
-| `--lang=zh-tw`    | Traditional Chinese output                                   |
-| `--lang=en`       | English output                                               |
-| `--dry-run`       | Preview only                                                 |
-| `--yes`           | Skip confirmation                                            |
-| `--allow-dirty`   | Allow upgrading with a dirty git working tree                |
-| `--clean-install` | Remove `node_modules`, `.astro`, and `dist` before upgrading |
-| `--skip-check`    | Skip `check`                                                 |
-| `--skip-lint`     | Skip `lint`                                                  |
-| `--skip-build`    | Skip `build`                                                 |
-
-## 17. Sensitive Files
-
-Never commit real secrets:
-
-- `.env`
-- `.env.cloudflare`
-- `.env.vps`
-- `.env.vercel`
-- `.dev.vars`
-- `.dev.vars.*`
-- `.npmrc`
-- `.yarnrc`
-- `.pnpmrc`
-- `.npmrc.local`
-- `.yarnrc.local`
-- `.pnpmrc.local`
-- `.wrangler/`
-- `.cloudflare/`
-- `.vercel/`
-- `.netlify/`
-- `.ssh/`
-- `*.pem`
-- `*.key`
-- `*.p8`
-- `*.p12`
-- `*.pfx`
-- `*.crt`
-- `*.csr`
-- `*.jks`
-- `*.keystore`
-- `id_rsa`
-- `id_ed25519`
-- `kubeconfig`
-- `*.kubeconfig`
-- `service-account*.json`
-- `credentials*.json`
-- `*-credentials.json`
-- `debug.log`
-
-The deployment scripts check `.gitignore` before deployment and can repair missing sensitive-file patterns.
+Confirm no real `.env`, tokens, keys, private articles, private images, generated `dist`, `.wrangler`, `.vercel`, `.netlify`, or `.supabase` state is tracked.

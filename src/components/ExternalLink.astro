@@ -1,0 +1,26 @@
+---
+export interface Props {
+  href: string;
+  lang?: 'zh-tw' | 'en' | 'zh-cn' | undefined;
+  class?: string | undefined;
+  rel?: string | undefined;
+  target?: '_blank' | '_self' | undefined;
+}
+
+import { getLeavingNoticeHref, normalizeExternalHttpUrl } from '../lib/external-links';
+
+const { href, lang = 'en', class: className, rel = '', target } = Astro.props;
+const destination = normalizeExternalHttpUrl(href);
+const relValues = new Set(rel.split(/\s+/).filter(Boolean));
+relValues.add('noopener');
+relValues.add('noreferrer');
+---
+
+<a
+  href={getLeavingNoticeHref(lang, destination.href)}
+  class={className}
+  rel={[...relValues].join(' ')}
+  target={target}
+>
+  <slot />
+</a>

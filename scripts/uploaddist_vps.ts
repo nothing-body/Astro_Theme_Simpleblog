@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Upload built dist/ to a VPS directory via rsync over SSH.
- * CI friendly: intended for GitHub/GitLab/Codeberg pipeline usage.
+ * Upload built dist/ to a VPS directory through OpenSSH.
+ * Uses rsync when available and an atomic scp/ssh fallback otherwise.
  *
  * Primary usage:
  *   pnpm uploaddist:vps:node
@@ -26,53 +26,67 @@
  *   --env=.env.vps
  *   --skip-clean
  */
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
-import process from "node:process";
-import { spawnSync } from "node:child_process";
-import { ensureGitignoreSafety } from "./deploy_safety.ts";
-import { stripLangArgs, t } from "./deploy_i18n.ts";
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+import { spawnSync } from 'node:child_process';
+import { ensureGitignoreSafety } from './deploy_safety.ts';
+import { loadEnvFile } from './deploy_env.ts';
+import { stripLangArgs, t } from './deploy_i18n.ts';
 import {
+  commandAvailable,
   ensureNodeRuntime,
   ensurePackageManagerRuntime,
   runPackageScript,
-} from "./deploy_runtime.ts";
+} from './deploy_runtime.ts';
+import {
+  activateStagingCommand,
+  cleanupStagingCommand,
+  getStagingPaths,
+  isSafeRemoteTargetPath,
+  prepareStagingCommand,
+  selectVpsTransport,
+} from './vps_transport.ts';
+import { createVpsConnection } from './vps_connection.ts';
 
 const args = stripLangArgs(process.argv.slice(2));
 const options = {
-  dist: "dist",
-  env: ".env.vps",
+  dist: 'dist',
+  env: '.env.vps',
   skipClean: false,
+  prebuilt: false,
 };
 
 for (const arg of args) {
-  if (arg === "--skip-clean") {
+  if (arg === '--skip-clean') {
     options.skipClean = true;
     continue;
   }
-  if (arg.startsWith("--dist=")) {
-    options.dist = arg.slice("--dist=".length);
+  if (arg === '--prebuilt') {
+    options.prebuilt = true;
     continue;
   }
-  if (arg.startsWith("--env=")) {
-    options.env = arg.slice("--env=".length);
+  if (arg.startsWith('--dist=')) {
+    options.dist = arg.slice('--dist='.length);
+    continue;
+  }
+  if (arg.startsWith('--env=')) {
+    options.env = arg.slice('--env='.length);
     continue;
   }
 }
 
 const color = {
-  yellow: "\x1b[33m",
-  cyan: "\x1b[36m",
-  green: "\x1b[32m",
-  reset: "\x1b[0m",
+  yellow: '\x1b[33m',
+  cyan: '\x1b[36m',
+  green: '\x1b[32m',
+  reset: '\x1b[0m',
 };
 type Tone = 'yellow' | 'cyan' | 'green';
-type AskPass = { file: string; dir: string };
 
-function info(message: string, tone: Tone = "cyan"): void {
-  const c = color[tone] ?? "";
-  const reset = c ? color.reset : "";
+function info(message: string, tone: Tone = 'cyan'): void {
+  const c = color[tone] ?? '';
+  const reset = c ? color.reset : '';
   console.log(`${c}${message}${reset}`);
 }
 
@@ -81,9 +95,22 @@ function fail(message: string): never {
   process.exit(1);
 }
 
-function run(command: string, commandArgs: string[], errorMessage: string, env: NodeJS.ProcessEnv = process.env): void {
+const unknownArgs = args.filter(
+  arg =>
+    arg !== '--skip-clean' &&
+    arg !== '--prebuilt' &&
+    !['--dist=', '--env='].some(prefix => arg.startsWith(prefix))
+);
+if (unknownArgs.length > 0) fail(`Unknown option: ${unknownArgs.join(', ')}`);
+
+function run(
+  command: string,
+  commandArgs: string[],
+  errorMessage: string,
+  env: NodeJS.ProcessEnv = process.env
+): void {
   const result = spawnSync(command, commandArgs, {
-    stdio: "inherit",
+    stdio: 'inherit',
     env,
   });
   if (result.error || result.status !== 0) fail(errorMessage);
@@ -91,44 +118,8 @@ function run(command: string, commandArgs: string[], errorMessage: string, env: 
 
 function runPackageTool(args: [string, ...string[]], errorMessage: string): void {
   const [script, ...scriptArgs] = args;
-  if (script === "check" || script === "build") {
+  if (script === 'check' || script === 'build') {
     runPackageScript(script, scriptArgs, run, errorMessage);
-  }
-}
-
-function assertCommand(name: string, args: string[] = ["--version"]): void {
-  const probe = spawnSync(name, args, { stdio: "ignore" });
-  if (probe.error || probe.status !== 0) fail(`Required command '${name}' not found. Please install it first.`);
-}
-
-function resolvePathMaybeHome(p: string): string {
-  if (!p) return p;
-  return p.startsWith("~/") ? path.join(os.homedir(), p.slice(2)) : p;
-}
-
-function loadEnvFile(envFilePath: string): void {
-  const fullPath = path.resolve(process.cwd(), envFilePath);
-  if (!fs.existsSync(fullPath)) {
-    info(`==> ${t("common.envMissing")} (${envFilePath})`, "yellow");
-    return;
-  }
-
-  info(`==> ${t("common.loadingEnv")}: '${envFilePath}'`);
-  const lines = fs.readFileSync(fullPath, "utf8").split(/\r?\n/);
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith("#")) continue;
-    const eqIndex = line.indexOf("=");
-    if (eqIndex === -1) continue;
-    const key = line.slice(0, eqIndex).trim();
-    let value = line.slice(eqIndex + 1).trim();
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-    if (key && process.env[key] === undefined) process.env[key] = value;
   }
 }
 
@@ -136,144 +127,122 @@ function assertSafeDistPath(distPath: string): void {
   const cwd = process.cwd();
   const relative = path.relative(cwd, distPath);
 
-  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
+  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
     fail(`Refusing to use unsafe dist path '${options.dist}'. It must stay inside the project.`);
   }
-  const generatedName = ['dist', 'build', 'output'].some(prefix =>
-    relative === prefix || ['-', '_', '.'].some(separator => relative.startsWith(`${prefix}${separator}`))
+  const generatedName = ['dist', 'build', 'output'].some(
+    prefix =>
+      relative === prefix ||
+      ['-', '_', '.'].some(separator => relative.startsWith(`${prefix}${separator}`))
   );
   const safeName = [...relative].every(char => /[A-Za-z0-9._-]/.test(char));
-  if (!options.skipClean && (!generatedName || !safeName)) {
-    fail(`Refusing to delete custom output path '${options.dist}'. Use --skip-clean for a prebuilt custom directory.`);
-  }
-}
-
-function assertNoShellMeta(value: string, label: string): void {
-  if (/[\0\r\n`$"'\\;&|<>!(){}[\]*?]/.test(value)) {
-    fail(`${label} contains unsupported shell metacharacters.`);
-  }
-}
-
-function createAskPassScript(passphrase: string): AskPass {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "astro-deploy-ssh-askpass-"));
-  if (process.platform === "win32") {
-    const file = path.join(dir, "askpass.cmd");
-    fs.writeFileSync(
-      file,
-      "@echo off\r\npowershell -NoProfile -Command \"[Console]::Out.Write($env:VPS_SSH_PASSPHRASE)\"\r\n",
-      { mode: 0o700 }
+  if (!options.skipClean && !options.prebuilt && (!generatedName || !safeName)) {
+    fail(
+      `Refusing to delete custom output path '${options.dist}'. Use --skip-clean for a prebuilt custom directory.`
     );
-    return { file, dir };
   }
-
-  const file = path.join(dir, "askpass.sh");
-  fs.writeFileSync(file, "#!/bin/sh\nprintf '%s' \"$VPS_SSH_PASSPHRASE\"\n", { mode: 0o700 });
-  fs.chmodSync(file, 0o700);
-  process.env.VPS_SSH_PASSPHRASE = passphrase;
-  return { file, dir };
 }
 
 ensureNodeRuntime();
 ensurePackageManagerRuntime();
 await ensureGitignoreSafety();
-assertCommand("rsync");
-assertCommand("ssh");
-loadEnvFile(options.env);
+if (!commandAvailable('ssh')) fail("Required command 'ssh' was not found.");
+const transport = selectVpsTransport(commandAvailable('rsync'), commandAvailable('scp'));
+if (!transport) fail("Install 'rsync' or the OpenSSH 'scp' command before VPS deployment.");
+if (loadEnvFile(options.env)) info(`==> ${t('common.loadingEnv')}: '${options.env}'`);
+else info(`==> ${t('common.envMissing')} (${options.env})`, 'yellow');
 
-const host = process.env.VPS_HOST ?? "";
-const user = process.env.VPS_USER ?? "";
-const targetDir = process.env.VPS_TARGET_DIR ?? "";
-const port = process.env.VPS_PORT ?? "22";
-const keyPath = resolvePathMaybeHome(process.env.VPS_SSH_KEY_PATH ?? "~/.ssh/id_rsa");
-const passphrase = process.env.VPS_SSH_PASSPHRASE || "";
+const host = process.env.VPS_HOST ?? '';
+const user = process.env.VPS_USER ?? '';
+const targetDir = process.env.VPS_TARGET_DIR ?? '';
 
 if (!host || !user || !targetDir) {
+  fail('Missing required VPS envs. Need VPS_HOST, VPS_USER, VPS_TARGET_DIR.');
+}
+
+if (!isSafeRemoteTargetPath(targetDir)) {
   fail(
-    "Missing required VPS envs. Need VPS_HOST, VPS_USER, VPS_TARGET_DIR."
+    'VPS_TARGET_DIR must be an absolute Unix path using only letters, numbers, dot, dash, underscore, tilde and slash.'
   );
 }
-
-if (!/^[A-Za-z0-9._-]+$/.test(user)) {
-  fail("VPS_USER contains unsupported characters.");
-}
-
-if (!/^[A-Za-z0-9._:-]+$/.test(host)) {
-  fail("VPS_HOST contains unsupported characters.");
-}
-
-if (!/^\d{1,5}$/.test(port) || Number(port) < 1 || Number(port) > 65535) {
-  fail("VPS_PORT must be a number between 1 and 65535.");
-}
-
-const targetSegments = targetDir.split('/').filter(Boolean);
-if (
-  !/^\/[A-Za-z0-9._~/-]*$/.test(targetDir) ||
-  targetDir.includes("//") ||
-  targetSegments.length === 0 ||
-  targetSegments.some(segment => segment === '.' || segment === '..')
-) {
-  fail("VPS_TARGET_DIR must be an absolute Unix path using only letters, numbers, dot, dash, underscore, tilde and slash.");
-}
-
-if (!fs.existsSync(keyPath)) {
-  fail(`SSH key file does not exist: ${keyPath}`);
-}
-assertNoShellMeta(keyPath, "VPS_SSH_KEY_PATH");
 
 const distPath = path.resolve(process.cwd(), options.dist);
 assertSafeDistPath(distPath);
-if (!options.skipClean && fs.existsSync(distPath)) {
-  info(`==> ${t("common.cleaning")} '${options.dist}'...`, "yellow");
+if (!options.skipClean && !options.prebuilt && fs.existsSync(distPath)) {
+  info(`==> ${t('common.cleaning')} '${options.dist}'...`, 'yellow');
   fs.rmSync(distPath, { recursive: true, force: true });
 }
 
-if (process.env.DEPLOY_CHECKED !== "1") {
-  info(`==> ${t("common.deploymentCheck")}`);
-  runPackageTool(["check"], "Project checks failed.");
+if (process.env.DEPLOY_CHECKED !== '1') {
+  info(`==> ${t('common.deploymentCheck')}`);
+  runPackageTool(['check'], 'Project checks failed.');
 }
 
-info(`==> ${t("common.building")}`);
-runPackageTool(
-  options.dist === 'dist' ? ["build"] : ["build", "--outDir", options.dist],
-  "Build failed."
-);
+if (!options.prebuilt) {
+  info(`==> ${t('common.building')}`);
+  runPackageTool(
+    options.dist === 'dist' ? ['build'] : ['build', '--outDir', options.dist],
+    'Build failed.'
+  );
+}
 
 if (!fs.existsSync(distPath)) {
-  fail(`${t("common.distMissing")}: '${options.dist}'.`);
+  fail(`${t('common.distMissing')}: '${options.dist}'.`);
 }
 
-info(`==> ${t("notice.vpsUser")}: ${user}`);
-info(`==> ${t("notice.vpsTarget")}: ${targetDir}`);
-if (user !== "root" && targetDir.startsWith("/var/www/")) {
-  info(`==> ${t("notice.vpsNonRoot")}`, "yellow");
+info(`==> ${t('notice.vpsUser')}: ${user}`);
+info(`==> ${t('notice.vpsTarget')}: ${targetDir}`);
+if (user !== 'root' && targetDir.startsWith('/var/www/')) {
+  info(`==> ${t('notice.vpsNonRoot')}`, 'yellow');
 }
-info(`==> ${t("vps.uploading")}: ${user}@${host}:${targetDir}`);
-let askPass: AskPass | null = null;
-const rsyncEnv: NodeJS.ProcessEnv = { ...process.env };
-if (passphrase) {
-  info(`==> ${t("vps.passDetected")}`, "yellow");
-  askPass = createAskPassScript(passphrase);
-  rsyncEnv.VPS_SSH_PASSPHRASE = passphrase;
-  rsyncEnv.SSH_ASKPASS = askPass.file;
-  rsyncEnv.SSH_ASKPASS_REQUIRE = "force";
-  rsyncEnv.DISPLAY = rsyncEnv.DISPLAY || "astro-deploy";
-}
+info(`==> ${t('vps.uploading')}: ${user}@${host}:${targetDir}`);
+info(`==> VPS transport: ${transport}`);
+const connection = createVpsConnection(() => info(`==> ${t('vps.passDetected')}`, 'yellow'));
 try {
+  const { env: sshEnv, remote, rsyncSshCommand, scpArgs, sshArgs } = connection;
+  const nonce = `${Date.now()}-${process.pid}`;
+  const { staging } = getStagingPaths(targetDir, nonce);
   run(
-    "rsync",
-    [
-      "-az",
-      "--delete",
-      "-e",
-      `ssh -i "${keyPath}" -p ${port} -o StrictHostKeyChecking=accept-new`,
-      `${options.dist}/`,
-      `${user}@${host}:${targetDir}/`,
-    ],
-    "Rsync upload failed.",
-    rsyncEnv
+    'ssh',
+    [...sshArgs, prepareStagingCommand(targetDir, nonce)],
+    'Unable to prepare VPS staging directory.',
+    sshEnv
+  );
+  if (transport === 'rsync') {
+    const copied = spawnSync(
+      'rsync',
+      ['-az', '--delete', '-e', rsyncSshCommand, `${options.dist}/`, `${remote}:${staging}/`],
+      { stdio: 'inherit', env: sshEnv, cwd: process.cwd() }
+    );
+    if (copied.error || copied.status !== 0) {
+      spawnSync('ssh', [...sshArgs, cleanupStagingCommand(targetDir, nonce)], {
+        stdio: 'ignore',
+        env: sshEnv,
+      });
+      fail('Rsync upload failed. The current deployed directory was not changed.');
+    }
+  } else {
+    const copied = spawnSync(
+      'scp',
+      ['-r', ...scpArgs, `${options.dist.replaceAll('\\', '/')}/.`, `${remote}:${staging}/`],
+      { stdio: 'inherit', env: sshEnv, cwd: process.cwd() }
+    );
+    if (copied.error || copied.status !== 0) {
+      spawnSync('ssh', [...sshArgs, cleanupStagingCommand(targetDir, nonce)], {
+        stdio: 'ignore',
+        env: sshEnv,
+      });
+      fail('SCP upload failed. The current deployed directory was not changed.');
+    }
+  }
+  run(
+    'ssh',
+    [...sshArgs, activateStagingCommand(targetDir, nonce)],
+    'Unable to activate the staged VPS deployment.',
+    sshEnv
   );
 } finally {
-  if (askPass) fs.rmSync(askPass.dir, { recursive: true, force: true });
+  connection.dispose();
 }
 
-info(`==> ${t("common.deployCompleted")}`, "green");
+info(`==> ${t('common.deployCompleted')}`, 'green');

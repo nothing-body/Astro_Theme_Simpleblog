@@ -1,0 +1,37 @@
+---
+import type { Lang } from '../i18n/ui';
+import { formatTranslation, useTranslations } from '../i18n/utils';
+import type { BlogPost } from '../lib/posts';
+import { getPostsPageUrl } from '../lib/routes';
+import { getCanonicalUrl } from '../lib/site';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostsListSection from './PostsListSection.astro';
+
+interface Props {
+  lang: Lang;
+  allPosts: BlogPost[];
+  currentPage: number;
+  totalPages: number;
+}
+
+const { lang, allPosts, currentPage, totalPages } = Astro.props;
+const t = useTranslations(lang);
+const title =
+  currentPage === 1
+    ? t('posts.title')
+    : formatTranslation(t('posts.pageTitle'), { page: currentPage });
+const description =
+  currentPage === 1
+    ? t('posts.description')
+    : formatTranslation(t('posts.pageDescription'), { page: currentPage });
+const canonical = getCanonicalUrl(getPostsPageUrl(lang, currentPage), Astro.site);
+---
+
+<BaseLayout title={title} description={description} customCanonical={canonical}>
+  <PostsListSection
+    lang={lang}
+    allPosts={allPosts}
+    currentPage={currentPage}
+    totalPages={totalPages}
+  />
+</BaseLayout>

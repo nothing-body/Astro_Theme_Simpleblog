@@ -1,6 +1,6 @@
 import type { Lang } from '../i18n/ui';
 import { ui } from '../i18n/ui';
-import { decodeRouteSegment, getCategoryRouteSegment, getPostsListUrl } from '../lib/routes';
+import { decodeRouteSegment, getCategoryUrl, getPostsListUrl, getTagListUrl } from '../lib/routes';
 import { readSessionStorage } from './storage';
 
 type TranslationMapping = Record<string, Partial<Record<Lang, string>>>;
@@ -61,20 +61,13 @@ if (config && backLink && storedPath && storedPath !== window.location.pathname)
           if (decoded.every((part): part is string => part !== null)) {
             const source = decoded.join('/');
             const translated = config.categoryMapping[source]?.[config.lang] || config.currentCategory;
-            const route = translated
-              .split('/')
-              .map(getCategoryRouteSegment)
-              .filter(Boolean)
-              .map(encodeURIComponent)
-              .join('/');
-            const prefix = config.lang === 'en' ? '' : `/${config.lang}`;
-            targetPath = `${prefix}/categories/${route}/1/`;
+            targetPath = getCategoryUrl(config.lang, translated.split('/').filter(Boolean), 1);
           }
         } else if (parts.includes('tags')) {
           const source = decodeRouteSegment(parts[hasPrefix ? 2 : 1] ?? '');
           const translated = source ? config.tagMapping[source]?.[config.lang] || source : null;
           targetPath = translated
-            ? `${config.lang === 'en' ? '' : `/${config.lang}`}/tags/${encodeURIComponent(translated)}/1/`
+            ? getTagListUrl(config.lang, translated, 1)
             : getPostsListUrl(config.lang, 1);
         } else if (parts.includes('page')) {
           const pageIndex = parts.indexOf('page');

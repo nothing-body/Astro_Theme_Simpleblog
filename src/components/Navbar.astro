@@ -4,22 +4,25 @@ import { languages, type Lang } from '../i18n/ui';
 import { SITE_NAME } from '../lib/site';
 import type { LanguageRoute } from '../types';
 
-export interface Props {
+interface Props {
   languageRoutes: Record<Lang, LanguageRoute>;
+  preserveLanguageFragment?: boolean | undefined;
 }
 
-const { languageRoutes } = Astro.props;
+const { languageRoutes, preserveLanguageFragment = false } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const translatePath = useTranslatedPath(lang);
 const currentPath = Astro.url.pathname;
+const searchPath = translatePath('/search');
+const searchLabel = t('nav.search');
 
 const languagePaths = (Object.keys(languages) as Lang[]).map(code => ({
-    code,
-    label: languages[code],
-    path: languageRoutes[code].path,
-    hreflang: code === 'zh-tw' ? 'zh-TW' : code === 'zh-cn' ? 'zh-CN' : 'en',
-  }));
+  code,
+  label: languages[code],
+  path: languageRoutes[code].path,
+  hreflang: code === 'zh-tw' ? 'zh-TW' : code === 'zh-cn' ? 'zh-CN' : 'en',
+}));
 
 const copy = {
   skip: t('a11y.skipToMain'),
@@ -65,6 +68,15 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
         >
       </div>
 
+      <a
+        href={searchPath}
+        class:list={['nav-search', { 'nav-search--active': currentPath.includes('/search') }]}
+        aria-label={searchLabel}
+        title={searchLabel}
+      >
+        <span aria-hidden="true">🔍</span>
+      </a>
+
       <div class="lang-switcher">
         <button
           class="lang-trigger"
@@ -109,6 +121,7 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
                 aria-selected={lang === item.code}
                 aria-disabled={lang === item.code ? 'true' : undefined}
                 hreflang={item.hreflang}
+                data-preserve-fragment={preserveLanguageFragment ? 'true' : undefined}
               >
                 {item.label}
               </a>
@@ -146,7 +159,13 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
   </div>
 </nav>
 
-<div class="mobile-menu" id="mobile-menu" aria-hidden="true" role="dialog" aria-label={copy.mobileMenu}>
+<div
+  class="mobile-menu"
+  id="mobile-menu"
+  aria-hidden="true"
+  role="dialog"
+  aria-label={copy.mobileMenu}
+>
   <nav class="mobile-links">
     <a href={translatePath('/')} class="mobile-item">{t('nav.home')}</a>
     <a href={translatePath('/posts')} class="mobile-item">{t('nav.posts')}</a>
@@ -159,6 +178,7 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
           class:list={['mobile-lang', { active: lang === item.code }]}
           aria-disabled={lang === item.code ? 'true' : undefined}
           hreflang={item.hreflang}
+          data-preserve-fragment={preserveLanguageFragment ? 'true' : undefined}
         >
           {item.label}
         </a>
@@ -227,7 +247,8 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
   .nav-item,
   .mobile-item,
   .mobile-lang,
-  .lang-option {
+  .lang-option,
+  .nav-search {
     color: inherit;
     text-decoration: none;
   }
@@ -265,6 +286,22 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
 
   .lang-switcher {
     position: relative;
+  }
+
+  .nav-search {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+
+  .nav-search:hover,
+  .nav-search--active {
+    background: var(--primary-red-light);
+    color: var(--primary-red);
   }
 
   .lang-trigger,

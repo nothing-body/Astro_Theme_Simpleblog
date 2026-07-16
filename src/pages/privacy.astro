@@ -3,11 +3,12 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AboutSidebar from '../components/AboutSidebar.astro';
 import SiteSettingsInline from '../components/SiteSettingsInline.astro';
-import { getCanonicalUrl } from '../lib/site';
+import { SITE_NAME, getCanonicalUrl } from '../lib/site';
 import { safeJsonStringify } from '../lib/utils';
 
 const currentPath = Astro.url.pathname;
 const pageUrl = getCanonicalUrl(currentPath, Astro.site);
+const description = `Privacy policy for ${SITE_NAME}.`;
 const today = new Date().toLocaleDateString('en-GB', {
   year: 'numeric',
   month: 'long',
@@ -19,12 +20,12 @@ const jsonLd = {
   '@type': 'WebPage',
   name: 'Privacy Policy',
   url: pageUrl,
-  description: "Privacy policy for the SimpleBlog blog.",
-  publisher: { '@type': 'Person', name: "SimpleBlog" },
+  description,
+  publisher: { '@type': 'Organization', name: SITE_NAME },
 };
 ---
 
-<BaseLayout title="Privacy Policy" description="Privacy policy for the SimpleBlog blog.">
+<BaseLayout title="Privacy Policy" {description}>
   <script is:inline type="application/ld+json" set:html={safeJsonStringify(jsonLd)} />
   <div class="page-container content-page">
     <div class="content-wrapper">
@@ -42,8 +43,8 @@ const jsonLd = {
             <h2>1. Data Collection</h2>
             <ul>
               <li>
-                <strong>Server-side:</strong> This is a static site. We do not actively collect, store,
-                or track personal data on our servers.
+                <strong>Server-side:</strong> Site pages are static. This public template does not include
+                a private external-link lookup API, mutable feed storage, or an application database.
               </li>
               <li>
                 <strong>Google Analytics (GA4):</strong> We use GA4 to collect anonymous traffic data.
@@ -78,5 +79,4 @@ const jsonLd = {
       </div>
     </div>
   </div>
-
 </BaseLayout>

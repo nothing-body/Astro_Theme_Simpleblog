@@ -1,8 +1,8 @@
 import type { Lang } from '../i18n/ui';
-import { defaultLang } from '../i18n/ui';
 import type { BlogPost } from './posts';
 import { sortBlogPosts } from './posts';
-import { decodeRouteSegments, getCategoryRouteSegment, normalizePageNumber } from './routes';
+import { decodeRouteSegments, getCategoryRoutePath, normalizePageNumber } from './routes';
+export { getCategoryRoutePath, getCategoryUrl } from './routes';
 
 const PATH_SEPARATOR = '\u001f';
 
@@ -55,24 +55,6 @@ export function getCategoryPathKey(path: string[]): string {
 export function categoryPathStartsWith(path: string[], prefix: string[]): boolean {
   if (prefix.length > path.length) return false;
   return prefix.every((segment, index) => path[index] === segment);
-}
-
-export function getCategoryRoutePath(path: string[]): string {
-  const segments = path.map(getCategoryRouteSegment);
-  if (segments.some(segment => !segment)) {
-    throw new Error(`Category path contains a segment with no URL-safe characters: ${path.join(' / ')}`);
-  }
-  return segments.join('/');
-}
-
-export function getCategoryUrl(lang: Lang, path: string[], page = 1): string {
-  if (path.length === 0) throw new Error('Category routes require at least one segment.');
-  const prefix = lang === defaultLang ? '' : `/${lang}`;
-  const encodedPath = getCategoryRoutePath(path)
-    .split('/')
-    .map(segment => encodeURIComponent(segment))
-    .join('/');
-  return `${prefix}/categories/${encodedPath}/${normalizePageNumber(page)}/`;
 }
 
 function localeForSort(lang: Lang): string {

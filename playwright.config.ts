@@ -7,10 +7,19 @@ function chromiumExecutable(): string | undefined {
   const configured = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH?.trim();
   if (configured) return configured;
 
-  const localAppData = process.env.LOCALAPPDATA;
-  if (!localAppData) return undefined;
-  const candidate = path.join(localAppData, 'Chromium', 'Application', 'chrome.exe');
-  return fs.existsSync(candidate) ? candidate : undefined;
+  const candidates = [
+    process.env.LOCALAPPDATA
+      ? path.join(process.env.LOCALAPPDATA, 'Chromium', 'Application', 'chrome.exe')
+      : '',
+    'C:\\Program Files\\Chromium\\Application\\chrome.exe',
+    '/Applications/Chromium.app/Contents/MacOS/Chromium',
+    '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/brave-browser',
+    '/snap/bin/chromium',
+  ];
+  return candidates.find(candidate => candidate && fs.existsSync(candidate));
 }
 
 const executablePath = chromiumExecutable();

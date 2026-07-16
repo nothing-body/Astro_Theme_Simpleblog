@@ -2,8 +2,8 @@
 title: 'Congratulations, Your SimpleBlog Is Ready'
 description: 'Your multilingual Astro blog has been built successfully. Here are the safest next steps for configuration, writing, verification, and deployment.'
 pubDate: 2026-07-14
-category: 'Guide'
-categoryPath: ['Guide', 'Getting Started']
+category: 'Website'
+categoryPath: ['Website', 'Astro']
 tags: ['Astro', 'Website Setup']
 author: 'SimpleBlog'
 pinned: true

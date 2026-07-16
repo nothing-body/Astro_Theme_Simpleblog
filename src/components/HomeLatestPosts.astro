@@ -4,7 +4,7 @@ import BookmarkLinks from './BookmarkLinks.astro';
 import PostCard from './PostCard.astro';
 import { useTranslatedPath, useTranslations } from '../i18n/utils';
 
-export interface Props {
+interface Props {
   lang: 'en' | 'zh-tw' | 'zh-cn';
   posts: BlogPost[];
 }

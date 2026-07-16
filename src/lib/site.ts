@@ -1,7 +1,35 @@
-export const SITE_NAME = "SimpleBlog";
-export const DEFAULT_AUTHOR = 'SimpleBlog';
-export const DEFAULT_DESCRIPTION =
-  'Personal technology notes about self-hosting, web development, security, and open source tools.';
+function publicText(value: string | undefined, fallback: string, name: string, maxLength: number) {
+  const text = value?.trim() || fallback;
+  if (
+    text.length > maxLength ||
+    [...text].some(character => {
+      const code = character.codePointAt(0) ?? 0;
+      return code <= 0x1f || (code >= 0x7f && code <= 0x9f);
+    })
+  ) {
+    throw new Error(`${name} contains control characters or exceeds ${maxLength} characters.`);
+  }
+  return text;
+}
+
+export const SITE_NAME = publicText(
+  import.meta.env.PUBLIC_SITE_NAME,
+  'Astro Simple Blog',
+  'PUBLIC_SITE_NAME',
+  100
+);
+export const DEFAULT_AUTHOR = publicText(
+  import.meta.env.PUBLIC_SITE_AUTHOR,
+  'Site Author',
+  'PUBLIC_SITE_AUTHOR',
+  100
+);
+export const DEFAULT_DESCRIPTION = publicText(
+  import.meta.env.PUBLIC_SITE_DESCRIPTION,
+  'A multilingual Astro blog for notes, guides, and articles.',
+  'PUBLIC_SITE_DESCRIPTION',
+  300
+);
 
 export function getSiteUrl(site?: URL | string | null): string {
   const raw = site?.toString() || import.meta.env.PUBLIC_SITE_URL;
@@ -14,9 +42,9 @@ export function getCanonicalUrl(pathname: string, site?: URL | string | null): s
 }
 
 export function getContactEmail(): string {
-  const email = import.meta.env.PUBLIC_CONTACT_EMAIL?.trim();
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new Error('PUBLIC_CONTACT_EMAIL is required and must be a valid email address.');
+  const email = import.meta.env.PUBLIC_CONTACT_EMAIL?.trim() || 'contact@example.com';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error('PUBLIC_CONTACT_EMAIL must be a valid email address.');
   }
   return email;
 }

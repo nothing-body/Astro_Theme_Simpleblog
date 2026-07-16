@@ -2,8 +2,9 @@
 import type { CategoryTreeNode } from '../lib/categories';
 import { getCategoryUrl } from '../lib/categories';
 import type { Lang } from '../i18n/ui';
+import { formatTranslation, useTranslations } from '../i18n/utils';
 
-export interface Props {
+interface Props {
   nodes: CategoryTreeNode[];
   lang: Lang;
   postsHref: string;
@@ -12,6 +13,7 @@ export interface Props {
 }
 
 const { nodes, lang, postsHref, activePathKey, depth = 0 } = Astro.props;
+const t = useTranslations(lang);
 ---
 
 <ul class:list={['category-tree', { 'category-tree--nested': depth > 0 }]} role={depth === 0 ? 'tree' : 'group'}>
@@ -31,7 +33,9 @@ const { nodes, lang, postsHref, activePathKey, depth = 0 } = Astro.props;
                 <button
                   type="button"
                   class="category-tree-toggle"
-                  aria-label={`Toggle ${node.label}`}
+                  aria-label={formatTranslation(t('a11y.toggleCategory'), {
+                    category: node.label,
+                  })}
                   aria-expanded={isOpen ? 'true' : 'false'}
                   aria-controls={childrenId}
                   data-category-tree-toggle

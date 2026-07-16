@@ -4,7 +4,7 @@ import type { Lang } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
 import { formatDate, getPostUrl, summarizePlainText } from '../lib/utils';
 
-export interface Props {
+interface Props {
   post: CollectionEntry<'blog'>;
   lang: Lang;
 }
@@ -103,7 +103,7 @@ const pinnedLabel = t('post.pinned');
     color: var(--primary-red);
     font-size: 0.78rem;
     font-weight: 800;
-    letter-spacing: 0.1em;
+    letter-spacing: 0;
     text-transform: uppercase;
   }
 

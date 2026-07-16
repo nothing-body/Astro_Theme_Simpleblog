@@ -2,7 +2,7 @@
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import AboutSidebar from '../../components/AboutSidebar.astro';
-import { getCanonicalUrl } from '../../lib/site';
+import { SITE_NAME, getCanonicalUrl } from '../../lib/site';
 import { safeJsonStringify } from '../../lib/utils';
 
 const currentPath = Astro.url.pathname;
@@ -14,7 +14,7 @@ const jsonLd = {
   name: '免责声明',
   url: pageUrl,
   description: '本站免责声明，说明内容使用与责任范围。',
-  publisher: { '@type': 'Person', name: "SimpleBlog" },
+  publisher: { '@type': 'Organization', name: SITE_NAME },
 };
 ---
 

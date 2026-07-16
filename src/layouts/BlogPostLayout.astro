@@ -13,6 +13,7 @@ import {
 } from '../i18n/utils';
 import { formatDate, safeJsonStringify, summarizePlainText } from '../lib/utils';
 import { DEFAULT_AUTHOR, getSiteUrl } from '../lib/site';
+import { getTagListUrl } from '../lib/routes';
 import {
   getCategoryPathFromData,
   getCategoryUrl,
@@ -21,7 +22,7 @@ import {
 import '../styles/markdown.css';
 import '../assets/css/blog-enhancements.css';
 
-export interface Props {
+interface Props {
   post?: CollectionEntry<'blog'>;
   frontmatter: {
     title: string;
@@ -50,9 +51,7 @@ const currentCategoryPath = getCategoryPathFromData({
 const allBlogPosts = await getCollection('blog', ({ data }) => !data.draft);
 const categoryMapping = buildDynamicCategoryMapping(allBlogPosts);
 const tagMapping = buildDynamicTagMapping(allBlogPosts);
-const normalizedCategoryPath = post
-  ? getNormalizedPostCategoryPath(post)
-  : currentCategoryPath;
+const normalizedCategoryPath = post ? getNormalizedPostCategoryPath(post) : currentCategoryPath;
 const currentCategoryLabel = normalizedCategoryPath.join(' / ');
 const currentCategoryHref = getCategoryUrl(lang, normalizedCategoryPath, 1);
 
@@ -123,16 +122,28 @@ const breadcrumbs = [
       <article class="post-article">
         <Breadcrumbs items={breadcrumbs} ariaLabel={breadcrumbLabel} />
 
-        <header class="post-header">
+        <header
+          class="post-header"
+          data-pagefind-body
+          data-pagefind-meta={`description:${articleDescription}`}
+        >
           <div class="post-meta-row">
             <a
               href={currentCategoryHref}
               class="post-category-badge"
+              data-pagefind-filter="category"
+              data-pagefind-meta="category"
             >
               {currentCategoryLabel}
             </a>
             <span class="meta-dot" aria-hidden="true">/</span>
-            <time class="post-date" datetime={publishedDate.toISOString()}>{formattedDate}</time>
+            <time
+              class="post-date"
+              datetime={publishedDate.toISOString()}
+              data-pagefind-meta="date"
+            >
+              {formattedDate}
+            </time>
             {
               updatedDate && (
                 <>
@@ -141,7 +152,9 @@ const breadcrumbs = [
                   </span>
                   <span class="post-updated">
                     {updatedLabel}
-                    <time datetime={updatedDate.toISOString()}>{formatDate(updatedDate, lang)}</time>
+                    <time datetime={updatedDate.toISOString()}>
+                      {formatDate(updatedDate, lang)}
+                    </time>
                   </span>
                 </>
               )
@@ -154,7 +167,11 @@ const breadcrumbs = [
             (frontmatter.tags ?? []).length > 0 && (
               <div class="post-tags-row" aria-label={tagsLabel}>
                 {(frontmatter.tags ?? []).map((tag: string) => (
-                  <a href={translatePath(`/tags/${encodeURIComponent(tag)}/1/`)} class="inline-tag">
+                  <a
+                    href={getTagListUrl(lang, tag, 1)}
+                    class="inline-tag"
+                    data-pagefind-filter={`tag:${tag}`}
+                  >
                     #{tag}
                   </a>
                 ))}
@@ -165,7 +182,7 @@ const breadcrumbs = [
           <div class="post-divider" role="separator" aria-hidden="true"></div>
         </header>
 
-        <div class="article-entry">
+        <div class="article-entry" data-pagefind-body>
           <slot />
         </div>
 
@@ -234,7 +251,7 @@ const breadcrumbs = [
     color: var(--primary-red);
     font-size: 0.78rem;
     font-weight: 800;
-    letter-spacing: 0.12em;
+    letter-spacing: 0;
     text-decoration: none;
     text-transform: uppercase;
     transition:
@@ -269,8 +286,6 @@ const breadcrumbs = [
     line-height: 1.22;
     overflow-wrap: anywhere;
   }
-
-
 
   .post-tags-row {
     display: flex;

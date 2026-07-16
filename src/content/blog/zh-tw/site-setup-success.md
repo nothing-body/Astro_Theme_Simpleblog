@@ -2,8 +2,8 @@
 title: '恭喜，SimpleBlog 已搭建成功'
 description: '你的 Astro 多語系部落格已成功建置，接下來可以安全地完成網站設定、撰寫文章、自檢與部署。'
 pubDate: 2026-07-14
-category: '教學'
-categoryPath: ['教學', '開始使用']
+category: '網站'
+categoryPath: ['網站', 'Astro']
 tags: ['Astro', '網站設定']
 author: 'SimpleBlog'
 pinned: true

@@ -2,7 +2,7 @@
 // src/pages/en/disclaimer.astro — Disclaimer (English)
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AboutSidebar from '../components/AboutSidebar.astro';
-import { getCanonicalUrl } from '../lib/site';
+import { SITE_NAME, getCanonicalUrl } from '../lib/site';
 import { safeJsonStringify } from '../lib/utils';
 
 const currentPath = Astro.url.pathname;
@@ -14,7 +14,7 @@ const jsonLd = {
   name: 'Disclaimer',
   url: pageUrl,
   description: 'Disclaimer for this site, explaining content usage and liability.',
-  publisher: { '@type': 'Person', name: "SimpleBlog" },
+  publisher: { '@type': 'Organization', name: SITE_NAME },
 };
 ---
 

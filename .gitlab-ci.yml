@@ -22,6 +22,15 @@ deploy:
         printf '%s' "$VPS_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
       fi
+    - |
+      if [ -n "$VPS_SSH_KNOWN_HOSTS" ]; then
+        printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/known_hosts
+      fi
   script:
     - export VPS_SSH_KEY_PATH="${VPS_SSH_KEY_PATH:-$HOME/.ssh/id_rsa}"
+    - |
+      if [ -n "$VPS_SSH_KNOWN_HOSTS" ]; then
+        export VPS_KNOWN_HOSTS_FILE="${VPS_KNOWN_HOSTS_FILE:-$HOME/.ssh/known_hosts}"
+      fi
     - pnpm deploy:switch --mode="${DEPLOY_MODE:-direct:cf+vps}" --yes

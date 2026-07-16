@@ -1,0 +1,306 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const copy = {
+  title: t('search.title'),
+  description: t('search.description'),
+  label: t('search.label'),
+  placeholder: t('search.placeholder'),
+  submit: t('search.submit'),
+  category: t('search.category'),
+  tag: t('search.tag'),
+  allCategories: t('search.allCategories'),
+  allTags: t('search.allTags'),
+  idle: t('search.idle'),
+  loading: t('search.loading'),
+  count: t('search.count'),
+  empty: t('search.empty'),
+  error: t('search.error'),
+  previous: t('search.previous'),
+  next: t('search.next'),
+  pagination: t('search.pagination'),
+  page: t('search.page'),
+};
+---
+
+<BaseLayout title={copy.title} description={copy.description}>
+  <section
+    class="search-page"
+    aria-labelledby="search-title"
+    data-search-root
+    data-message-idle={copy.idle}
+    data-message-loading={copy.loading}
+    data-message-count={copy.count}
+    data-message-empty={copy.empty}
+    data-message-error={copy.error}
+    data-message-page={copy.page}
+    data-pagefind-ignore="all"
+  >
+    <header class="search-heading">
+      <h1 id="search-title">{copy.title}</h1>
+    </header>
+
+    <form class="search-form" role="search" data-search-form novalidate>
+      <label class="visually-hidden" for="article-search-input">{copy.label}</label>
+      <div class="search-input-row">
+        <span class="search-input-symbol" aria-hidden="true">🔍</span>
+        <input
+          id="article-search-input"
+          name="q"
+          type="search"
+          inputmode="search"
+          autocomplete="off"
+          maxlength="120"
+          placeholder={copy.placeholder}
+          data-search-input
+        />
+        <button type="submit" class="search-submit">{copy.submit}</button>
+      </div>
+
+      <div class="search-filters" data-search-filters hidden>
+        <label class="search-filter">
+          <span>{copy.category}</span>
+          <select data-search-category disabled>
+            <option value="">{copy.allCategories}</option>
+          </select>
+        </label>
+        <label class="search-filter">
+          <span>{copy.tag}</span>
+          <select data-search-tag disabled>
+            <option value="">{copy.allTags}</option>
+          </select>
+        </label>
+      </div>
+    </form>
+
+    <p class="search-status" role="status" aria-live="polite" data-search-status>{copy.idle}</p>
+    <ol class="search-results" data-search-results></ol>
+
+    <nav class="search-pagination" aria-label={copy.pagination} data-search-pagination hidden>
+      <button type="button" data-search-previous>{copy.previous}</button>
+      <span data-search-page></span>
+      <button type="button" data-search-next>{copy.next}</button>
+    </nav>
+  </section>
+</BaseLayout>
+
+<script>
+  import '../scripts/search';
+</script>
+
+<style is:global>
+  .search-page {
+    width: min(100% - 2rem, 900px);
+    min-height: calc(100vh - 170px);
+    margin: 0 auto;
+    padding: 3rem 0 5rem;
+  }
+
+  .search-heading {
+    margin-bottom: 1.4rem;
+  }
+
+  .search-heading h1 {
+    margin: 0;
+    color: var(--text-heading);
+    font-size: clamp(2rem, 5vw, 3rem);
+    letter-spacing: 0;
+  }
+
+  .search-form {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .search-input-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    min-height: 3.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .search-input-row:focus-within {
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 3px var(--primary-red-light);
+  }
+
+  .search-input-symbol {
+    padding-left: 0.9rem;
+    font-size: 1rem;
+  }
+
+  .search-input-row input {
+    width: 100%;
+    min-width: 0;
+    padding: 0.75rem;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text-primary);
+    font: inherit;
+  }
+
+  .search-submit,
+  .search-pagination button {
+    min-height: 2.5rem;
+    border: 1px solid var(--primary-red);
+    border-radius: 7px;
+    background: var(--primary-red);
+    color: #fff;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .search-submit {
+    margin-right: 0.35rem;
+    padding: 0.45rem 1rem;
+  }
+
+  .search-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .search-filters[hidden],
+  .search-pagination[hidden] {
+    display: none;
+  }
+
+  .search-filter {
+    display: grid;
+    gap: 0.35rem;
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    font-weight: 750;
+  }
+
+  .search-filter select {
+    width: 100%;
+    min-height: 2.7rem;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font: inherit;
+  }
+
+  .search-status {
+    min-height: 1.5rem;
+    margin: 1.4rem 0 0.8rem;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+  }
+
+  .search-results {
+    display: grid;
+    gap: 0.8rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .search-result {
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-card);
+  }
+
+  .search-result:hover,
+  .search-result:focus-within {
+    border-color: var(--primary-red);
+    box-shadow: 0 3px 12px rgba(37, 53, 69, 0.1);
+    transform: translateY(-1px);
+  }
+
+  .search-result-title {
+    color: var(--text-heading);
+    font-size: 1.12rem;
+    font-weight: 850;
+    text-decoration: none;
+  }
+
+  .search-result-title:hover {
+    color: var(--primary-red);
+  }
+
+  .search-result-excerpt {
+    margin: 0.55rem 0 0;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+
+  .search-result-meta {
+    margin: 0.65rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+
+  .search-pagination {
+    display: grid;
+    grid-template-columns: minmax(6rem, auto) 1fr minmax(6rem, auto);
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+    text-align: center;
+  }
+
+  .search-pagination button {
+    padding: 0.45rem 0.85rem;
+  }
+
+  .search-pagination button:disabled {
+    border-color: var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    cursor: default;
+  }
+
+  @media (max-width: 600px) {
+    .search-page {
+      width: min(100% - 1.25rem, 900px);
+      padding-top: 2rem;
+    }
+
+    .search-filters {
+      grid-template-columns: 1fr;
+    }
+
+    .search-submit {
+      padding-inline: 0.7rem;
+    }
+
+    .search-pagination {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .search-pagination span {
+      grid-column: 1 / -1;
+      grid-row: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .search-result {
+      transition:
+        border-color 0.16s ease,
+        box-shadow 0.16s ease,
+        transform 0.16s ease;
+    }
+  }
+</style>

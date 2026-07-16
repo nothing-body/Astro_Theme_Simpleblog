@@ -53,13 +53,7 @@ Bookmark links are rendered as external links with:
 target="_blank" rel="noopener noreferrer"
 ```
 
-The global Markdown external-link warning rewrite does not change this component automatically, because these links are written directly in Astro component markup. If you want bookmark clicks to go through the leaving notice page, set the `href` manually:
-
-```ts
-{ label: 'Example', href: `/leaving?to=${encodeURIComponent('https://example.com/')}` }
-```
-
-For Traditional Chinese and Simplified Chinese bookmark variants, use `/zh-tw/leaving?to=` or `/zh-cn/leaving?to=`.
+The public template opens bookmark destinations directly. The shared `ExternalLink.astro` component rejects unsupported protocols and URL credentials, then adds `noopener noreferrer`.
 
 ## Safety Notes
 

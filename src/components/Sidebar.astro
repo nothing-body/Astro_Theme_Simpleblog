@@ -3,8 +3,9 @@ import type { CollectionEntry } from 'astro:content';
 import { useTranslations } from '../i18n/utils';
 import CategoryTree from './CategoryTree.astro';
 import { buildCategoryTree, getCategoryPathKey } from '../lib/categories';
+import { getPostsListUrl, getTagListUrl } from '../lib/routes';
 
-export interface Props {
+interface Props {
   allPosts: CollectionEntry<'blog'>[];
   lang?: 'zh-tw' | 'en' | 'zh-cn' | undefined;
   activeCategory?: string | undefined;
@@ -21,8 +22,7 @@ const {
 } = Astro.props;
 const t = useTranslations(lang);
 
-const pathPrefix = lang === 'en' ? '' : `/${lang}`;
-const postsHref = `${pathPrefix}/posts`;
+const postsHref = getPostsListUrl(lang, 1);
 const categoryLabel = t('sidebar.categories');
 const tagLabel = t('sidebar.tags');
 const sidebarLabel = t('sidebar.label');
@@ -52,7 +52,7 @@ const allTags = [...new Set(allPosts.flatMap(p => p.data.tags))].sort();
       {
         allTags.map(tag => (
           <a
-            href={tag === activeTag ? postsHref : `${pathPrefix}/tags/${encodeURIComponent(tag)}/1/`}
+            href={tag === activeTag ? postsHref : getTagListUrl(lang, tag, 1)}
             class:list={['tag-box', { 'tag-box--active': tag === activeTag }]}
             data-sidebar-filter-link
             data-filter-kind="tag"

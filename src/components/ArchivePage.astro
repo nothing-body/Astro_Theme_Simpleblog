@@ -1,9 +1,10 @@
 ---
 import type { Lang } from '../i18n/ui';
-import { useTranslations } from '../i18n/utils';
+import { formatTranslation, useTranslations } from '../i18n/utils';
 import { getCategoryUrl } from '../lib/categories';
 import { paginatePosts, type BlogPost } from '../lib/posts';
 import { getTagListUrl } from '../lib/routes';
+import { getCanonicalUrl } from '../lib/site';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Pagination from './Pagination.astro';
 import PostCard from './PostCard.astro';
@@ -34,9 +35,14 @@ const getPageUrl = (page: number) =>
   kind === 'tag'
     ? getTagListUrl(lang, label, page)
     : getCategoryUrl(lang, categoryPath ?? [], page);
+const description = formatTranslation(
+  t(kind === 'tag' ? 'archive.tagDescription' : 'archive.categoryDescription'),
+  { category: label, tag: label, page: currentPage }
+);
+const canonical = getCanonicalUrl(getPageUrl(currentPage), Astro.site);
 ---
 
-<BaseLayout title={title}>
+<BaseLayout title={title} description={description} customCanonical={canonical}>
   <div class="page-container content-page">
     <div class="content-wrapper">
       <Sidebar

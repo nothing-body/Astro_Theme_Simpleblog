@@ -69,7 +69,10 @@ async function chooseLanguage(rl: Interface): Promise<void> {
 function envFileForTarget(targetId: TargetId): string {
   if (targetId === "cf") return String(selectedOptions.get("cf-env") || ".env.cloudflare");
   if (targetId === "vps") return String(selectedOptions.get("vps-env") || ".env.vps");
+  if (targetId === 'vps-docker') return String(selectedOptions.get('vps-docker-env') || '.env.vps-docker');
   if (targetId === "vercel") return String(selectedOptions.get("vercel-env") || ".env.vercel");
+  if (targetId === 'netlify') return String(selectedOptions.get('netlify-env') || '.env.netlify');
+  if (targetId === 'supabase') return String(selectedOptions.get('supabase-env') || '.env.supabase');
   return "";
 }
 
@@ -163,9 +166,14 @@ function showTargetNotes(mode: DeployMode): void {
       row(t("notice.cfProject"), cloudflareProjectName());
       console.log(`- ${t("notice.cfCreate")}`);
     }
-    if (targetId === "vps") {
+    if (targetId === "vps" || targetId === 'vps-docker') {
       row(t("notice.vpsUser"), vpsValue("VPS_USER"));
-      row(t("notice.vpsTarget"), vpsValue("VPS_TARGET_DIR"));
+      row(
+        t("notice.vpsTarget"),
+        envValuesForTarget(targetId).get(
+          targetId === 'vps' ? 'VPS_TARGET_DIR' : 'VPS_DOCKER_APP_DIR'
+        ) || `(${t("common.notSet")})`
+      );
     }
     for (const key of target.noteKeys ?? []) console.log(`- ${t(key)}`);
   }

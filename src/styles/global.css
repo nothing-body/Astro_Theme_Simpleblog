@@ -89,7 +89,7 @@ body {
   line-height: 1.8;
   font-size: 1.04rem;
   font-weight: 450;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -583,7 +583,7 @@ code:not([class*='language-']) {
   font-size: 0.8rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0;
   color: var(--primary-red);
   margin-bottom: 1rem;
   display: flex;

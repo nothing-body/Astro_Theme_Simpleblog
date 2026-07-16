@@ -75,7 +75,12 @@ function initNavbar(): void {
       navbar?.classList.toggle('nav-header--scrolled', scrollY > 10);
       navbar?.classList.toggle(
         'nav-header--hidden',
-        Boolean(mobileMenu && !mobileMenu.classList.contains('is-open') && scrollY > lastScrollY && scrollY > 80)
+        Boolean(
+          mobileMenu &&
+          !mobileMenu.classList.contains('is-open') &&
+          scrollY > lastScrollY &&
+          scrollY > 80
+        )
       );
       lastScrollY = scrollY;
       framePending = false;
@@ -192,11 +197,15 @@ function initPrivacyPanel(): void {
 }
 
 function initFooterPreferences(): void {
-  document.querySelector<HTMLButtonElement>('#footer-prefs-trigger')?.addEventListener('click', event => {
-    const trigger = event.currentTarget;
-    if (!(trigger instanceof HTMLButtonElement)) return;
-    document.dispatchEvent(new CustomEvent('open-site-prefs', { detail: { triggerId: trigger.id } }));
-  });
+  document
+    .querySelector<HTMLButtonElement>('#footer-prefs-trigger')
+    ?.addEventListener('click', event => {
+      const trigger = event.currentTarget;
+      if (!(trigger instanceof HTMLButtonElement)) return;
+      document.dispatchEvent(
+        new CustomEvent('open-site-prefs', { detail: { triggerId: trigger.id } })
+      );
+    });
 }
 
 markLowPowerDevice();

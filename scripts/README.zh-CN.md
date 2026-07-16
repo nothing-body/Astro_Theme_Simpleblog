@@ -1,144 +1,99 @@
-# 脚本总览
+# 脚本说明
 
-此目录包含跨平台 Node.js 脚本，用于部署、项目分析、自检、测试与 Astro 升级。
+所有操作脚本都使用 TypeScript，支持 Windows、macOS、Linux。优先使用 pnpm，找不到 pnpm 时自动使用 npm；外部命令以参数数组执行，不拼接危险 shell 字符串。
 
-## 部署脚本
+## 部署入口
 
-- `deploy_menu.ts`：交互式部署菜单。
-- `deploy_switch.ts`：命令行部署模式切换器，适合直接命令或 CI/CD。
-- `deploy_i18n.ts`：部署脚本共用语言字典，目前支持英文与繁体中文输出。
-- `deploy_lib.ts`：共用部署模式与命令生成逻辑。
-- `deploy_runtime.ts`：检测 Node.js 与跨平台 pnpm/npm package runner。
-- `deploy_safety.ts`：部署前 `.gitignore` 与敏感文件检查。
-- `uploaddist_cf.ts`：构建并部署 `dist/` 到 Cloudflare Pages。
-- `uploaddist_vps.ts`：通过 SSH/rsync 上传 `dist/` 到 VPS。
-- `uploaddist_vercel.ts`：通过 Vercel CLI 构建或部署。
-- `upgrade_astro.ts`：升级 Astro 相关包，并执行 `check`、`lint` 与 `build`。
+- `deploy_menu.ts`：英文、繁中、简中交互菜单。
+- `deploy_switch.ts`：非交互式部署目标与 Git 平台切换。
+- `deploy_lib.ts`：验证模式、参数、remote 和 branch。
+- `deploy_i18n.ts`：三语言控制台文本。
+- `deploy_runtime.ts`：Node 与 pnpm/npm 检测，支持 Windows `.cmd`。
+- `deploy_env.ts`：所有目标共用的严格 `.env*` 解析器。
+- `deploy_safety.ts`：`.gitignore`、输出路径和敏感文件检查。
 
-## 根目录配置文件
+## 直接部署器
 
-部署脚本读取：
+- `uploaddist_cf.ts`：通过 Wrangler 部署 Cloudflare Pages。
+- `uploaddist_vercel.ts`：Vercel REST 流式上传，不依赖 Vercel CLI。
+- `uploaddist_netlify.ts`：用有界流创建 ZIP 并调用 Netlify REST API。
+- `uploaddist_vps.ts`：rsync／OpenSSH scp 暂存上传与原子切换。
+- `uploaddist_vps_docker.ts`：部署非 root Nginx Compose Bundle。
+- `uploaddist_supabase.ts`：部署 `supabase/functions/<名称>/index.ts`。
+
+Supabase Edge Functions 是后端函数，不是静态网站主机。
+
+## 环境文件
 
 ```text
-.env                 共用网站设置
-.env.cloudflare      Cloudflare Pages 部署设置
-.env.vps             VPS SSH/rsync 部署设置
-.env.vercel          Vercel 部署设置
+.env
+.env.cloudflare
+.env.vercel
+.env.netlify
+.env.supabase
+.env.vps
+.env.vps-docker
 ```
 
-从已提交的示例文件复制：
+请从同名 `.example` 复制。`--env` 只接受项目根目录 `.env`／`.env.*`，拒绝路径穿越和 symbolic link。
 
-```bash
-cp .env.example .env
-cp .env.cloudflare.example .env.cloudflare
-cp .env.vps.example .env.vps
-cp .env.vercel.example .env.vercel
-```
-
-真实文件必须被 Git 忽略。只提交 `.env.example` 与 `.env.*.example`。
-
-## 部署所需数据
-
-Cloudflare Pages：
-
-- `CLOUDFLARE_API_TOKEN`
-- `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_PAGES_PROJECT_NAME`
-- `PUBLIC_SITE_URL`
-- `PUBLIC_CONTACT_EMAIL`
-
-VPS：
-
-- `VPS_HOST`、`VPS_PORT`、`VPS_USER`
-- `VPS_TARGET_DIR`
-- `VPS_SSH_KEY_PATH`
-- 可选的 `VPS_SSH_PASSPHRASE`，优先使用 `ssh-agent`
-
-Vercel：
-
-- `VERCEL_TOKEN`
-- `VERCEL_ORG_ID`
-- `VERCEL_PROJECT_ID`
-
-## 使用方式
+## 命令
 
 ```bash
 pnpm deploy:menu
-pnpm deploy:menu -- --lang=en
-pnpm deploy:menu -- --lang=zh-tw
-pnpm deploy:switch -- --mode=direct:cf
+pnpm deploy:switch -- --mode=direct:cf --dry-run --yes
 pnpm deploy:cf:only
-pnpm deploy:vps:only
 pnpm deploy:vercel:only
+pnpm deploy:netlify:only
+pnpm deploy:vps:only
+pnpm deploy:vps-docker:only
+pnpm deploy:supabase:only
 pnpm deploy:all
+pnpm deploy:all:static
+pnpm deploy:all:including-functions
 ```
 
-部署脚本会先运行项目 `check`，通过后才执行 `build`。真实部署前仍建议执行：
+- `deploy:all`：Cloudflare + VPS + Vercel。
+- `deploy:all:static`：Cloudflare + VPS + VPS Docker + Vercel + Netlify。
+- `deploy:all:including-functions`：全部静态目标 + Supabase Edge Functions。
+
+`--dry-run` 只显示计划，不构建或上传；`--yes` 只跳过 switch 确认；`--skip-clean` 只保留输出目录后重新构建，不会跳过 build。所有模式与参数请参阅 [DEPLOYMENT.zh-CN.md](../DEPLOYMENT.zh-CN.md)。
 
 ```bash
+pnpm deploy:menu -- --lang=en
+pnpm deploy:menu -- --lang=zh-tw
+pnpm deploy:menu -- --lang=zh-cn
+```
+
+npm 传参时保留 `--`：
+
+```bash
+npm run deploy:switch -- --mode=direct:cf --dry-run --yes
+```
+
+## 自检
+
+- `analysis.ts`：源码、文章、图片、依赖、构建输出、部署 dry-run、E2E。
+- `audit-security.ts`：把已安装包和版本发送到 OSV 查询已知漏洞。
+- `checks/source.ts`：危险语法、TypeScript 策略、安全响应头、秘密和公开／私人边界。
+- `checks/content.ts`：frontmatter、多语言文章、分类、路由、链接和 raw HTML。
+- `checks/images.ts`：格式、尺寸、像素和文件大小。
+- `checks/output.ts`：canonical、hreflang、sitemap、CSP、内联代码、图片和坏链接。
+- `run-e2e.ts`：可以使用本机 ungoogled-chromium。
+
+```bash
+pnpm selfcheck -- --explain
 pnpm selfcheck -- --quick
 pnpm analyze
-pnpm audit:security
 ```
 
-自检会验证 9 个部署脚本的语法，并使用安全占位值运行隔离 dry-run，不会连接或上传到真实平台。自检也会查询依赖软件包安全公告；该步骤需要连接软件包注册站，无法连接时会明确失败而不会静默跳过。
+各规则分类、严重程度和错误示例请参阅 [SELF_CHECK_GUIDE.zh-CN.md](../SELF_CHECK_GUIDE.zh-CN.md)。
 
-## 软件包管理器与语言
+## 安全重点
 
-部署脚本优先使用 `package.json` 的 `packageManager` 所锁定的 pnpm；找不到 pnpm 时会自动使用 npm。由于项目锁文件是 `pnpm-lock.yaml`，仍建议优先使用 pnpm。交互式菜单、`--lang` 或 `DEPLOY_LANG` 可切换英文与繁体中文控制台消息；这不会改变网站内容语言或部署目标。
-
-```bash
-pnpm deploy:menu -- --lang=en
-pnpm deploy:menu -- --lang=zh-tw
-pnpm deploy:switch --mode=direct:cf --lang=en --dry-run
-```
-
-## 构建输出
-
-直接部署会先执行 package `check` 与 `build`，再部署 `dist/`。Cloudflare 与 VPS 可以使用 `--dist=<dir>` 指定其他输出目录。构建脚本会先清理旧 `.astro` 与 `dist`，防止旧文章缓存混入新输出。
-
-## 安全升级 Astro
-
-```bash
-pnpm upgrade:astro -- --lang=zh-tw --dry-run
-pnpm upgrade:astro -- --lang=zh-tw --dry-run --clean-install
-```
-
-升级助手从 `package.json` 检测 Astro 软件包，dirty 工作树默认停止，完成后执行现有 check、lint、build。`--clean-install` 不会删除 lockfile。
-
-## 非部署脚本
-
-- `analysis.ts`：完整项目检查，覆盖代码、CSS、SEO、安全、隐私、内容来源、部署与文档。
-- `clean-generated.ts`：只清理项目根目录的 `.astro` 与 `dist`，防止旧内容缓存进入新构建。
-- `run-e2e.ts`：启动本地 preview 并运行 Playwright，输出放到系统临时目录。
-
-## VPS 权限
-
-VPS 上传使用 `.env.vps` 中的 `VPS_USER`。非 root 用户无法写入 `/var/www/...` 时，可上传到 `/home/<user>/site-dist`，再由服务器端部署流程同步到 web root。不要为了方便而开放过宽目录权限。
-
-## Git Ignore 要求
-
-`.gitignore` 应排除：
-
-```text
-.env*
-!.env.example
-!.env.*.example
-.npmrc
-.yarnrc
-.pnpmrc
-.ssh/
-*.pem
-*.key
-id_rsa
-id_ed25519
-dist/
-.astro/
-node_modules/
-.wrangler/
-.vercel/
-playwright-report/
-test-results/
-```
-
-新增部署平台或环境文件名时，必须同时更新 `.gitignore`、对应 `.example` 文件、自检与本文档。
+- Vercel、Netlify API 响应有大小限制。
+- Netlify ZIP 和 Vercel 文件采用流式处理，降低内存峰值。
+- SSH key 必须是普通文件；Unix 权限不得允许 group／others 读取。
+- 建议配置 `VPS_KNOWN_HOSTS_FILE`。
+- VPS Docker 默认只绑定 loopback；公开绑定必须明确允许。
+- 真实 env、平台状态、私钥、报告和构建输出均由 `.gitignore` 排除。

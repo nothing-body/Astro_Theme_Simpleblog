@@ -2,10 +2,11 @@ import process from "node:process";
 
 export const LANGUAGES = [
   { id: "zh-tw", label: "繁體中文" },
+  { id: 'zh-cn', label: '简体中文' },
   { id: "en", label: "English" },
 ];
 
-const dictionaries = {
+const dictionaries: Record<'zh-tw' | 'zh-cn' | 'en', Record<string, string>> = {
   "zh-tw": {
     "common.exit": "結束",
     "common.back": "返回",
@@ -63,6 +64,7 @@ const dictionaries = {
     "mode.git": "推送到 {provider}，再由 CI/CD 部署到 {targets}",
     "notice.gitCredentials": "請確認 Git 帳號、remote、branch、CI/CD secrets、部署金鑰與環境變數都已正確設定。此模式只 push 原始碼，build 與上傳應在 CI/CD 內執行。",
     "notice.directBuild": "本機直接部署會先執行 package.json 的 build script，然後只上傳 build 後的輸出資料夾，不會上傳原始碼。",
+    "notice.directFunctions": "Supabase 目標只部署 supabase/functions 內的 TypeScript Edge Functions，不會上傳 Astro 原始碼，也不會把 Supabase 當成靜態網站託管。",
     "notice.localDist": "部署輸出資料夾",
     "notice.ciCommand": "CI/CD 內建議執行",
     "notice.ciFile": "CI/CD 設定檔",
@@ -74,10 +76,16 @@ const dictionaries = {
     "notice.vpsPassphrase": "若 SSH 私鑰有密碼，建議使用 ssh-agent；也可在未提交的 .env.vps 或 CI secret 設定 VPS_SSH_PASSPHRASE。請勿把密碼放在命令列。",
     "target.cf.note1": "會先執行 build，然後將輸出資料夾上傳到 Cloudflare Pages。",
     "target.cf.note2": "請正確設定 CLOUDFLARE_API_TOKEN、CLOUDFLARE_ACCOUNT_ID、Pages project name、PUBLIC_SITE_URL 與 public/_headers。",
-    "target.vps.note1": "會先執行 build，然後透過 SSH/rsync 將輸出資料夾同步到 VPS_TARGET_DIR。",
+    "target.vps.note1": "會先執行 build，再透過 rsync 或 OpenSSH scp 後備將輸出資料夾部署到 VPS_TARGET_DIR。",
     "target.vps.note2": "請確認 VPS_HOST、VPS_PORT、VPS_USER、VPS_TARGET_DIR、VPS_SSH_KEY_PATH 與私鑰權限。",
-    "target.vercel.note1": "預設使用 Vercel CLI 執行 vercel build，再 deploy --prebuilt。",
-    "target.vercel.note2": "建議設定 VERCEL_ORG_ID 與 VERCEL_PROJECT_ID，降低部署到錯誤專案的風險。",
+    "target.vpsDocker.note1": "建立已驗證的 dist，包裝為唯讀 Nginx Docker 映像，透過 SSH 上傳並執行 Docker Compose。",
+    "target.vpsDocker.note2": "預設只綁定 127.0.0.1；請在前方使用 HTTPS 反向代理，並確認 VPS 已安裝 Docker Compose v2。",
+    "target.vercel.note1": "先在本機完成檢查與 Astro build，再以 Vercel REST API 的 SHA-1 檔案上傳流程建立部署。",
+    "target.vercel.note2": "必須設定 VERCEL_PROJECT_ID；團隊專案另設 VERCEL_ORG_ID，避免部署到錯誤帳號或專案。",
+    "target.netlify.note1": "先執行檢查與 build，再以 Netlify REST API 上傳受限且已驗證的完整 ZIP。",
+    "target.netlify.note2": "請設定 NETLIFY_AUTH_TOKEN 與 NETLIFY_SITE_ID；正式部署前先用 --dry-run 確認目標站點與輸出內容。",
+    "target.supabase.note1": "只部署 supabase/functions/<name>/index.ts 內的 TypeScript Edge Functions，不部署 Astro 靜態頁面。",
+    "target.supabase.note2": "請設定 SUPABASE_ACCESS_TOKEN 與 SUPABASE_PROJECT_REF；公開函式仍需自行實作驗證、CORS 與限流。",
     "safety.title": "部署前安全檢查",
     "safety.noGitignore": "找不到 .gitignore，敏感檔案、環境檔、私鑰與本機部署狀態可能被誤 push。",
     "safety.missing": ".gitignore 尚未完整保護部署敏感檔案，缺少以下規則：",
@@ -99,15 +107,20 @@ const dictionaries = {
     "flag.cfBranch": "指定 Cloudflare Pages 部署 branch。",
     "flag.cfEnv": "指定 Cloudflare 環境檔案。",
     "flag.vpsEnv": "指定 VPS 環境檔案。",
+    "flag.vpsDockerEnv": "指定 VPS Docker 環境檔案。",
     "flag.vercelEnv": "指定 Vercel 環境檔案。",
     "flag.vercelPreview": "部署到 Vercel Preview，而不是 Production。",
-    "flag.vercelNoPrebuilt": "跳過 vercel build + deploy --prebuilt，改由 vercel deploy 處理 build。",
+    "flag.netlifyEnv": "指定 Netlify 環境檔案。",
+    "flag.netlifyPreview": "建立 Netlify 草稿部署，不取代正式站點。",
+    "flag.supabaseEnv": "指定 Supabase 環境檔案。",
+    "flag.supabaseFunction": "只部署指定的 Supabase Edge Function。",
     "flag.gitRemote": "指定 git push 的 remote。",
     "flag.gitBranch": "指定 git push 的 branch。",
     "flag.gitSetUpstream": "在 git push 加上 --set-upstream。",
     "flag.gitFollowTags": "在 git push 加上 --follow-tags。",
     "flag.dryRun": "只顯示將執行的指令，不 push、不部署。",
   },
+  'zh-cn': {},
   en: {
     "common.exit": "Exit",
     "common.back": "Back",
@@ -165,6 +178,7 @@ const dictionaries = {
     "mode.git": "Push to {provider}, then CI/CD deploys to {targets}",
     "notice.gitCredentials": "Confirm Git credentials, remote, branch, CI/CD secrets, deploy keys, and environment variables are configured. This mode only pushes source code; build and upload should run in CI/CD.",
     "notice.directBuild": "Local direct deployment runs the package.json build script first, then uploads only the generated output directory, not source files.",
+    "notice.directFunctions": "The Supabase target deploys only TypeScript Edge Functions under supabase/functions. It does not upload Astro source files or use Supabase as a static-site host.",
     "notice.localDist": "Deploy output directory",
     "notice.ciCommand": "Suggested CI/CD command",
     "notice.ciFile": "CI/CD config file",
@@ -176,10 +190,16 @@ const dictionaries = {
     "notice.vpsPassphrase": "If the SSH private key has a passphrase, prefer ssh-agent or set VPS_SSH_PASSPHRASE in an uncommitted .env.vps or CI secret. Never put it on the command line.",
     "target.cf.note1": "Runs build first, then uploads the output directory to Cloudflare Pages.",
     "target.cf.note2": "Configure CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, Pages project name, PUBLIC_SITE_URL, and public/_headers correctly.",
-    "target.vps.note1": "Runs build first, then syncs the output directory to VPS_TARGET_DIR over SSH/rsync.",
+    "target.vps.note1": "Runs build first, then deploys to VPS_TARGET_DIR with rsync or the OpenSSH scp fallback.",
     "target.vps.note2": "Verify VPS_HOST, VPS_PORT, VPS_USER, VPS_TARGET_DIR, VPS_SSH_KEY_PATH, and private-key permissions.",
-    "target.vercel.note1": "By default, uses the Vercel CLI to run vercel build, then deploy --prebuilt.",
-    "target.vercel.note2": "Set VERCEL_ORG_ID and VERCEL_PROJECT_ID to reduce the risk of deploying to the wrong project.",
+    "target.vpsDocker.note1": "Builds a verified dist, packages it into a read-only Nginx Docker image, uploads it over SSH, and runs Docker Compose.",
+    "target.vpsDocker.note2": "The container binds to 127.0.0.1 by default. Put an HTTPS reverse proxy in front and install Docker Compose v2 on the VPS.",
+    "target.vercel.note1": "Runs checks and the Astro build locally, then creates a deployment through Vercel's SHA-1 file-upload REST API.",
+    "target.vercel.note2": "VERCEL_PROJECT_ID is required. Set VERCEL_ORG_ID for team projects to avoid deploying to the wrong account or project.",
+    "target.netlify.note1": "Runs checks and build, then uploads one bounded and validated ZIP through the Netlify REST API.",
+    "target.netlify.note2": "Set NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID; use --dry-run to verify the target site and output before production deployment.",
+    "target.supabase.note1": "Deploys TypeScript Edge Functions under supabase/functions/<name>/index.ts; it does not host Astro static pages.",
+    "target.supabase.note2": "Set SUPABASE_ACCESS_TOKEN and SUPABASE_PROJECT_REF. Public functions still need authentication, CORS, and rate limiting.",
     "safety.title": "Pre-deployment safety check",
     "safety.noGitignore": "No .gitignore file was found. Secrets, env files, private keys, and local deploy state may be pushed by mistake.",
     "safety.missing": ".gitignore does not yet protect all deployment-sensitive files. Missing patterns:",
@@ -201,9 +221,13 @@ const dictionaries = {
     "flag.cfBranch": "Set the Cloudflare Pages deployment branch.",
     "flag.cfEnv": "Set the Cloudflare env file to load.",
     "flag.vpsEnv": "Set the VPS env file to load.",
+    "flag.vpsDockerEnv": "Set the VPS Docker env file to load.",
     "flag.vercelEnv": "Set the Vercel env file to load.",
     "flag.vercelPreview": "Deploy to Vercel Preview instead of Production.",
-    "flag.vercelNoPrebuilt": "Skip vercel build + deploy --prebuilt and let vercel deploy handle the build.",
+    "flag.netlifyEnv": "Set the Netlify env file to load.",
+    "flag.netlifyPreview": "Create a Netlify draft deploy without replacing production.",
+    "flag.supabaseEnv": "Set the Supabase env file to load.",
+    "flag.supabaseFunction": "Deploy only the named Supabase Edge Function.",
     "flag.gitRemote": "Git remote to push to.",
     "flag.gitBranch": "Git branch to push.",
     "flag.gitSetUpstream": "Add --set-upstream to git push.",
@@ -211,6 +235,120 @@ const dictionaries = {
     "flag.dryRun": "Print the commands without pushing or deploying.",
   },
 };
+
+const simplifiedPhrases: ReadonlyArray<readonly [string, string]> = [
+  ['繁體中文', '简体中文'],
+  ['目前', '当前'],
+  ['檔案', '文件'],
+  ['資料夾', '文件夹'],
+  ['環境變數', '环境变量'],
+  ['原始碼', '源代码'],
+  ['程式碼', '代码'],
+  ['私鑰', '私钥'],
+  ['金鑰', '密钥'],
+  ['連接埠', '端口'],
+  ['帳號', '账号'],
+  ['專案', '项目'],
+  ['其餘', '其他'],
+  ['建立', '创建'],
+  ['執行', '执行'],
+];
+const simplifiedCharacters: Readonly<Record<string, string>> = {
+  體: '体',
+  擇: '择',
+  檔: '档',
+  資: '资',
+  夾: '夹',
+  環: '环',
+  變: '变',
+  數: '数',
+  說: '说',
+  認: '认',
+  錯: '错',
+  輸: '输',
+  寫: '写',
+  請: '请',
+  還: '还',
+  遠: '远',
+  鑰: '钥',
+  帳: '账',
+  連: '连',
+  執: '执',
+  後: '后',
+  應: '应',
+  網: '网',
+  頁: '页',
+  續: '续',
+  讀: '读',
+  為: '为',
+  與: '与',
+  將: '将',
+  這: '这',
+  個: '个',
+  種: '种',
+  從: '从',
+  開: '开',
+  關: '关',
+  過: '过',
+  發: '发',
+  現: '现',
+  無: '无',
+  僅: '仅',
+  於: '于',
+  據: '据',
+  實: '实',
+  較: '较',
+  綁: '绑',
+  處: '处',
+  預: '预',
+  載: '载',
+  啟: '启',
+  動: '动',
+  碼: '码',
+  項: '项',
+  產: '产',
+  檢: '检',
+  測: '测',
+  構: '构',
+  築: '筑',
+  徑: '径',
+  權: '权',
+  限: '限',
+  傳: '传',
+  靜: '静',
+  態: '态',
+  誤: '误',
+  風: '风',
+  險: '险',
+  顯: '显',
+  選: '选',
+  語: '语',
+  設: '设',
+  定: '定',
+  離: '离',
+  鄉: '乡',
+  點: '点',
+  擴: '扩',
+  敗: '败',
+  滿: '满',
+};
+
+function toSimplifiedChinese(value: string): string {
+  let result = value;
+  for (const [traditional, simplified] of simplifiedPhrases) {
+    result = result.replaceAll(traditional, simplified);
+  }
+  return [...result]
+    .map(character => simplifiedCharacters[character] ?? character)
+    .join('');
+}
+
+dictionaries['zh-cn'] = Object.fromEntries(
+  Object.entries(dictionaries['zh-tw']).map(([key, value]) => [
+    key,
+    toSimplifiedChinese(value),
+  ])
+);
 
 export type DeployLanguage = keyof typeof dictionaries;
 
@@ -223,6 +361,7 @@ let currentLanguage = normalizeLanguage(
 export function normalizeLanguage(value: unknown): DeployLanguage {
   const raw = String(value || "").trim().toLowerCase();
   if (["en", "english"].includes(raw)) return "en";
+  if (["zh-cn", "cn", "simplified", "simplified-chinese"].includes(raw)) return "zh-cn";
   if (["zh", "zh-tw", "tw", "traditional", "traditional-chinese"].includes(raw)) return "zh-tw";
   return "zh-tw";
 }

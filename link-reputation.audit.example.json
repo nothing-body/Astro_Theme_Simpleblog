@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "mode": "api",
+  "strategy": "local-feed",
+  "provider": "OpenPhish Community Feed",
+  "backendLocation": "same-repository",
+  "files": {
+    "client": ["src/components/LeavingNotice.astro", "src/scripts/example-reputation-client.ts"],
+    "api": ["functions/api/example-reputation-check.ts"],
+    "core": ["src/server/example-reputation-core.ts"],
+    "sync": ["workers/example-reputation-sync/src/index.ts"],
+    "storage": ["src/server/example-reputation-store.ts"],
+    "upstream": [],
+    "disclosure": ["src/components/LeavingNotice.astro"]
+  }
+}

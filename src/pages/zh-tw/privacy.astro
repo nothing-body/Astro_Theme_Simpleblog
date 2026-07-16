@@ -3,7 +3,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import AboutSidebar from '../../components/AboutSidebar.astro';
 import SiteSettingsInline from '../../components/SiteSettingsInline.astro';
-import { getCanonicalUrl } from '../../lib/site';
+import ExternalLink from '../../components/ExternalLink.astro';
+import { SITE_NAME, getCanonicalUrl } from '../../lib/site';
 import { safeJsonStringify } from '../../lib/utils';
 
 const currentPath = Astro.url.pathname;
@@ -20,7 +21,7 @@ const jsonLd = {
   name: '隱私權政策',
   url: pageUrl,
   description: '本站隱私權政策，說明資料收集與處理方式。',
-  publisher: { '@type': 'Person', name: "SimpleBlog" },
+  publisher: { '@type': 'Organization', name: SITE_NAME },
 };
 ---
 
@@ -87,13 +88,12 @@ const jsonLd = {
             <h2>第三方服務</h2>
             <p>
               本站部署於 <strong>Cloudflare Pages</strong>，Cloudflare
-              可能依其隱私政策收集基本存取日誌。詳情請參閱 <a
+              可能依其隱私政策收集基本存取日誌。詳情請參閱 <ExternalLink
                 href="https://www.cloudflare.com/privacypolicy/"
-                rel="noopener noreferrer"
-                target="_blank">Cloudflare 隱私政策</a
-              >。本站<strong>不使用任何第三方字體 CDN</strong>，以保護您的隱私。
+                lang="zh-tw"
+                target="_blank">Cloudflare 隱私政策
+              </ExternalLink>。本站<strong>不使用任何第三方字體 CDN</strong>，以保護您的隱私。
             </p>
-
             <h2>聯絡</h2>
             <p>如對本隱私政策有疑問，歡迎透過<a href="/zh-tw/contact">聯絡我們</a>頁面與本站聯繫。</p>
           </div>

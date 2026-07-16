@@ -60,9 +60,9 @@ function readNodeEngine(): { raw: string; min: Version | null } | null {
   }
 }
 
-function commandExists(command: string, args: string[] = ["--version"]): boolean {
+export function commandAvailable(command: string, args: string[] = ["--version"]): boolean {
   const result = spawnSync(command, args, { stdio: "ignore" });
-  if (!result.error && result.status === 0) return true;
+  if (!result.error) return true;
   if (process.platform === "win32") {
     const where = spawnSync("where.exe", [command], { stdio: "ignore" });
     return !where.error && where.status === 0;
@@ -70,11 +70,16 @@ function commandExists(command: string, args: string[] = ["--version"]): boolean
   return false;
 }
 
+function commandSucceeds(command: string, args: string[] = ['--version']): boolean {
+  const result = spawnSync(command, args, { stdio: 'ignore' });
+  return !result.error && result.status === 0;
+}
+
 type CommandInvocation = { command: string; prefix: string[] };
 
 function packageManagerInvocation(name: 'pnpm' | 'npm'): CommandInvocation | null {
   if (process.platform !== 'win32') {
-    return commandExists(name) ? { command: name, prefix: [] } : null;
+    return commandSucceeds(name) ? { command: name, prefix: [] } : null;
   }
 
   const result = spawnSync('where.exe', [`${name}.cmd`], { encoding: 'utf8', shell: false });
@@ -210,10 +215,5 @@ export function packageExecCommand(bin: string, args: string[] = []): PackageCom
 
 export function runPackageScript<T>(script: string, args: string[], runner: CommandRunner<T>, errorMessage: string, env: NodeJS.ProcessEnv = process.env): T {
   const cmd = packageScriptCommand(script, args);
-  return runner(cmd.command, cmd.args, errorMessage, env);
-}
-
-export function runPackageExec<T>(bin: string, args: string[], runner: CommandRunner<T>, errorMessage: string, env: NodeJS.ProcessEnv = process.env): T {
-  const cmd = packageExecCommand(bin, args);
   return runner(cmd.command, cmd.args, errorMessage, env);
 }

@@ -1,7 +1,8 @@
 ---
-import { useTranslatedPath, useTranslations } from '../i18n/utils';
+import { formatTranslation, useTranslatedPath, useTranslations } from '../i18n/utils';
+import { SITE_NAME } from '../lib/site';
 
-export interface Props {
+interface Props {
   lang: 'en' | 'zh-tw' | 'zh-cn';
 }
 
@@ -34,7 +35,9 @@ const dateLocale = lang === 'en' ? 'en-GB' : lang === 'zh-cn' ? 'zh-CN' : 'zh-TW
       <div class="hero-divider" aria-hidden="true"></div>
 
       <div class="intro-section">
-        <h1 class="intro-title">{t('welcome.title')}</h1>
+        <h1 class="intro-title">
+          {formatTranslation(t('welcome.title'), { siteName: SITE_NAME })}
+        </h1>
         <p class="intro-text-primary">
           <strong>{t('welcome.introPrimaryLead')}</strong>
           {t('welcome.introPrimaryRest')}
@@ -103,7 +106,7 @@ const dateLocale = lang === 'en' ? 'en-GB' : lang === 'zh-cn' ? 'zh-CN' : 'zh-TW
     font-weight: 500;
     color: var(--text-muted);
     font-family: var(--font-family-mono, monospace);
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
   }
 
   .clock-time {
@@ -168,7 +171,7 @@ const dateLocale = lang === 'en' ? 'en-GB' : lang === 'zh-cn' ? 'zh-CN' : 'zh-TW
     font-weight: 800;
     color: var(--primary-red);
     text-transform: uppercase;
-    letter-spacing: 0.25em;
+    letter-spacing: 0;
     margin: 0;
   }
 

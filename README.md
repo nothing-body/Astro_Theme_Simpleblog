@@ -1,106 +1,28 @@
-# SimpleBlog
-Personal Astro static blog with multilingual Markdown posts, SEO metadata, external-link warning pages, deployment automation, and project self-check scripts.
+# Astro Theme SimpleBlog
+
+A multilingual Astro static-blog template with Markdown content, Pagefind search, Partytown analytics isolation, SEO metadata, strict security headers, and cross-platform TypeScript deployment tools.
 
 <p align="center">
   <a href="https://blog.gkbb.de/">Live Demo</a>
   &middot;
-  <a href="./README.zh-TW.md">Traditional Chinese README</a>
+  <a href="./README.zh-TW.md">繁體中文</a>
   &middot;
-  <a href="./README.zh-CN.md">Simplified Chinese README</a>
+  <a href="./README.zh-CN.md">简体中文</a>
 </p>
 
-
-## Current Structure
-
-English is the default locale at `/`. Traditional Chinese uses `/zh-tw/`, and Simplified Chinese uses `/zh-cn/`.
-
-```text
-src/content/blog/en/       English posts
-src/content/blog/zh-tw/    Traditional Chinese posts
-src/content/blog/zh-cn/    Simplified Chinese posts
-src/pages/                 English routes and shared routes
-src/pages/zh-tw/           Traditional Chinese routes
-src/pages/zh-cn/           Simplified Chinese routes
-src/components/            Shared Astro components
-src/i18n/ui.ts             Locale labels and navigation text
-scripts/                   Build, deploy, and self-check scripts
-tests/                     Unit and browser tests
-```
-
-Use the same slug in all three content folders when a post has translated versions. For example:
-
-```text
-src/content/blog/en/getting-started.md
-src/content/blog/zh-tw/getting-started.md
-src/content/blog/zh-cn/getting-started.md
-```
-
-These generate `/posts/getting-started`, `/zh-tw/posts/getting-started`, and `/zh-cn/posts/getting-started`.
-
-## Content Features
-
-- Markdown posts with categories, tags, pagination, and RSS-friendly metadata
-- Pinned posts with `pinned: true`
-- Draft posts with `draft: true`
-- External HTTP/HTTPS links in Markdown are rewritten at build time to language-aware leaving notice pages
-- Leaving notice routes exist at `/leaving`, `/zh-tw/leaving`, and `/zh-cn/leaving`
-- Sitemap, robots.txt, canonical URLs, JSON-LD, Open Graph, and security headers
-
-## Guides
-
-- [Markdown writing guide](./MARKDOWN_GUIDE.en.md)
-- [Traditional Chinese Markdown writing guide](./MARKDOWN_GUIDE.zh-TW.md)
-- [Simplified Chinese Markdown writing guide](./MARKDOWN_GUIDE.zh-CN.md)
-- [Bookmark guide](./BOOKMARKS_GUIDE.en.md)
-- [Traditional Chinese bookmark guide](./BOOKMARKS_GUIDE.zh-TW.md)
-- [Simplified Chinese bookmark guide](./BOOKMARKS_GUIDE.zh-CN.md)
-- [Deployment guide](./DEPLOYMENT.en.md)
-- [Traditional Chinese deployment guide](./DEPLOYMENT.zh-TW.md)
-- [Simplified Chinese deployment guide](./DEPLOYMENT.zh-CN.md)
-- [Scripts overview](./scripts/README.en.md)
-- [Traditional Chinese scripts overview](./scripts/README.zh-TW.md)
-- [Simplified Chinese scripts overview](./scripts/README.zh-CN.md)
-
-## What To Configure
-
-For local development, deployment, and safety checks, keep these files at the project root:
-
-```text
-.env                         local public site settings, copied from .env.example
-.env.cloudflare              Cloudflare Pages deploy settings, copied from .env.cloudflare.example
-.env.vps                     VPS SSH/rsync deploy settings, copied from .env.vps.example
-.env.vercel                  Vercel deploy settings, copied from .env.vercel.example
-.gitignore                   keeps real env files, tokens, keys, build output, and local reports out of git
-```
-
-Only commit the `.example` files. The real `.env*` files contain local values and must stay private.
-
-Required deployment values:
-
-- Shared build settings: `PUBLIC_SITE_URL` and `PUBLIC_CONTACT_EMAIL`
-- Cloudflare Pages: API token, Account ID, and Pages project name
-- VPS: host, port, SSH user, target directory, SSH key path, and optional passphrase
-- Vercel: token, org/user ID, and project ID
-
-See [Deployment guide](./DEPLOYMENT.en.md) for where to find each value and how to run the scripts.
-
-## Common Customization
-
-- Bookmarks: edit `src/components/BookmarkLinks.astro`; see [Bookmark guide](./BOOKMARKS_GUIDE.en.md).
-- External-link notice page: Markdown HTTP/HTTPS links are rewritten automatically. Edit `src/components/LeavingNotice.astro` for wording and `src/pages/leaving.astro`, `src/pages/zh-tw/leaving.astro`, `src/pages/zh-cn/leaving.astro` for routes.
-- Self-checks: run `pnpm selfcheck -- --quick` for a fast audit, or `pnpm analyze` for the full project analysis.
-- Git ignore rules: keep `.env`, `.env.cloudflare`, `.env.vps`, `.env.vercel`, private keys, package-manager auth files, `dist/`, `.astro/`, `node_modules/`, and local test reports ignored.
+The Live Demo intentionally points to a real completed site. Configuration examples continue to use `example.com` and placeholder IDs so the public repository does not expose private deployment data.
 
 ## Quick Start
 
+Node.js 22.12 or newer is required. pnpm is recommended because this repository commits `pnpm-lock.yaml`.
+
 ```bash
 pnpm install
+cp .env.example .env
 pnpm dev
-pnpm check
-pnpm build
 ```
 
-pnpm is the primary and recommended package manager because `package.json` pins its version and this repository commits `pnpm-lock.yaml`. The scripts can fall back to npm on systems where pnpm is unavailable:
+On Windows PowerShell, use `Copy-Item .env.example .env`. If pnpm is unavailable, the scripts fall back to npm:
 
 ```bash
 npm install
@@ -109,58 +31,164 @@ npm run check
 npm run build
 ```
 
+## Languages And Routes
+
+- English is the default language: `/`
+- Traditional Chinese: `/zh-tw/`
+- Simplified Chinese: `/zh-cn/`
+- Article lists use `/posts/`; page two and later use `/page/2`, `/page/3`, and so on.
+- There is no duplicate `/page/1` or legacy `/en` route.
+
+Translated articles use the same filename:
+
+```text
+src/content/blog/en/getting-started.md
+src/content/blog/zh-tw/getting-started.md
+src/content/blog/zh-cn/getting-started.md
+```
+
+## Technology Stack
+
+- Astro static output with strict TypeScript and Vite
+- Tailwind CSS v4 through `@tailwindcss/vite`, plus scoped Astro and shared CSS
+- Astro Sitemap with custom multilingual alternate generation
+- Pagefind static full-text search with localized filters
+- Partytown for consented GA4 execution outside the main thread
+- Astro Markdown/Remark, GFM, custom directives, Prism, and a raw-HTML ban
+- Sharp and Astro assets for bounded responsive article images
+- Jest, Playwright, Astro Check, ESLint, Stylelint, Knip, OSV, and Lighthouse
+- TypeScript deployment clients for Cloudflare, Vercel, Netlify, VPS, VPS Docker, and Supabase Edge Functions
+
+## Current Architecture
+
+```text
+src/content/blog/          Markdown posts and shared article images
+src/pages/                 English and shared Astro routes
+src/pages/zh-tw/           Traditional Chinese routes
+src/pages/zh-cn/           Simplified Chinese routes
+src/components/            Shared Astro UI components
+src/layouts/               Document and article layouts
+src/i18n/                  UI text and language-route mapping
+src/integrations/          Sitemap and hreflang output post-processing
+src/lib/                   URL, content, taxonomy, and site helpers
+src/markdown/              Markdown safety and image processing
+src/scripts/               Browser-side TypeScript
+scripts/                   Checks and deployment tools
+deploy/                    Nginx and VPS Docker configuration
+public/                    Static assets and provider security headers
+tests/                     Browser tests
+```
+
+Important components:
+
+- `BaseLayout.astro`: document shell, metadata, navigation, privacy controls, and shared scripts.
+- `PostsPage.astro`: one rendering implementation shared by all localized post-list routes.
+- `BlogPostLayout.astro`: article metadata, JSON-LD, breadcrumbs, Pagefind fields, categories, and tags.
+- `SearchPage.astro`: localized search UI; `src/scripts/search.ts` creates results with safe DOM APIs.
+- `HeadMeta.astro`: canonical URL, hreflang, Open Graph, Twitter metadata, and GA4 configuration.
+- `CategoryTree.astro`, `Sidebar.astro`, `Pagination.astro`, and `PostCard.astro`: reusable archive UI.
+- `ExternalLink.astro` and `LeavingNotice.astro`: keep external destinations in a URL fragment and show a multilingual API-free notice.
+- `src/markdown/processor.ts`: rejects raw HTML, secures external links, and applies the article-image policy.
+- `src/integrations/localized-output.ts`: verifies and supplements localized sitemap alternates after generation.
+- `scripts/checks/`: audits source, content, images, secrets, headers, SEO, generated output, documentation, and optional reputation integrations.
+
+The default flow is:
+
+```text
+Markdown -> safe Markdown/image pipeline -> Astro static routes -> Pagefind index
+External link -> localized static leaving notice -> user-confirmed destination
+Deployment menu -> validated TypeScript target -> generated dist upload
+```
+
+## Main Features
+
+- Three-language Markdown articles, categories, tags, pinned posts, drafts, and pagination
+- Pagefind full-text search with localized category and tag filters
+- Astro image optimization with dimensions, responsive `srcset`, lazy loading, and file-size limits
+- Canonical URLs, hreflang, sitemap alternates, robots.txt, JSON-LD, Open Graph, and Twitter cards
+- Partytown for consented GA4 execution away from the main thread
+- CSP without `unsafe-inline`, MIME sniffing protection, framing protection, and provider-specific header files
+- Reduced-motion, low-memory, low-CPU, save-data, and slow-network presentation paths
+- Windows, macOS, and Linux deployment scripts written in TypeScript
+- Dual-mode external-link self-checks: static notice by default, optional `local-feed` or `remote-api` reputation integrations when explicitly declared
+
+Pagefind does not currently support stemming for `zh-tw` or `zh-cn`. The build note is expected; Chinese search still works. Add `--quiet` to the Pagefind portion of the `build` script to hide informational notes while keeping warnings and errors.
+
 ## Configuration
 
-Use example files as templates, then keep real credentials local:
+Copy only the example you need and keep the real file uncommitted:
 
 ```text
 .env.example
 .env.cloudflare.example
 .env.vercel.example
+.env.netlify.example
+.env.supabase.example
 .env.vps.example
+.env.vps-docker.example
 ```
 
-Do not commit real `.env` files, API tokens, private keys, provider account IDs, or site verification files.
+Shared public values:
 
-Set the production domain with `PUBLIC_SITE_URL` and optional GA4 measurement with `PUBLIC_GA4_ID` in the uncommitted `.env` or hosting-platform variables. Do not hard-code either value in `astro.config.ts`. Cross-platform security headers live in `public/_headers`, `vercel.json`, and `deploy/nginx-security-headers.conf`.
+```env
+PUBLIC_SITE_URL=https://example.com
+PUBLIC_SITE_NAME=Astro Simple Blog
+PUBLIC_SITE_AUTHOR=Site Author
+PUBLIC_SITE_DESCRIPTION=A multilingual Astro blog for notes, guides, and articles.
+PUBLIC_CONTACT_EMAIL=contact@example.com
+PUBLIC_GA4_ID=
+```
+
+Do not commit real `.env*` files, tokens, account IDs, project IDs, SSH keys, passphrases, private articles, or private images. `.gitignore` excludes these by default.
 
 ## Deployment
 
-Use the guided deployment menu:
+Supported direct targets:
 
 ```bash
-pnpm deploy:menu
-```
-
-Or run a direct deployment target:
-
-```bash
-pnpm deploy:switch -- --mode=direct:cf
 pnpm deploy:cf:only
-pnpm deploy:vps:only
 pnpm deploy:vercel:only
-pnpm deploy:all
+pnpm deploy:netlify:only
+pnpm deploy:vps:only
+pnpm deploy:vps-docker:only
+pnpm deploy:supabase:only
 ```
 
-Deployment scripts build the Astro project first and deploy the generated `dist/` output.
+Cloudflare Pages, Vercel, Netlify, VPS, and VPS Docker deploy the static site. Supabase deploys TypeScript Edge Functions under `supabase/functions/<name>/index.ts`; it is not a static-site host.
 
-## Public Template Safety
+Use `pnpm deploy:menu` for the English, Traditional Chinese, or Simplified Chinese menu. GitHub Actions, GitLab CI, and Codeberg/Woodpecker examples are included. See [DEPLOYMENT.en.md](./DEPLOYMENT.en.md) for beginner-friendly setup.
 
-Before publishing a fork or template update, review the repository for private data:
+## Optional URL Reputation Integration
 
-- Keep personal domains, analytics IDs, provider account IDs, API tokens, private keys, and real `.env` files out of the public repo.
-- Keep public defaults such as `PUBLIC_SITE_URL=https://example.com`.
-- Review articles and assets before publishing; do not copy personal notes, private operational details, or non-public images into the repository.
+This public template includes only a static, multilingual external-link notice. It does **not** include the private lookup API, KV binding, synchronization Worker, feed data, or secrets. The destination is stored in a URL fragment and the notice does not send a request to any reputation service.
+
+The three `OPENPHISH_GUIDE.*.md` files explain how to build a separate optional service on Cloudflare, Netlify, Vercel, Supabase, or another backend. The self-check supports:
+
+- `local-feed`: OpenPhish, URLhaus, or another privately synchronized feed
+- `remote-api`: Google Safe Browsing, Google Web Risk, VirusTotal, or another fixed server-to-server provider
+
+Copy `link-reputation.audit.example.json` to `link-reputation.audit.json` only after implementing the feature, select a strategy, name the provider, and declare the actual client/backend/disclosure files. The manifest contains paths and architecture metadata only; never put endpoints, keys, tokens, account IDs, project IDs, storage IDs, or database credentials in it.
+
+Review the selected provider's licensing and data-flow terms. In particular, direct Google Safe Browsing URL searches send the lookup URL to Google, so user-facing disclosures must not claim that the destination remains local.
+
+## Guides
+
+- [Deployment](./DEPLOYMENT.en.md) · [繁體中文](./DEPLOYMENT.zh-TW.md) · [简体中文](./DEPLOYMENT.zh-CN.md)
+- [Markdown and configuration](./MARKDOWN_GUIDE.en.md) · [繁體中文](./MARKDOWN_GUIDE.zh-TW.md) · [简体中文](./MARKDOWN_GUIDE.zh-CN.md)
+- [Bookmarks](./BOOKMARKS_GUIDE.en.md) · [繁體中文](./BOOKMARKS_GUIDE.zh-TW.md) · [简体中文](./BOOKMARKS_GUIDE.zh-CN.md)
+- [Optional URL reputation](./OPENPHISH_GUIDE.en.md) · [繁體中文](./OPENPHISH_GUIDE.zh-TW.md) · [简体中文](./OPENPHISH_GUIDE.zh-CN.md)
+- [Scripts](./scripts/README.en.md) · [繁體中文](./scripts/README.zh-TW.md) · [简体中文](./scripts/README.zh-CN.md)
+- [Self-check rules](./SELF_CHECK_GUIDE.en.md) · [繁體中文](./SELF_CHECK_GUIDE.zh-TW.md) · [简体中文](./SELF_CHECK_GUIDE.zh-CN.md)
 
 ## Verification
 
 ```bash
 pnpm check
-pnpm lint
-pnpm lint:css
-pnpm test
-pnpm analyze
+pnpm audit:security
+pnpm build
+pnpm test:e2e
 pnpm selfcheck -- --quick
+pnpm analyze
 ```
 
-Run `pnpm build` before publishing or deploying.
+`pnpm analyze` performs the full build-output, SEO, CSP, route, content, dependency, deployment-plan, and browser audit.

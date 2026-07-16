@@ -16,16 +16,19 @@ export function loadAnalyticsIfConsented(): void {
   if (!ga4Id) return;
 
   loaded = true;
-  const script = document.createElement('script');
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga4Id)}`;
-  script.async = true;
-  script.referrerPolicy = 'strict-origin-when-cross-origin';
-  document.head.append(script);
-
   window.dataLayer ??= [];
   window.gtag = (...args: unknown[]) => {
     window.dataLayer?.push(args);
   };
+
+  const script = document.createElement('script');
+  script.type = 'text/partytown';
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga4Id)}`;
+  script.async = true;
+  script.referrerPolicy = 'strict-origin-when-cross-origin';
+  document.head.append(script);
+  window.dispatchEvent(new CustomEvent('ptupdate'));
+
   window.gtag('js', new Date());
   window.gtag('config', ga4Id, {
     anonymize_ip: true,

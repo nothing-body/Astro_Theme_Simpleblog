@@ -36,7 +36,10 @@ function row(label: string, value: unknown): void {
 function envFileForTarget(targetId: TargetId, options: DeployOptions): string {
   if (targetId === "cf") return String(options.get("cf-env") || ".env.cloudflare");
   if (targetId === "vps") return String(options.get("vps-env") || ".env.vps");
+  if (targetId === 'vps-docker') return String(options.get('vps-docker-env') || '.env.vps-docker');
   if (targetId === "vercel") return String(options.get("vercel-env") || ".env.vercel");
+  if (targetId === 'netlify') return String(options.get('netlify-env') || '.env.netlify');
+  if (targetId === 'supabase') return String(options.get('supabase-env') || '.env.supabase');
   return "";
 }
 
@@ -72,7 +75,13 @@ function printDeploymentNotice(mode: DeployMode, options: DeployOptions): void {
 
   const alias = directModeAlias(mode);
   if (alias) row(t("common.shortcut"), packageScriptCommand(alias).display);
-  console.log(`\n${t("notice.directBuild")}`);
+  console.log(
+    `\n${
+      mode.targets.length === 1 && mode.targets[0] === 'supabase'
+        ? t('notice.directFunctions')
+        : t('notice.directBuild')
+    }`
+  );
 
   for (const targetId of mode.targets) {
     const target = targetById(targetId);
@@ -84,10 +93,14 @@ function printDeploymentNotice(mode: DeployMode, options: DeployOptions): void {
       row(t("notice.cfProject"), cloudflareProjectName(options));
       console.log(`  - ${t("notice.cfCreate")}`);
     }
-    if (targetId === "vps") {
-      const values = envValuesForTarget("vps", options);
+    if (targetId === "vps" || targetId === 'vps-docker') {
+      const values = envValuesForTarget(targetId, options);
       row(t("notice.vpsUser"), values.get("VPS_USER") || process.env.VPS_USER || `(${t("common.notSet")})`);
-      row(t("notice.vpsTarget"), values.get("VPS_TARGET_DIR") || process.env.VPS_TARGET_DIR || `(${t("common.notSet")})`);
+      row(
+        t("notice.vpsTarget"),
+        values.get(targetId === 'vps' ? 'VPS_TARGET_DIR' : 'VPS_DOCKER_APP_DIR') ||
+          `(${t("common.notSet")})`
+      );
     }
     for (const key of target.noteKeys ?? []) console.log(`  - ${t(key)}`);
   }

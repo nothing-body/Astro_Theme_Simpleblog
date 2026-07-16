@@ -10,6 +10,7 @@ import {
   buildDynamicTagMapping,
   getLangFromUrl,
   getTargetLangRoute,
+  useTranslations,
 } from '../i18n/utils';
 import '../styles/global.css';
 
@@ -27,6 +28,7 @@ export interface Props {
   customCanonical?: string | undefined;
   robots?: string | undefined;
   alternates?: boolean | undefined;
+  preserveLanguageFragment?: boolean | undefined;
 }
 
 const {
@@ -43,9 +45,11 @@ const {
   customCanonical,
   robots,
   alternates = true,
+  preserveLanguageFragment = false,
 } = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 const htmlLang = lang === 'en' ? 'en' : lang === 'zh-cn' ? 'zh-CN' : 'zh-TW';
 const ga4Id = import.meta.env.PUBLIC_GA4_ID ?? '';
 const finalCanonical = customCanonical ?? canonicalUrl;
@@ -82,7 +86,7 @@ const languageRoutes = Object.fromEntries(
     />
   </head>
   <body>
-    <Navbar languageRoutes={languageRoutes} />
+    <Navbar languageRoutes={languageRoutes} preserveLanguageFragment={preserveLanguageFragment} />
     <CookieConsent lang={lang} />
 
     <main id="main-content" tabindex="-1">
@@ -93,8 +97,8 @@ const languageRoutes = Object.fromEntries(
       type="button"
       id="back-to-top-btn"
       class="back-to-top-btn"
-      aria-label={lang === 'en' ? 'Back to top' : lang === 'zh-cn' ? '回到顶部' : '回到頂部'}
-      title={lang === 'en' ? 'Back to top' : lang === 'zh-cn' ? '回到顶部' : '回到頂部'}
+      aria-label={t('a11y.backToTop')}
+      title={t('a11y.backToTop')}
     >
       ↑
     </button>

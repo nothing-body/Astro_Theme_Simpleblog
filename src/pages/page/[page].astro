@@ -1,24 +1,11 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostsListSection from '../../components/PostsListSection.astro';
-import { useTranslations } from '../../i18n/utils';
+import PostsPage from '../../components/PostsPage.astro';
 import { getPostsPageStaticPaths } from '../../lib/posts';
 
-export async function getStaticPaths() {
-  return getPostsPageStaticPaths('en');
-}
+export const getStaticPaths = () => getPostsPageStaticPaths('en');
 
-const { page } = Astro.params;
 const { totalPages, allPosts } = Astro.props;
-const t = useTranslations('en');
-const currentPage = Number(page);
+const currentPage = Number(Astro.params.page);
 ---
 
-<BaseLayout title={`${t('posts.title')} - Page ${currentPage}`}>
-  <PostsListSection
-    lang="en"
-    allPosts={allPosts}
-    currentPage={currentPage}
-    totalPages={totalPages}
-  />
-</BaseLayout>
+<PostsPage lang="en" allPosts={allPosts} currentPage={currentPage} totalPages={totalPages} />

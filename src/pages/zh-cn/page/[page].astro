@@ -1,27 +1,16 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
-import PostsListSection from '../../../components/PostsListSection.astro';
-import { useTranslations } from '../../../i18n/utils';
+import PostsPage from '../../../components/PostsPage.astro';
 import { getPostsPageStaticPaths } from '../../../lib/posts';
 
-export async function getStaticPaths() {
-  return getPostsPageStaticPaths('zh-cn');
-}
+export const getStaticPaths = () => getPostsPageStaticPaths('zh-cn');
 
-const { page } = Astro.params;
 const { totalPages, allPosts } = Astro.props;
-const t = useTranslations('zh-cn');
-const currentPage = Number(page);
+const currentPage = Number(Astro.params.page);
 ---
 
-<BaseLayout
-  title={`${t('posts.title')} - 第 ${currentPage} 页`}
-  description={`所有文章列表第 ${currentPage} 页。`}
->
-  <PostsListSection
-    lang="zh-cn"
-    allPosts={allPosts}
-    currentPage={currentPage}
-    totalPages={totalPages}
-  />
-</BaseLayout>
+<PostsPage
+  lang="zh-cn"
+  allPosts={allPosts}
+  currentPage={currentPage}
+  totalPages={totalPages}
+/>

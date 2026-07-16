@@ -1,6 +1,9 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "entry": ["src/layouts/BlogPostLayout.astro", "src/scripts/post-back.ts"],
+  "entry": [
+    "src/layouts/BlogPostLayout.astro",
+    "src/scripts/post-back.ts"
+  ],
   "project": [
     "src/**/*.{astro,ts}",
     "scripts/**/*.ts",
@@ -10,6 +13,7 @@
   "ignoreDependencies": [
     "@tailwindcss/typography",
     "postcss-html",
+    "supabase",
     "tailwindcss",
     "wrangler"
   ],

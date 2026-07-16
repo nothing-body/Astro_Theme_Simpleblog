@@ -13,11 +13,16 @@ describe('route decoding', () => {
     expect(decodeRouteSegment('%E0%A4%A')).toBeNull();
     expect(decodeRouteSegments(['valid', '%ZZ'])).toBeNull();
   });
+
+  test.each(['%2Fadmin', '..', '%5Csecret', 'name%E2%80%AEtxt', '%00']) (
+    'rejects ambiguous or invisible route segment %s',
+    segment => expect(decodeRouteSegment(segment)).toBeNull()
+  );
 });
 
 describe('stripLocalePathParts', () => {
-  test('removes legacy /en prefix', () => {
-    expect(stripLocalePathParts(['en', 'page', '2'])).toEqual(['page', '2']);
+  test('does not treat the removed /en route as a locale prefix', () => {
+    expect(stripLocalePathParts(['en', 'page', '2'])).toEqual(['en', 'page', '2']);
   });
 
   test('removes zh-tw prefix', () => {
@@ -64,6 +69,7 @@ describe('getTagListUrl', () => {
   });
 
   test('rejects empty tag routes', () => {
-    expect(() => getTagListUrl('en', '  ', 1)).toThrow(/non-empty tag/);
+    expect(() => getTagListUrl('en', '  ', 1)).toThrow(/safe, non-empty/);
+    expect(() => getTagListUrl('en', 'admin/secret', 1)).toThrow(/safe, non-empty/);
   });
 });

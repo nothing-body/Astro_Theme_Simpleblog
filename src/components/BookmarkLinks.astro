@@ -1,4 +1,6 @@
 ---
+import ExternalLink from './ExternalLink.astro';
+
 export interface Props {
   lang?: 'zh-tw' | 'en' | 'zh-cn';
 }
@@ -93,9 +95,9 @@ const bookmarkRows = [
             <span class="bookmark-group">{row.group}</span>
             <div class="bookmark-link-list">
               {row.items.map(item => (
-                <a class="bookmark-link" href={item.href} target="_blank" rel="noopener noreferrer">
+                <ExternalLink class="bookmark-link" href={item.href} lang={lang} target="_blank">
                   <span>{item.label}</span>
-                </a>
+                </ExternalLink>
               ))}
             </div>
           </div>

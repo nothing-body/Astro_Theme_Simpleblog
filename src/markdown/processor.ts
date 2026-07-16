@@ -1,7 +1,15 @@
 import { unified } from '@astrojs/markdown-remark';
+import { fileURLToPath } from 'node:url';
 import remarkDirective from 'remark-directive';
 import remarkGfm from 'remark-gfm';
 import { visit } from 'unist-util-visit';
+import {
+  ARTICLE_IMAGE_OUTPUT_QUALITY,
+  imageLoadingAttributes,
+  validateArticleImage,
+} from './image-policy';
+import { getLeavingNoticeHref, normalizeExternalHttpUrl } from '../lib/external-links';
+import type { Lang } from '../i18n/ui';
 
 type Tree = Parameters<typeof visit>[0];
 type VFile = { path?: string; history?: string[] } | null | undefined;
@@ -12,17 +20,26 @@ type DirectiveNode = {
   data?: NodeData;
 };
 type LinkNode = { type: 'link'; url: string; data?: NodeData };
+type ImageNode = {
+  type: 'image';
+  url: string;
+  alt?: string | null;
+};
+type HtmlNode = { type: 'html'; value?: string };
 type ElementNode = {
   type: 'element';
   tagName?: string;
   properties?: Record<string, unknown>;
+  position?: { start?: { line?: number } };
 };
 
 function isDirectiveNode(node: unknown): node is DirectiveNode {
   if (typeof node !== 'object' || node === null) return false;
   const candidate = node as { type?: unknown; name?: unknown };
-  return typeof candidate.name === 'string' &&
-    ['containerDirective', 'leafDirective', 'textDirective'].includes(String(candidate.type));
+  return (
+    typeof candidate.name === 'string' &&
+    ['containerDirective', 'leafDirective', 'textDirective'].includes(String(candidate.type))
+  );
 }
 
 function isLinkNode(node: unknown): node is LinkNode {
@@ -31,8 +48,28 @@ function isLinkNode(node: unknown): node is LinkNode {
   return candidate.type === 'link' && typeof candidate.url === 'string';
 }
 
+function isImageNode(node: unknown): node is ImageNode {
+  if (typeof node !== 'object' || node === null) return false;
+  const candidate = node as { type?: unknown; url?: unknown };
+  return candidate.type === 'image' && typeof candidate.url === 'string';
+}
+
+function rejectRawHtml() {
+  return (tree: Tree) => {
+    visit(tree, node => {
+      if ((node as HtmlNode).type === 'html') {
+        throw new Error(
+          'Raw HTML is not allowed in Markdown articles; use Markdown syntax instead.'
+        );
+      }
+    });
+  };
+}
+
 function isElementNode(node: unknown): node is ElementNode {
-  return typeof node === 'object' && node !== null && (node as { type?: unknown }).type === 'element';
+  return (
+    typeof node === 'object' && node !== null && (node as { type?: unknown }).type === 'element'
+  );
 }
 
 function directiveToDiv() {
@@ -50,41 +87,80 @@ function directiveToDiv() {
   };
 }
 
+function markdownFilePath(file: VFile): string {
+  const value = String(file?.path ?? file?.history?.[0] ?? '');
+  return value.startsWith('file:') ? fileURLToPath(value) : value;
+}
+
+function validateArticleImages() {
+  return (tree: Tree, file: VFile) => {
+    const sourceFile = markdownFilePath(file);
+    if (!sourceFile) return;
+
+    visit(tree, node => {
+      if ((node as { type?: unknown }).type === 'imageReference') {
+        throw new Error(
+          'Reference-style Markdown images are not supported; use ![alt](../_assets/file).'
+        );
+      }
+      if (!isImageNode(node)) return;
+      validateArticleImage(sourceFile, node.url, node.alt);
+    });
+  };
+}
+
+function optimizeImageLoading() {
+  return (tree: Tree) => {
+    let firstImage = true;
+    visit(tree, node => {
+      if (!isElementNode(node) || node.tagName !== 'img') return;
+      const properties = node.properties ?? (node.properties = {});
+      const sourceLine = node.position?.start?.line ?? Number.POSITIVE_INFINITY;
+      const attributes = imageLoadingAttributes(firstImage, sourceLine);
+      Object.assign(properties, attributes);
+      properties.quality = ARTICLE_IMAGE_OUTPUT_QUALITY;
+      if (!attributes.fetchPriority) delete properties.fetchPriority;
+      firstImage = false;
+    });
+  };
+}
+
 function appendRel(existing: unknown, additions: string[]): string {
-  const values = new Set(String(existing ?? '').split(/\s+/).filter(Boolean));
+  const values = new Set(
+    String(existing ?? '')
+      .split(/\s+/)
+      .filter(Boolean)
+  );
   additions.forEach(value => values.add(value));
   return [...values].join(' ');
 }
 
-function leavingPath(file: VFile): string {
-  const filename = String(file?.path ?? file?.history?.[0] ?? '').replaceAll('\\', '/');
-  if (/(?:^|\/)src\/content\/blog\/zh-tw\//.test(filename)) return '/zh-tw/leaving';
-  if (/(?:^|\/)src\/content\/blog\/zh-cn\//.test(filename)) return '/zh-cn/leaving';
-  return '/leaving';
+function markdownLanguage(file: VFile): Lang {
+  const sourceFile = markdownFilePath(file).replaceAll('\\', '/');
+  if (sourceFile.includes('src/content/blog/zh-tw/')) return 'zh-tw';
+  if (sourceFile.includes('src/content/blog/zh-cn/')) return 'zh-cn';
+  return 'en';
 }
 
-function externalNotice(siteOrigin: string) {
-  return () => (tree: Tree, file: VFile) => {
-    const noticePath = leavingPath(file);
+function secureExternalLinks() {
+  return (tree: Tree, file: VFile) => {
+    const lang = markdownLanguage(file);
     visit(tree, node => {
       if (!isLinkNode(node)) return;
-      let target: URL;
+      let parsedTarget: URL;
       try {
-        target = new URL(node.url);
+        parsedTarget = new URL(node.url);
       } catch {
         return;
       }
-      if (target.username || target.password) {
-        throw new Error('Markdown links must not contain URL credentials.');
-      }
-      if (!['http:', 'https:'].includes(target.protocol) || target.origin === siteOrigin) return;
-      node.url = `${noticePath}?to=${encodeURIComponent(target.href)}`;
+      if (!['http:', 'https:'].includes(parsedTarget.protocol)) return;
+      const target = normalizeExternalHttpUrl(node.url);
+      node.url = getLeavingNoticeHref(lang, target.href);
       const data = node.data ?? (node.data = {});
       const properties = data.hProperties ?? {};
       data.hProperties = {
         ...properties,
         rel: appendRel(properties.rel, ['noopener', 'noreferrer']),
-        'data-external-notice': 'true',
       };
     });
   };
@@ -96,7 +172,9 @@ function noInlineStyles() {
       if (!isElementNode(node) || !node.properties) return;
       const classes = Array.isArray(node.properties.className)
         ? node.properties.className.map(String)
-        : node.properties.className ? [String(node.properties.className)] : [];
+        : node.properties.className
+          ? [String(node.properties.className)]
+          : [];
       if (['th', 'td'].includes(node.tagName ?? '') && typeof node.properties.align === 'string') {
         if (!['left', 'center', 'right'].includes(node.properties.align)) {
           throw new Error(`Unsupported Markdown table alignment: ${node.properties.align}`);
@@ -108,7 +186,10 @@ function noInlineStyles() {
         if (classes.length) node.properties.className = classes;
         return;
       }
-      const styles = node.properties.style.split(';').map(value => value.trim()).filter(Boolean);
+      const styles = node.properties.style
+        .split(';')
+        .map(value => value.trim())
+        .filter(Boolean);
       for (const style of styles) {
         const match = style.match(/^text-align:\s*(left|center|right)$/);
         if (!match) throw new Error(`Unsupported inline Markdown style: ${style}`);
@@ -120,9 +201,16 @@ function noInlineStyles() {
   };
 }
 
-export function createMarkdownProcessor(siteOrigin: string) {
+export function createMarkdownProcessor() {
   return unified({
-    remarkPlugins: [remarkGfm, remarkDirective, directiveToDiv, externalNotice(siteOrigin)],
-    rehypePlugins: [noInlineStyles],
+    remarkPlugins: [
+      remarkGfm,
+      remarkDirective,
+      rejectRawHtml,
+      directiveToDiv,
+      secureExternalLinks,
+      validateArticleImages,
+    ],
+    rehypePlugins: [noInlineStyles, optimizeImageLoading],
   });
 }

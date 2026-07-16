@@ -18,6 +18,9 @@ pnpm is the primary and recommended package manager because `package.json` pins 
 
 ```env
 PUBLIC_SITE_URL=https://example.com
+PUBLIC_SITE_NAME=My Blog
+PUBLIC_SITE_AUTHOR=Your Name
+PUBLIC_SITE_DESCRIPTION=Notes, guides, and articles from my website.
 PUBLIC_CONTACT_EMAIL=contact@example.com
 PUBLIC_GA4_ID=
 ```
@@ -26,28 +29,32 @@ Use your real public URL and public contact email in `.env`. Keep `.env` uncommi
 
 ## 2. Important Files
 
-| File or folder | Purpose |
-| --- | --- |
-| `src/content/blog/en/` | English posts |
-| `src/content/blog/zh-tw/` | Traditional Chinese posts |
-| `src/content/blog/zh-cn/` | Simplified Chinese posts |
-| `src/content.config.ts` | Frontmatter schema and validation |
-| `src/lib/site.ts` | Site name, default author, description, URL helpers |
-| `src/i18n/ui.ts` | Interface text for all languages |
-| `src/components/BookmarkLinks.astro` | Default bookmark groups and links |
-| `public/_headers` | Cloudflare security and cache headers |
-| `vercel.json` | Vercel security and cache headers |
-| `deploy/nginx-security-headers.conf` | Nginx security-header include for VPS hosting |
-| `public/_redirects` | Static redirects |
-| `astro.config.ts` | Astro, Markdown, sitemap, SEO, and build integrations |
-| `.env.example` | Public site setting template |
-| `.env.cloudflare.example` | Cloudflare deployment template |
-| `.env.vps.example` | VPS deployment template |
-| `.env.vercel.example` | Vercel deployment template |
-| `.github/workflows/deploy.yml` | GitHub Actions deployment |
-| `.gitlab-ci.yml` | GitLab CI deployment |
-| `.woodpecker.yml` | Woodpecker/Codeberg deployment |
-| `scripts/analysis.ts` | Full project self-check |
+| File or folder                       | Purpose                                               |
+| ------------------------------------ | ----------------------------------------------------- |
+| `src/content/blog/en/`               | English posts                                         |
+| `src/content/blog/zh-tw/`            | Traditional Chinese posts                             |
+| `src/content/blog/zh-cn/`            | Simplified Chinese posts                              |
+| `src/content/blog/_assets/`          | Shared article images processed by Astro              |
+| `src/content.config.ts`              | Frontmatter schema and validation                     |
+| `src/lib/site.ts`                    | Validated site-setting and URL helpers                |
+| `src/i18n/ui.ts`                     | Interface text for all languages                      |
+| `src/components/BookmarkLinks.astro` | Default bookmark groups and links                     |
+| `public/_headers`                    | Cloudflare security and cache headers                 |
+| `vercel.json`                        | Vercel security and cache headers                     |
+| `deploy/nginx-security-headers.conf` | Nginx security-header include for VPS hosting         |
+| `public/_redirects`                  | Static redirects                                      |
+| `astro.config.ts`                    | Astro, Markdown, sitemap, SEO, and build integrations |
+| `.env.example`                       | Public site setting template                          |
+| `.env.cloudflare.example`            | Cloudflare deployment template                        |
+| `.env.vercel.example`                | Vercel deployment template                            |
+| `.env.netlify.example`               | Netlify deployment template                           |
+| `.env.supabase.example`              | Supabase Edge Functions deployment template           |
+| `.env.vps.example`                   | VPS static deployment template                        |
+| `.env.vps-docker.example`            | VPS Docker deployment template                        |
+| `.github/workflows/deploy.yml`       | GitHub Actions deployment                             |
+| `.gitlab-ci.yml`                     | GitLab CI deployment                                  |
+| `.woodpecker.yml`                    | Woodpecker/Codeberg deployment                        |
+| `scripts/analysis.ts`                | Full project self-check                               |
 
 Commit only `.example` environment files. Never commit real tokens, keys, account IDs, SSH passphrases, private articles, personal images, generated `dist`, or `.astro` cache data.
 
@@ -111,16 +118,42 @@ Do not give every translated version a different `pinOrder`; matching translatio
 
 ## 6. Markdown Safety
 
-- Prefer normal Markdown links instead of raw HTML.
-- External HTTP/HTTPS links are routed through the localized leaving-notice page.
+- Use normal Markdown syntax. Raw HTML is rejected during both content checks and production builds.
+- External HTTP/HTTPS links keep their direct destination and receive `noopener noreferrer`.
 - Do not paste scripts, API keys, access tokens, private hostnames, internal IP addresses, or personal filesystem paths into posts.
 - Posts use `.md`. Executable imports, exports, JSX, and embedded scripts are intentionally unsupported; add reviewed presentation features through the shared layout or Markdown processor instead.
-- Put public assets in `public/`; do not copy private photos or the private site's image directory into a public template.
+- Put favicons, verification files, and other intentionally unprocessed site assets in `public/`. Article images belong in `src/content/blog/_assets/`; never copy private photos into a public template.
+
+### Article images
+
+Store an image once in `src/content/blog/_assets/`, then reference it from each translated post with meaningful localized alt text:
+
+```md
+![Settings page with two-factor authentication enabled](../_assets/security-settings.png)
+```
+
+Astro generates optimized responsive files, `srcset`, `sizes`, intrinsic dimensions, lazy loading, and asynchronous decoding. A first image within the first 12 source lines is treated as a possible LCP image and loaded eagerly; later images remain lazy.
+
+Only AVIF, JPEG, PNG, and WebP article images are accepted. Keep each source below 512 KiB when possible. The self-check rejects files above 2 MiB, either edge above 6000 pixels, or more than 12 million pixels. Remote images, `/images/...` body references, SVG, GIF, data URLs, query strings, and paths escaping `_assets` are rejected. `ogImage` is separate metadata and may still use its documented `/images/...` or HTTPS value.
+
+### Article search
+
+Production builds run Pagefind after Astro and index only article headers and bodies marked in `src/layouts/BlogPostLayout.astro`. The localized `/search/`, `/zh-tw/search/`, and `/zh-cn/search/` pages support title-weighted BM25-style ranking plus category and tag filters. Search is generated after `astro build`, so test it with `pnpm build` followed by `pnpm preview`, not the development server alone.
+
+The browser controller is `src/scripts/search.ts`. It validates same-origin result URLs and creates result elements with DOM APIs and `textContent`; do not replace this with raw `innerHTML`. Pagefind requires the narrowly scoped `'wasm-unsafe-eval'` CSP source and `worker-src 'self' blob:`. Do not edit generated files under `dist/pagefind/` because every build replaces them.
+
+Pagefind does not currently provide stemming for `zh-cn` or `zh-tw`. The repeated build Note is expected: Chinese search and filters still work, but root-word expansion is unavailable. To hide informational notes, add `--quiet` to only the Pagefind segment of the `build` script:
+
+```text
+pagefind --site dist --glob "**/index.html" --quiet
+```
+
+`--quiet` keeps warnings and errors. `--silent` keeps errors only, so use it only when suppressing warnings is deliberate.
 
 ## 7. Site Customization
 
-1. Edit `src/lib/site.ts` for the public site name, author, and default description.
-2. Edit `src/i18n/ui.ts` so welcome text matches the site name in all languages.
+1. Set `PUBLIC_SITE_NAME`, `PUBLIC_SITE_AUTHOR`, and `PUBLIC_SITE_DESCRIPTION` in `.env`. Do not hard-code personal values in `src/lib/site.ts`.
+2. Edit `src/i18n/ui.ts` only when you want to change shared interface wording in all languages.
 3. Review About, Contact, Privacy, and Disclaimer pages in all three route folders.
 4. Edit `src/components/BookmarkLinks.astro` or remove links you do not want to recommend.
 5. Configure your real URL and contact email in `.env`, not in committed source examples.
@@ -132,7 +165,7 @@ Safely preview generated deployment commands:
 
 ```bash
 pnpm deploy:switch --mode=direct:cf --dry-run
-pnpm deploy:switch --mode=direct:cf+vps+vercel --dry-run
+pnpm deploy:switch --mode=direct:cf+vps+vps-docker+vercel+netlify --dry-run
 ```
 
 Interactive menu:
@@ -145,9 +178,12 @@ Direct targets:
 
 ```bash
 pnpm deploy:cf:only
-pnpm deploy:vps:only
 pnpm deploy:vercel:only
-pnpm deploy:all
+pnpm deploy:netlify:only
+pnpm deploy:vps:only
+pnpm deploy:vps-docker:only
+pnpm deploy:supabase:only
+pnpm deploy:all:static
 ```
 
 The deployment scripts run the project's `check` and `build` commands, then upload only generated output. Process/CI environment variables take priority over local env files, so a stale local value cannot silently replace an injected CI secret.
@@ -155,9 +191,14 @@ The deployment scripts run the project's `check` and `build` commands, then uplo
 Configure secrets in the selected Git provider, not in YAML:
 
 - Cloudflare: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_PAGES_PROJECT_NAME`.
-- VPS: `VPS_HOST`, `VPS_USER`, `VPS_PORT`, `VPS_TARGET_DIR`, SSH private key secret.
 - Vercel: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
+- Netlify: `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`.
+- VPS: `VPS_HOST`, `VPS_USER`, `VPS_PORT`, `VPS_TARGET_DIR`, SSH private key and pinned known-hosts data.
+- VPS Docker: the VPS values plus `VPS_DOCKER_APP_DIR`, project name, bind address, and port.
+- Supabase: `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`. This target deploys TypeScript Edge Functions; it does not host the Astro static site.
 - Shared public settings: `PUBLIC_SITE_URL`, `PUBLIC_CONTACT_EMAIL`, optional `PUBLIC_GA4_ID`.
+
+The public template does not include a private OpenPhish runtime. [OPENPHISH_GUIDE.en.md](./OPENPHISH_GUIDE.en.md) explains how to build an optional separate service without committing feed data, storage IDs, or secrets.
 
 ## 9. Verify Before Publishing
 
@@ -168,7 +209,7 @@ pnpm lint:css
 pnpm selfcheck
 ```
 
-The full self-check runs type checks, linting, tests, a clean production build, Astro dev startup, deployment dry-runs, security scans, content provenance, SEO, sitemap/hreflang, landmark, and sensitive-file checks.
+The full self-check runs type checks, linting, tests, a clean production build, generated-output inspection, deployment dry-runs, dependency security scans, content provenance, SEO, sitemap/hreflang, browser behavior, and sensitive-file checks.
 
 The build cleans `.astro` and `dist` first. This prevents deleted or private posts from surviving in stale generated content.
 

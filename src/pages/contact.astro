@@ -2,7 +2,7 @@
 // src/pages/en/contact.astro — Contact Us (English)
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AboutSidebar from '../components/AboutSidebar.astro';
-import { getCanonicalUrl, getContactEmail } from '../lib/site';
+import { SITE_NAME, getCanonicalUrl, getContactEmail } from '../lib/site';
 import { safeJsonStringify } from '../lib/utils';
 
 const currentPath = Astro.url.pathname;
@@ -15,7 +15,7 @@ const jsonLd = {
   name: 'Contact Us',
   url: pageUrl,
   description: 'How to contact the author of this site.',
-  publisher: { '@type': 'Person', name: "SimpleBlog" },
+  publisher: { '@type': 'Organization', name: SITE_NAME },
 };
 ---
 

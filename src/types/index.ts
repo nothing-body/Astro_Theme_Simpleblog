@@ -21,6 +21,7 @@ declare global {
     updatePrivacySettings?: (updates: Partial<PrivacySettings>) => void;
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
+    partytown?: { forward?: unknown[] };
     __loadGa4IfConsented?: () => void;
   }
 }

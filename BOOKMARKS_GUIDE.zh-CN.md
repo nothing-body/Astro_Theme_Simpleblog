@@ -52,13 +52,7 @@ const groupLabels = {
 target="_blank" rel="noopener noreferrer"
 ```
 
-全站 Markdown 外部链接提示页只会自动处理 Markdown 文章中的链接，不会自动改写 Astro 组件中直接编写的书签链接。如需让书签也进入离站提示页，可以手动设置 `href`：
-
-```ts
-{ label: 'Example', href: `/leaving?to=${encodeURIComponent('https://example.com/')}` }
-```
-
-英文、繁体中文与简体中文可分别使用 `/leaving?to=`、`/zh-tw/leaving?to=` 与 `/zh-cn/leaving?to=`。
+公开模板会直接打开书签目的地。共用的 `ExternalLink.astro` 组件会拒绝不支持的协议和带有账号密码的 URL，并自动加入 `noopener noreferrer`。
 
 ## 安全注意事项
 

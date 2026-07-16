@@ -18,7 +18,7 @@ function post(
       category: categoryPath.at(-1) ?? 'Uncategorized',
       categoryPath,
       tags,
-      author: 'SimpleBlog',
+      author: 'Blue Binary',
       pinned: false,
       draft: false,
     },

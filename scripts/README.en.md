@@ -1,162 +1,106 @@
 # Scripts Overview
 
-This directory contains cross-platform Node.js scripts for deployment, analysis, and tests.
+All operational scripts are TypeScript and support Windows, macOS, and Linux. pnpm is preferred; npm is an automatic fallback. Commands use argument arrays instead of shell-built command strings.
 
-## Deployment Scripts
+## Deployment Entry Points
 
-- `deploy_menu.ts`: interactive deployment menu. Use it when you want to choose deployment targets and options step by step.
-- `deploy_switch.ts`: command-line deployment mode switcher. Use it for direct commands and CI/CD.
-- `deploy_i18n.ts`: shared language dictionary for deployment scripts. Supports Traditional Chinese and English output from the same scripts.
-- `deploy_lib.ts`: shared deployment mode definitions and command generation logic. Internal module.
-- `deploy_runtime.ts`: shared Node.js and cross-platform pnpm/npm runner detection logic. Internal module.
-- `deploy_safety.ts`: pre-deployment `.gitignore` and sensitive-file safety checker. Internal module.
-- `uploaddist_cf.ts`: builds the Astro site and deploys `dist` to Cloudflare Pages.
-- `uploaddist_vps.ts`: builds the Astro site and uploads `dist` to a VPS with SSH/rsync.
-- `uploaddist_vercel.ts`: builds/deploys through the Vercel CLI.
-- `upgrade_astro.ts`: safely upgrades Astro-related packages, then runs the existing package `check`, `lint`, and `build` scripts.
+- `deploy_menu.ts`: interactive English, Traditional Chinese, and Simplified Chinese menu.
+- `deploy_switch.ts`: non-interactive target and Git-provider switch.
+- `deploy_lib.ts`: validated modes, flags, remotes, and branches.
+- `deploy_i18n.ts`: the three-language console dictionary.
+- `deploy_runtime.ts`: Node and pnpm/npm discovery, including Windows `.cmd` wrappers.
+- `deploy_env.ts`: one strict root-level `.env*` parser for every target.
+- `deploy_safety.ts`: `.gitignore`, output-path, and sensitive-file checks.
 
-## Required Root Files
+## Direct Deployers
 
-Deployment scripts read environment files from the project root:
+- `uploaddist_cf.ts`: Cloudflare Pages through Wrangler.
+- `uploaddist_vercel.ts`: bounded, streaming Vercel REST upload; no Vercel CLI dependency.
+- `uploaddist_netlify.ts`: bounded streaming ZIP and Netlify REST deploy.
+- `uploaddist_vps.ts`: rsync or OpenSSH scp to a staging directory, then atomic activation.
+- `uploaddist_vps_docker.ts`: uploads a hardened non-root Nginx Compose bundle and starts it remotely.
+- `uploaddist_supabase.ts`: deploys TypeScript files under `supabase/functions/<name>/index.ts`.
+
+Supabase Edge Functions are backend functions, not a static-site host.
+
+## Required Environment Files
 
 ```text
-.env                 shared public site settings
-.env.cloudflare      Cloudflare Pages deployment settings
-.env.vps             VPS SSH/rsync deployment settings
-.env.vercel          Vercel deployment settings
+.env
+.env.cloudflare
+.env.vercel
+.env.netlify
+.env.supabase
+.env.vps
+.env.vps-docker
 ```
 
-Create them from the committed examples:
+Create them from the matching `.example` files. Environment options accept only root-level `.env` or `.env.*` names and reject traversal and symbolic links.
+
+## Common Commands
 
 ```bash
-cp .env.example .env
-cp .env.cloudflare.example .env.cloudflare
-cp .env.vps.example .env.vps
-cp .env.vercel.example .env.vercel
+pnpm deploy:menu
+pnpm deploy:switch -- --mode=direct:cf --dry-run --yes
+pnpm deploy:cf:only
+pnpm deploy:vercel:only
+pnpm deploy:netlify:only
+pnpm deploy:vps:only
+pnpm deploy:vps-docker:only
+pnpm deploy:supabase:only
 ```
 
-The real files must stay ignored by git. Keep only `.env.example`, `.env.cloudflare.example`, `.env.vps.example`, and `.env.vercel.example` committed.
-
-## Values To Get Before Deploying
-
-Cloudflare Pages:
-
-- `CLOUDFLARE_API_TOKEN`: Cloudflare Dashboard > My Profile > API Tokens > Create Token
-- `CLOUDFLARE_ACCOUNT_ID`: Cloudflare account sidebar
-- `CLOUDFLARE_PAGES_PROJECT_NAME`: Cloudflare Pages project name
-- `PUBLIC_SITE_URL`: production URL used by Astro output
-- `PUBLIC_CONTACT_EMAIL`: public contact address required by the Astro build
-
-VPS:
-
-- `VPS_HOST`, `VPS_PORT`, `VPS_USER`: from the VPS provider panel or server setup
-- `VPS_TARGET_DIR`: directory served by the web server, or an upload staging directory
-- `VPS_SSH_KEY_PATH`: local private key path
-- `VPS_SSH_PASSPHRASE`: optional; prefer `ssh-agent` when possible
-
-Vercel:
-
-- `VERCEL_TOKEN`: Vercel Account Settings > Tokens
-- `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`: from `.vercel/project.json` after `vercel link`
-
-## Non-Deployment Scripts
-
-- `analysis.ts`: checks code, CSS, SEO, security, privacy, content provenance, deployment paths, and documentation.
-- `clean-generated.ts`: removes only the project `.astro` and `dist` directories before a clean build.
-- `run-e2e.ts`: runs end-to-end tests and keeps browser output outside the repository.
-
-Run the fast self-check before publishing template changes:
+Combined targets:
 
 ```bash
-pnpm selfcheck -- --quick
+pnpm deploy:all
+pnpm deploy:all:static
+pnpm deploy:all:including-functions
 ```
 
-Run the full analysis when checking a larger change:
+- `deploy:all`: Cloudflare + VPS + Vercel.
+- `deploy:all:static`: Cloudflare + VPS + VPS Docker + Vercel + Netlify.
+- `deploy:all:including-functions`: all static targets + Supabase Edge Functions.
 
-```bash
-pnpm analyze
-pnpm audit:security
-```
+Use `--dry-run` to print a plan without building or uploading. `--yes` skips only the switch confirmation. `--skip-clean` preserves the output directory before rebuilding; it does not skip the build. See [DEPLOYMENT.en.md](../DEPLOYMENT.en.md) for every mode and flag.
 
-The analysis script checks `.gitignore` coverage, dangerous code patterns, important component wiring, public scripts, suspicious sensitive files, built-content provenance, local documentation links, documented package commands, and dependency advisories. The dependency audit contacts the package registry, so an unavailable registry correctly causes the comprehensive self-check to fail instead of silently skipping the audit.
-
-## Package Manager
-
-Deployment prefers the pnpm version pinned by `packageManager` in `package.json`. If pnpm is unavailable, the shared runner uses npm automatically. pnpm remains recommended because `pnpm-lock.yaml` is the repository lockfile.
-
-## Language Support
-
-The deployment scripts are single-source i18n scripts. Choose the language in the interactive menu, pass `--lang`, or set `DEPLOY_LANG`.
+Language:
 
 ```bash
 pnpm deploy:menu -- --lang=en
 pnpm deploy:menu -- --lang=zh-tw
-pnpm deploy:switch --mode=direct:cf --lang=en
-DEPLOY_LANG=en pnpm deploy:cf:only
+pnpm deploy:menu -- --lang=zh-cn
 ```
 
-## Build Output
-
-Direct deployment scripts run the package `check` and `build` scripts before deploying the generated output directory. The default output directory is `dist`, and `--dist=<dir>` can be used for Cloudflare/VPS deployments so the scripts are not tightly coupled to Astro.
-
-## Safe Astro Upgrade
-
-Use the bilingual upgrade helper to update Astro-related packages safely:
+With npm, keep the argument separator:
 
 ```bash
-pnpm upgrade:astro -- --lang=en --dry-run
-pnpm upgrade:astro -- --lang=en --dry-run --clean-install
-pnpm upgrade:astro -- --lang=zh-tw
+npm run deploy:switch -- --mode=direct:cf --dry-run --yes
 ```
 
-The script detects Astro-related dependencies from `package.json`, refuses to run on a dirty git working tree unless `--allow-dirty` is passed, updates with the available package manager, then verifies with the existing package scripts instead of hard-coding Astro commands. Optional flags:
+## Checks
 
-`--lang` only changes console output language. It does not change the upgrade target, package manager behavior, deployment target, or site content language. Use `--lang=en` for English script messages and `--lang=zh-tw` for Traditional Chinese script messages.
+- `analysis.ts`: source, content, images, dependency audit, build output, deployment dry-runs, and E2E.
+- `audit-security.ts`: queries OSV for the installed package/version graph.
+- `checks/source.ts`: risky syntax, TypeScript-only policy, headers, secrets, deployment wiring, and public/private boundaries.
+- `checks/content.ts`: frontmatter, multilingual pairing, categories, routes, links, and raw-HTML rules.
+- `checks/images.ts`: formats, dimensions, pixel count, and file-size policy.
+- `checks/output.ts`: canonical, hreflang, sitemap, CSP, inline code/style, images, broken links, and generated assets.
+- `run-e2e.ts`: uses the configured local Chromium-compatible executable, including ungoogled-chromium.
 
-- `--dry-run`: show the planned package-manager command without modifying files.
-- `--yes`: skip the confirmation prompt.
-- `--allow-dirty`: allow upgrading even when local files have uncommitted changes.
-- `--clean-install`: remove `node_modules`, `.astro`, and `dist` before upgrading. Lockfiles are not deleted automatically.
-- `--skip-check`, `--skip-lint`, `--skip-build`: skip specific verification steps.
-
-## VPS User And Permissions
-
-VPS SSH upload uses the `VPS_USER` value in `.env.vps`.
-
-```env
-VPS_HOST=203.0.113.10
-VPS_PORT=22
-VPS_USER=deploy
-VPS_TARGET_DIR=/var/www/example.com
-VPS_SSH_KEY_PATH=~/.ssh/id_ed25519
-VPS_SSH_PASSPHRASE=your_private_key_passphrase
+```bash
+pnpm selfcheck -- --explain
+pnpm selfcheck -- --quick
+pnpm analyze
 ```
 
-If `VPS_USER` is not `root`, it may not be allowed to write to `/var/www/...`. In that case, upload to a directory such as `/home/<user>/site-dist`, then move or sync the uploaded build output to the directory served by your web server on the VPS. Prefer `ssh-agent` for passphrase-protected private keys; use `VPS_SSH_PASSPHRASE` only in a local uncommitted env file or CI secret.
+The rule groups, severity behavior, and examples are documented in [SELF_CHECK_GUIDE.en.md](../SELF_CHECK_GUIDE.en.md).
 
-## Git Ignore Requirements
+## Safety Notes
 
-The repository `.gitignore` should keep secrets and generated output out of commits:
-
-```text
-.env*
-!.env.example
-!.env.*.example
-.npmrc
-.yarnrc
-.pnpmrc
-.ssh/
-*.pem
-*.key
-id_rsa
-id_ed25519
-dist/
-.astro/
-node_modules/
-.wrangler/
-.vercel/
-playwright-report/
-test-results/
-```
-
-If you change deployment filenames or add a new provider, update `.gitignore`, the relevant `.env.*.example`, and this guide together.
+- Vercel and Netlify responses are size-bounded.
+- Netlify archives and Vercel uploads are streamed to reduce memory spikes.
+- VPS private keys must be regular files; Unix permissions must not be group/world-readable.
+- `VPS_KNOWN_HOSTS_FILE` is recommended. Without it, SSH uses `accept-new`; existing key changes still fail.
+- VPS Docker binds to loopback by default and requires an explicit opt-in for `0.0.0.0`.
+- Real env files, provider state, private keys, reports, and generated output remain excluded by `.gitignore`.

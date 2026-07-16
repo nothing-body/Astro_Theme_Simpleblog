@@ -1,21 +1,8 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import PostsListSection from '../components/PostsListSection.astro';
-import { useTranslations } from '../i18n/utils';
+import PostsPage from '../components/PostsPage.astro';
 import { getPublishedPostsForLang, getTotalPages } from '../lib/posts';
-import { getPostsPageUrl } from '../lib/routes';
-import { getCanonicalUrl } from '../lib/site';
 
-const t = useTranslations('en');
 const allPosts = await getPublishedPostsForLang('en');
-const totalPages = getTotalPages(allPosts.length);
-const canonicalPage1 = getCanonicalUrl(getPostsPageUrl('en', 1), Astro.site);
 ---
 
-<BaseLayout
-  title={t('posts.title')}
-  description="All posts - Browse all articles."
-  customCanonical={canonicalPage1}
->
-  <PostsListSection lang="en" allPosts={allPosts} currentPage={1} totalPages={totalPages} />
-</BaseLayout>
+<PostsPage lang="en" allPosts={allPosts} currentPage={1} totalPages={getTotalPages(allPosts.length)} />

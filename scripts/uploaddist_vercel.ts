@@ -1,166 +1,183 @@
 #!/usr/bin/env node
-/**
- * Deploy to Vercel through Vercel CLI.
- *
- * Default behavior:
- *   1) Load .env.vercel
- *   2) Run vercel build locally
- *   3) Run vercel deploy --prebuilt --archive=tgz
- *
- * Required:
- *   VERCEL_TOKEN
- *
- * Recommended for non-interactive CI:
- *   VERCEL_ORG_ID
- *   VERCEL_PROJECT_ID
- *
- * Options:
- *   --env=.env.vercel
- *   --preview
- *   --no-prebuilt
- *   --skip-clean
- */
-import fs from "node:fs";
-import path from "node:path";
-import process from "node:process";
-import { spawnSync } from "node:child_process";
-import { ensureGitignoreSafety } from "./deploy_safety.ts";
-import { stripLangArgs, t } from "./deploy_i18n.ts";
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import process from 'node:process';
+import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+import { Readable } from 'node:stream';
+import { ensureGitignoreSafety } from './deploy_safety.ts';
+import { readBoundedJsonResponse } from './deploy_http.ts';
+import { loadEnvFile } from './deploy_env.ts';
+import { stripLangArgs, t } from './deploy_i18n.ts';
 import {
   ensureNodeRuntime,
   ensurePackageManagerRuntime,
-  packageExecCommand,
-  runPackageExec,
   runPackageScript,
-} from "./deploy_runtime.ts";
+} from './deploy_runtime.ts';
+import {
+  assertSafeOutputPath,
+  collectStaticDeployFiles,
+  type StaticDeployFile,
+} from './static_deploy_files.ts';
+import { createVercelStaticConfig } from './vercel_static_config.ts';
 
+const MAX_DEPLOY_FILES = 10_000;
+const MAX_DEPLOY_BYTES = 256 * 1024 * 1024;
+const MAX_FILE_BYTES = 64 * 1024 * 1024;
+const MAX_RESPONSE_BYTES = 128 * 1024;
+const UPLOAD_CONCURRENCY = 4;
 const args = stripLangArgs(process.argv.slice(2));
 const options = {
-  env: ".env.vercel",
+  env: '.env.vercel',
   production: true,
-  prebuilt: true,
   skipClean: false,
 };
 
 for (const arg of args) {
-  if (arg === "--preview") {
-    options.production = false;
-    continue;
-  }
-  if (arg === "--no-prebuilt") {
-    options.prebuilt = false;
-    continue;
-  }
-  if (arg === "--skip-clean") {
-    options.skipClean = true;
-    continue;
-  }
-  if (arg.startsWith("--env=")) {
-    options.env = arg.slice("--env=".length);
-  }
-}
-
-const color = {
-  yellow: "\x1b[33m",
-  cyan: "\x1b[36m",
-  green: "\x1b[32m",
-  reset: "\x1b[0m",
-};
-type Tone = 'yellow' | 'cyan' | 'green';
-type VercelInvocation = { direct: true; command: string } | { direct: false; command?: never };
-
-function info(message: string, tone: Tone = "cyan"): void {
-  const c = color[tone] ?? "";
-  const reset = c ? color.reset : "";
-  console.log(`${c}${message}${reset}`);
+  if (arg === '--preview') options.production = false;
+  else if (arg === '--skip-clean') options.skipClean = true;
+  else if (arg.startsWith('--env=')) options.env = arg.slice('--env='.length);
+  else throw new Error(`Unknown Vercel deployment option: ${arg}`);
 }
 
 function fail(message: string): never {
-  console.error(`\n[vercel-deploy] ${message}`);
-  process.exit(1);
+  throw new Error(`[vercel-deploy] ${message}`);
 }
 
-function redactSensitive(text: string): string {
-  if (!text) return text;
-  let out = text;
-  const token = process.env.VERCEL_TOKEN;
-  if (token) out = out.split(token).join("[REDACTED_VERCEL_TOKEN]");
-  return out;
-}
-
-function loadEnvFile(envFilePath: string): void {
-  const fullPath = path.resolve(process.cwd(), envFilePath);
-  if (!fs.existsSync(fullPath)) {
-    info(`==> ${t("common.envMissing")} (${envFilePath})`, "yellow");
-    return;
-  }
-
-  info(`==> ${t("common.loadingEnv")}: '${envFilePath}'`);
-  const lines = fs.readFileSync(fullPath, "utf8").split(/\r?\n/);
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith("#")) continue;
-    const eqIndex = line.indexOf("=");
-    if (eqIndex === -1) continue;
-    const key = line.slice(0, eqIndex).trim();
-    let value = line.slice(eqIndex + 1).trim();
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-    if (key && process.env[key] === undefined) process.env[key] = value;
-  }
-}
-
-function run(command: string, commandArgs: string[], errorMessage: string, env: NodeJS.ProcessEnv = process.env): void {
-  const result = spawnSync(command, commandArgs, {
-    stdio: "pipe",
-    env,
-    encoding: "utf8",
-  });
-
-  if (result.stdout) process.stdout.write(redactSensitive(result.stdout));
-  if (result.stderr) process.stderr.write(redactSensitive(result.stderr));
+function run(
+  command: string,
+  commandArgs: string[],
+  errorMessage: string,
+  env: NodeJS.ProcessEnv = process.env
+): void {
+  const result = spawnSync(command, commandArgs, { env, stdio: 'inherit' });
   if (result.error || result.status !== 0) fail(errorMessage);
 }
 
-function runPackageTool(args: [string, ...string[]], errorMessage: string, env: NodeJS.ProcessEnv = process.env): void {
-  if (args.length === 1 && args[0] === "--version") return;
-  runPackageExec(args[0], args.slice(1), run, errorMessage, env);
+function readProjectName(): string {
+  const configured = process.env.VERCEL_PROJECT_NAME?.trim();
+  if (configured) return configured;
+  try {
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')) as { name?: unknown };
+    return typeof pkg.name === 'string' ? pkg.name : '';
+  } catch {
+    return '';
+  }
 }
 
-function getVercelInvocation(): VercelInvocation {
-  const direct = spawnSync("vercel", ["--version"], { stdio: "ignore" });
-  if (!direct.error && direct.status === 0) {
-    return {
-      command: "vercel",
-      direct: true,
-    };
-  }
-
-  return {
-    direct: false,
-  };
+function apiUrl(pathname: string, teamId: string): URL {
+  const url = new URL(pathname, 'https://api.vercel.com');
+  if (teamId) url.searchParams.set('teamId', teamId);
+  return url;
 }
 
-function runVercel(args: string[], errorMessage: string, env: NodeJS.ProcessEnv = process.env): void {
-  if (vercel.direct) {
-    run(vercel.command, args, errorMessage, env);
-    return;
+async function readApiResponse(response: Response): Promise<unknown> {
+  try {
+    return await readBoundedJsonResponse(response, MAX_RESPONSE_BYTES, 'Vercel');
+  } catch (error) {
+    fail(error instanceof Error ? error.message : String(error));
   }
-  const command = packageExecCommand("vercel", args);
-  run(command.command, command.args, errorMessage, env);
 }
 
-function removeIfExists(targetPath: string): void {
-  const fullPath = path.resolve(process.cwd(), targetPath);
-  const relative = path.relative(process.cwd(), fullPath);
-  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
-    fail(`Refusing to clean unsafe path '${targetPath}'.`);
+function apiError(result: unknown, status: number): string {
+  if (typeof result !== 'object' || result === null) return `HTTP ${status}`;
+  const error = (result as { error?: unknown }).error;
+  if (typeof error === 'object' && error !== null) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string') return message.slice(0, 300);
   }
-  if (fs.existsSync(fullPath)) fs.rmSync(fullPath, { recursive: true, force: true });
+  return `HTTP ${status}`;
+}
+
+type VercelFile = StaticDeployFile & {
+  sha: string;
+};
+
+async function sha1File(filePath: string): Promise<string> {
+  const hash = createHash('sha1');
+  for await (const chunk of fs.createReadStream(filePath)) {
+    hash.update(chunk as Buffer);
+  }
+  return hash.digest('hex');
+}
+
+async function describeFiles(files: StaticDeployFile[]): Promise<VercelFile[]> {
+  const described: VercelFile[] = [];
+  for (const file of files) {
+    if (file.size > MAX_FILE_BYTES) {
+      fail(`Vercel deployment file exceeds 64 MiB: ${file.deploymentPath}`);
+    }
+    described.push({ ...file, sha: await sha1File(file.absolutePath) });
+  }
+  return described;
+}
+
+async function uploadFile(file: VercelFile, token: string, teamId: string): Promise<void> {
+  const body = Readable.toWeb(fs.createReadStream(file.absolutePath)) as ReadableStream<Uint8Array>;
+  const response = await fetch(apiUrl('/v2/files', teamId), {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Length': String(file.size),
+      'Content-Type': 'application/octet-stream',
+      'x-vercel-digest': file.sha,
+    },
+    body,
+    duplex: 'half',
+    signal: AbortSignal.timeout(120_000),
+  } as RequestInit & { duplex: 'half' });
+  const result = await readApiResponse(response);
+  if (!response.ok) {
+    fail(
+      `Vercel file upload failed for ${file.deploymentPath}: ${apiError(result, response.status)}`
+    );
+  }
+}
+
+async function uploadFiles(files: VercelFile[], token: string, teamId: string): Promise<void> {
+  const unique = [...new Map(files.map(file => [file.sha, file])).values()];
+  for (let index = 0; index < unique.length; index += UPLOAD_CONCURRENCY) {
+    await Promise.all(
+      unique.slice(index, index + UPLOAD_CONCURRENCY).map(file => uploadFile(file, token, teamId))
+    );
+  }
+}
+
+async function createDeployment(
+  files: VercelFile[],
+  credentials: {
+    projectId: string;
+    projectName: string;
+    teamId: string;
+    token: string;
+  }
+): Promise<{ id?: string; readyState?: string; url?: string }> {
+  const response = await fetch(apiUrl('/v13/deployments', credentials.teamId), {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${credentials.token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name: credentials.projectName,
+      project: credentials.projectId,
+      files: files.map(file => ({
+        file: file.deploymentPath,
+        sha: file.sha,
+        size: file.size,
+      })),
+      projectSettings: { framework: null },
+      ...(options.production ? { target: 'production' } : {}),
+    }),
+    signal: AbortSignal.timeout(120_000),
+  });
+  const result = await readApiResponse(response);
+  if (!response.ok) fail(`Vercel deployment failed: ${apiError(result, response.status)}`);
+  if (typeof result !== 'object' || result === null || Array.isArray(result)) {
+    fail('Vercel returned an invalid deployment response.');
+  }
+  return result as { id?: string; readyState?: string; url?: string };
 }
 
 ensureNodeRuntime();
@@ -168,43 +185,85 @@ ensurePackageManagerRuntime();
 await ensureGitignoreSafety();
 loadEnvFile(options.env);
 
-if (!process.env.VERCEL_TOKEN) {
-  fail("VERCEL_TOKEN is missing. Put it in .env.vercel or process env.");
+const token = process.env.VERCEL_TOKEN?.trim() ?? '';
+const projectId = process.env.VERCEL_PROJECT_ID?.trim() ?? '';
+const teamId = process.env.VERCEL_ORG_ID?.trim() ?? '';
+const projectName = readProjectName();
+if (!token || !projectId) fail('VERCEL_TOKEN and VERCEL_PROJECT_ID are required.');
+if (/[\0\r\n]/.test(token) || token.length > 2048) fail('VERCEL_TOKEN is invalid.');
+if (!/^[A-Za-z0-9_-]{3,100}$/.test(projectId)) fail('VERCEL_PROJECT_ID is invalid.');
+if (teamId && !/^[A-Za-z0-9_-]{3,100}$/.test(teamId)) fail('VERCEL_ORG_ID is invalid.');
+if (!/^[a-z0-9][a-z0-9._-]{0,99}$/.test(projectName)) {
+  fail('VERCEL_PROJECT_NAME or package.json name must be a safe lowercase project name.');
 }
 
-const vercelEnv: NodeJS.ProcessEnv = { ...process.env };
-const prodFlag = options.production ? ["--prod"] : [];
-
-runPackageTool(["--version"], "A package manager is required for Vercel deploy.");
-if (process.env.DEPLOY_CHECKED !== "1") {
-  info(`==> ${t("common.deploymentCheck")}`);
-  runPackageScript("check", [], run, "Project checks failed.", vercelEnv);
+const distPath = path.resolve(process.cwd(), 'dist');
+try {
+  assertSafeOutputPath(process.cwd(), distPath);
+} catch (error) {
+  fail(error instanceof Error ? error.message : String(error));
 }
-const vercel = getVercelInvocation();
-runVercel(["--version"], "Vercel CLI is required. Install it locally or globally.", vercelEnv);
-
-if (!process.env.VERCEL_ORG_ID || !process.env.VERCEL_PROJECT_ID) {
-  info("==> VERCEL_ORG_ID / VERCEL_PROJECT_ID not both set. Vercel may require an existing .vercel/project.json link.", "yellow");
+if (!options.skipClean && fs.existsSync(distPath)) {
+  fs.rmSync(distPath, { force: true, recursive: true });
 }
 
-if (options.prebuilt) {
-  if (!options.skipClean) {
-    info(`==> ${t("common.cleaning")} .vercel/output...`, "yellow");
-    removeIfExists(".vercel/output");
+if (process.env.DEPLOY_CHECKED !== '1') {
+  runPackageScript('check', [], run, 'Project checks failed.');
+}
+runPackageScript('build', [], run, 'Build failed.');
+if (!fs.existsSync(distPath)) fail(`${t('common.distMissing')}: dist`);
+
+const files = collectStaticDeployFiles(distPath, {
+  maxFiles: MAX_DEPLOY_FILES - 1,
+  maxTotalBytes: MAX_DEPLOY_BYTES,
+});
+if (files.some(file => file.deploymentPath === 'vercel.json')) {
+  fail('Build output unexpectedly contains vercel.json.');
+}
+const configPath = path.resolve('vercel.json');
+const configStat = fs.lstatSync(configPath);
+if (configStat.isSymbolicLink() || !configStat.isFile()) {
+  fail('vercel.json must be a regular file.');
+}
+const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'astro-vercel-deploy-'));
+try {
+  const deploymentConfigPath = path.join(temporaryDirectory, 'vercel.json');
+  let sourceConfig: unknown;
+  try {
+    sourceConfig = JSON.parse(fs.readFileSync(configPath, 'utf8')) as unknown;
+  } catch {
+    fail('vercel.json contains invalid JSON.');
+  }
+  const deploymentConfig = JSON.stringify(createVercelStaticConfig(sourceConfig));
+  if (Buffer.byteLength(deploymentConfig, 'utf8') > 256 * 1024) {
+    fail('The generated Vercel static configuration is too large.');
+  }
+  fs.writeFileSync(deploymentConfigPath, deploymentConfig, {
+    encoding: 'utf8',
+    mode: 0o600,
+  });
+  const deploymentConfigStat = fs.lstatSync(deploymentConfigPath);
+  files.push({
+    absolutePath: deploymentConfigPath,
+    deploymentPath: 'vercel.json',
+    size: deploymentConfigStat.size,
+  });
+  if (files.reduce((total, file) => total + file.size, 0) > MAX_DEPLOY_BYTES) {
+    fail('Vercel deployment exceeds the total byte safety limit.');
   }
 
-  info(`==> ${t("vercel.building")} (${options.production ? "production" : "preview"})...`);
-  runVercel(["build", ...prodFlag], "Vercel local build failed.", vercelEnv);
-
-  info(`==> ${t("vercel.deploying")}...`);
-  runVercel(
-    ["deploy", "--prebuilt", "--archive=tgz", ...prodFlag],
-    "Vercel prebuilt deploy failed.",
-    vercelEnv
+  const describedFiles = await describeFiles(files);
+  await uploadFiles(describedFiles, token, teamId);
+  const deployment = await createDeployment(describedFiles, {
+    projectId,
+    projectName,
+    teamId,
+    token,
+  });
+  const deploymentUrl = deployment.url ? `https://${deployment.url}` : '';
+  console.log(
+    `${t('common.deployCompleted')} ${deploymentUrl || deployment.id || deployment.readyState || ''}`.trim()
   );
-} else {
-  info(`==> ${t("vercel.remote")} (${options.production ? "production" : "preview"})...`);
-  runVercel(["deploy", "--yes", ...prodFlag], "Vercel deploy failed.", vercelEnv);
+} finally {
+  fs.rmSync(temporaryDirectory, { force: true, recursive: true });
 }
-
-info(`==> ${t("common.deployCompleted")}`, "green");

@@ -1,7 +1,8 @@
 ---
 import { DEFAULT_AUTHOR } from '../lib/site';
+import ExternalLink from './ExternalLink.astro';
 
-export interface Props {
+interface Props {
   canonicalUrl: string;
   lang: 'zh-tw' | 'en' | 'zh-cn';
   author?: string | undefined;
@@ -34,14 +35,15 @@ const i = {
       <p class="copyright-title">{i.title}</p>
       <p class="copyright-summary">{i.license}</p>
     </div>
-    <a
+    <ExternalLink
       href={i.licenseUrl}
-      rel="license noopener noreferrer"
+      lang={lang}
+      rel="license"
       target="_blank"
       class="copyright-badge"
     >
       {i.badge}
-    </a>
+    </ExternalLink>
   </div>
 
   <dl class="copyright-meta">
@@ -58,14 +60,15 @@ const i = {
     <div class="copyright-meta-item">
       <dt>License</dt>
       <dd>
-        <a
+        <ExternalLink
           href={i.licenseUrl}
-          rel="license noopener noreferrer"
+          lang={lang}
+          rel="license"
           target="_blank"
           class="copyright-link"
         >
           Creative Commons Attribution-NonCommercial-ShareAlike 4.0
-        </a>
+        </ExternalLink>
       </dd>
     </div>
   </dl>

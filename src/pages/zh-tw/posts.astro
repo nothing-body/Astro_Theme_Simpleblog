@@ -1,21 +1,13 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostsListSection from '../../components/PostsListSection.astro';
-import { useTranslations } from '../../i18n/utils';
+import PostsPage from '../../components/PostsPage.astro';
 import { getPublishedPostsForLang, getTotalPages } from '../../lib/posts';
-import { getPostsPageUrl } from '../../lib/routes';
-import { getCanonicalUrl } from '../../lib/site';
 
-const t = useTranslations('zh-tw');
 const allPosts = await getPublishedPostsForLang('zh-tw');
-const totalPages = getTotalPages(allPosts.length);
-const canonicalPage1 = getCanonicalUrl(getPostsPageUrl('zh-tw', 1), Astro.site);
 ---
 
-<BaseLayout
-  title={t('posts.title')}
-  description="所有文章 - 瀏覽全部繁體中文文章。"
-  customCanonical={canonicalPage1}
->
-  <PostsListSection lang="zh-tw" allPosts={allPosts} currentPage={1} totalPages={totalPages} />
-</BaseLayout>
+<PostsPage
+  lang="zh-tw"
+  allPosts={allPosts}
+  currentPage={1}
+  totalPages={getTotalPages(allPosts.length)}
+/>
