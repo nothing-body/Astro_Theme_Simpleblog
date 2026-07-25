@@ -10,8 +10,6 @@
   <a href="./README.zh-CN.md">简体中文</a>
 </p>
 
-Live Demo 刻意指向已搭建完成的正式網站，讓使用者查看完成效果；公開設定範例仍保留 `example.com` 與佔位 ID，避免洩漏私人部署資料。
-
 ## 快速開始
 
 需要 Node.js 22.12 以上。專案提交 `pnpm-lock.yaml`，因此建議使用 pnpm。
@@ -115,7 +113,7 @@ Pagefind 目前不支援 `zh-tw`、`zh-cn` 詞幹分析。建置 Note 不是錯�
 
 ## 設定
 
-只複製需要的範例，真實檔案不可提交：
+範例：
 
 ```text
 .env.example
@@ -156,8 +154,6 @@ Cloudflare Pages、Vercel、Netlify、VPS 與 VPS Docker 部署靜態網站。Su
 `pnpm deploy:menu` 提供英文、繁體中文、簡體中文介面；專案也包含 GitHub Actions、GitLab CI 與 Codeberg/Woodpecker 範例。完整步驟請閱讀 [DEPLOYMENT.zh-TW.md](./DEPLOYMENT.zh-TW.md)。
 
 ## 選用網址信譽檢測
-
-公開版只保留不呼叫 API 的三語系靜態離站提示，不包含私人查詢 API、KV 綁定、同步 Worker、清單或秘密。目的網址存放在 URL fragment，提示頁不會向任何信譽檢測服務發出請求。
 
 `OPENPHISH_GUIDE.*.md` 提供獨立建置教學，可使用 Cloudflare、Netlify、Vercel、Supabase 或其他後端。自檢支援：
 

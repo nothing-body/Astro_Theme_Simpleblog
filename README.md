@@ -10,8 +10,6 @@ A multilingual Astro static-blog template with Markdown content, Pagefind search
   <a href="./README.zh-CN.md">简体中文</a>
 </p>
 
-The Live Demo intentionally points to a real completed site. Configuration examples continue to use `example.com` and placeholder IDs so the public repository does not expose private deployment data.
-
 ## Quick Start
 
 Node.js 22.12 or newer is required. pnpm is recommended because this repository commits `pnpm-lock.yaml`.
@@ -86,7 +84,6 @@ Important components:
 - `BlogPostLayout.astro`: article metadata, JSON-LD, breadcrumbs, Pagefind fields, categories, and tags.
 - `SearchPage.astro`: localized search UI; `src/scripts/search.ts` creates results with safe DOM APIs.
 - `HeadMeta.astro`: canonical URL, hreflang, Open Graph, Twitter metadata, and GA4 configuration.
-- `CategoryTree.astro`, `Sidebar.astro`, `Pagination.astro`, and `PostCard.astro`: reusable archive UI.
 - `ExternalLink.astro` and `LeavingNotice.astro`: keep external destinations in a URL fragment and show a multilingual API-free notice.
 - `src/markdown/processor.ts`: rejects raw HTML, secures external links, and applies the article-image policy.
 - `src/integrations/localized-output.ts`: verifies and supplements localized sitemap alternates after generation.
@@ -116,7 +113,7 @@ Pagefind does not currently support stemming for `zh-tw` or `zh-cn`. The build n
 
 ## Configuration
 
-Copy only the example you need and keep the real file uncommitted:
+Examples:
 
 ```text
 .env.example
@@ -143,8 +140,6 @@ Do not commit real `.env*` files, tokens, account IDs, project IDs, SSH keys, pa
 
 ## Deployment
 
-Supported direct targets:
-
 ```bash
 pnpm deploy:cf:only
 pnpm deploy:vercel:only
@@ -159,8 +154,6 @@ Cloudflare Pages, Vercel, Netlify, VPS, and VPS Docker deploy the static site. S
 Use `pnpm deploy:menu` for the English, Traditional Chinese, or Simplified Chinese menu. GitHub Actions, GitLab CI, and Codeberg/Woodpecker examples are included. See [DEPLOYMENT.en.md](./DEPLOYMENT.en.md) for beginner-friendly setup.
 
 ## Optional URL Reputation Integration
-
-This public template includes only a static, multilingual external-link notice. It does **not** include the private lookup API, KV binding, synchronization Worker, feed data, or secrets. The destination is stored in a URL fragment and the notice does not send a request to any reputation service.
 
 The three `OPENPHISH_GUIDE.*.md` files explain how to build a separate optional service on Cloudflare, Netlify, Vercel, Supabase, or another backend. The self-check supports:
 
