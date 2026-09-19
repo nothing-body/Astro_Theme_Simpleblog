@@ -5,6 +5,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { spawnSync } from 'node:child_process';
 import { Zip, ZipDeflate } from 'fflate';
+import { Readable } from 'node:stream';
 import { loadEnvFile } from './deploy_env.ts';
 import { stripLangArgs, t } from './deploy_i18n.ts';
 import {
@@ -37,6 +38,10 @@ for (const arg of args) {
   else if (arg.startsWith('--dist=')) options.dist = arg.slice('--dist='.length);
   else if (arg.startsWith('--env=')) options.env = arg.slice('--env='.length);
   else throw new Error(`Unknown Netlify deployment option: ${arg}`);
+}
+
+if (options.dist !== 'dist') {
+  throw new Error('This build pipeline requires --dist=dist. Custom directories are supported only by VPS --prebuilt uploads.');
 }
 
 function fail(message: string): never {
@@ -98,17 +103,19 @@ async function deployArchive(
   const endpoint = new URL(
     `https://api.netlify.com/api/v1/sites/${encodeURIComponent(siteId)}/deploys`
   );
-  endpoint.searchParams.set('production', options.production ? 'true' : 'false');
+  endpoint.searchParams.set('draft', options.production ? 'false' : 'true');
   const response = await fetch(endpoint, {
+    redirect: 'error',
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/zip',
       'User-Agent': 'astro-simpleblog-deployer/1',
     },
-    body: fs.readFileSync(zipPath),
+    body: Readable.toWeb(fs.createReadStream(zipPath)) as ReadableStream<Uint8Array>,
+    duplex: 'half',
     signal: AbortSignal.timeout(120_000),
-  });
+  } as RequestInit & { duplex: 'half' });
   try {
     const result = await readBoundedJsonResponse(response, MAX_RESPONSE_BYTES, 'Netlify');
     if (!response.ok) {

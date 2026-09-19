@@ -1,3 +1,4 @@
+import { initLanguageLinks } from './language-links';
 import type { PrivacySettings } from '../types';
 import { initAnalytics, loadAnalyticsIfConsented } from './analytics';
 import { bootstrapPrivacySettings, clearSavedTimezone } from './privacy';
@@ -215,3 +216,5 @@ initNavbar();
 initBackToTop();
 initPrivacyPanel();
 initFooterPreferences();
+
+initLanguageLinks();

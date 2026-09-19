@@ -46,6 +46,15 @@ jobs:
       - name: Run cross-platform source checks
         run: pnpm selfcheck -- --quick
 
+      - name: Build and validate production output
+        run: pnpm build
+
+      - name: Install browser for CI verification
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run browser regression checks
+        run: pnpm test:e2e
+
       - name: Validate all local deployment plans in English
         run: pnpm deploy:switch --mode=direct:cf+vps+vps-docker+vercel+netlify+supabase --lang=en --dry-run --yes
 

@@ -72,21 +72,20 @@ export function localizedSitemapAlternates(): AstroIntegration {
 
         for (const sitemapFile of sitemapFiles) {
           const xml = await readFile(sitemapFile, 'utf8');
-          const blocks = await Promise.all(
-            [...xml.matchAll(/<url>.*?<\/url>/gs)].map(async match => {
+          const blocks: string[] = [];
+          for (const match of xml.matchAll(/<url>.*?<\/url>/gs)) {
               const block = match[0];
               const location = block.match(/<loc>(.*?)<\/loc>/s)?.[1];
-              if (!location) return block;
+              if (!location) { blocks.push(block); continue; }
               const links = await pageAlternateLinks(distDir, decodeHtmlAttribute(location));
               const cleanBlock = block.replace(/<xhtml:link\b[^>]*\/>/g, '');
               const alternateXml = links.map(link =>
                 `<xhtml:link rel="alternate" hreflang="${escapeXmlAttribute(link.hreflang)}" href="${escapeXmlAttribute(link.href)}"/>`
               ).join('');
-              return alternateXml
+              blocks.push(alternateXml
                 ? cleanBlock.replace(`<loc>${location}</loc>`, `<loc>${location}</loc>${alternateXml}`)
-                : cleanBlock;
-            })
-          );
+                : cleanBlock);
+          }
           let index = 0;
           const updated = xml.replace(/<url>.*?<\/url>/gs, original => blocks[index++] ?? original);
           if (updated !== xml) await writeFile(sitemapFile, updated);

@@ -63,3 +63,8 @@ target="_blank" rel="noopener noreferrer"
 - 公開模板不要加入私人控制台、私人 IP、內部 hostname、API token 或個人帳號網址。
 - 書籤面板有固定捲動範圍，較多群組或連結不會讓首頁無限拉長。
 - 編輯後執行 `pnpm check`、`pnpm lint`、`pnpm lint:css`、`pnpm build`、`pnpm selfcheck -- --quick`。
+
+
+## 零基礎設定、環境檔、憑證與自動部署
+
+[零基礎設定、環境檔、憑證與自動部署](SETUP.zh-TW.md)。 Astro 7.3.3 / TypeScript 6 / pnpm 10.33.4.

@@ -88,7 +88,13 @@ for (const arg of args) {
   }
   if (arg.startsWith('--env=')) {
     options.env = arg.slice('--env='.length);
+    continue;
   }
+  throw new Error(`Unknown Cloudflare deployment option: ${arg}`);
+}
+
+if (options.dist !== 'dist') {
+  throw new Error('This build pipeline requires --dist=dist. Custom directories are supported only by VPS --prebuilt uploads.');
 }
 
 const color = {
@@ -108,13 +114,6 @@ function fail(message: string): never {
   console.error(`\n[deploy] ${message}`);
   process.exit(1);
 }
-
-const unknownArgs = args.filter(
-  arg =>
-    arg !== '--skip-clean' &&
-    !['--project=', '--branch=', '--dist=', '--env='].some(prefix => arg.startsWith(prefix))
-);
-if (unknownArgs.length > 0) fail(`Unknown option: ${unknownArgs.join(', ')}`);
 
 function redactSensitive(text: string): string {
   if (!text) return text;
@@ -241,6 +240,8 @@ async function getPagesProductionBranch(projectName: string): Promise<string> {
   let response: Response;
   try {
     response = await globalThis.fetch(url, {
+      redirect: 'error',
+      signal: AbortSignal.timeout(30_000),
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',

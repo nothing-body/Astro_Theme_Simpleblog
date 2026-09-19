@@ -10,6 +10,7 @@ type RuleGroup = {
  * analysis.ts whenever a new finding code or protected boundary is added.
  */
 const RULE_GROUPS: RuleGroup[] = [
+  { codes: 'CI', scope: 'GitHub workflow credential handling.', blocks: 'Direct shell interpolation of secrets or event data, and secrets in step conditions.' },
   {
     codes: 'CHECK',
     scope: 'Self-check orchestration and child-command failures.',
@@ -74,7 +75,7 @@ const RULE_GROUPS: RuleGroup[] = [
     codes: 'BUILD / ROUTE',
     scope: 'Generated-file integrity and canonical route policy.',
     blocks:
-      'Missing dist, source maps, broken internal URLs, duplicate page-one routes, and absent generated assets.',
+      'Missing dist, source maps, sensitive output files, symlinks, excessive nesting, broken internal URLs, duplicate page-one routes, and absent generated assets.',
   },
   {
     codes: 'SEO',

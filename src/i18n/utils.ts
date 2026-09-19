@@ -19,7 +19,7 @@ import type { LanguageRoute } from '../types';
 
 export function getLangFromUrl(url: URL): Lang {
   const [, firstSegment] = url.pathname.split('/');
-  if (firstSegment && firstSegment in ui) {
+  if (firstSegment && Object.hasOwn(ui, firstSegment)) {
     return firstSegment as Lang;
   }
   return defaultLang;
@@ -58,8 +58,8 @@ export function useTranslatedPath(lang: Lang) {
 export function buildDynamicCategoryMapping(
   allPosts: BlogPost[]
 ): Record<string, Record<string, string>> {
-  const mapping: Record<string, Record<string, string>> = {};
-  const postsByPath: Record<string, Record<string, string>> = {};
+  const mapping: Record<string, Record<string, string>> = Object.create(null);
+  const postsByPath: Record<string, Record<string, string>> = Object.create(null);
 
   const addCategoryMapping = (sourcePath: string[], targetLang: string, targetPath: string[]) => {
     if (sourcePath.length === 0 || targetPath.length === 0) return;
@@ -92,7 +92,7 @@ export function buildDynamicCategoryMapping(
 
     postsByPath[relativePath] ??= {};
 
-    if (locale && locale in ui) {
+    if (locale && Object.hasOwn(ui, locale)) {
       postsByPath[relativePath][locale] = getNormalizedPostCategoryPath(post).join('/');
     }
   }
@@ -122,12 +122,12 @@ export function buildDynamicCategoryMapping(
 export function buildDynamicTagMapping(
   allPosts: BlogPost[]
 ): Record<string, Record<string, string>> {
-  const mapping: Record<string, Record<string, string>> = {};
+  const mapping: Record<string, Record<string, string>> = Object.create(null);
   const postsByPath = new Map<string, Partial<Record<Lang, BlogPost>>>();
 
   for (const post of allPosts) {
     const [locale, ...relativeParts] = post.id.split('/');
-    if (!locale || !(locale in ui) || relativeParts.length === 0) continue;
+    if (!locale || !Object.hasOwn(ui, locale) || relativeParts.length === 0) continue;
 
     const relativePath = relativeParts.join('/');
     const translations = postsByPath.get(relativePath) ?? {};
@@ -193,7 +193,7 @@ export function getTargetLangRoute(
     return route(getPostsListUrl(targetLang, 1));
   }
 
-  if (parts[0] === 'page' && parts[1] && /^\d+$/.test(parts[1])) {
+  if (parts.length === 2 && parts[0] === 'page' && parts[1] && /^[1-9]\d*$/.test(parts[1])) {
     const page = Math.min(Number(parts[1]), getTotalPages(targetPosts.length));
     return route(getPostsPageUrl(targetLang, page));
   }
@@ -224,7 +224,7 @@ export function getTargetLangRoute(
     return unavailableRoute(targetLang);
   }
 
-  if (parts[0] === 'tags' && parts[1]) {
+  if (parts[0] === 'tags' && parts[1] && parts.length <= 3 && (!parts[2] || /^[1-9]\d*$/.test(parts[2]))) {
     const currentTag = decodeRouteSegment(parts[1]);
     if (!currentTag) return unavailableRoute(targetLang);
     const targetTag = targetPosts.some(p => p.data.tags.includes(currentTag))
@@ -241,6 +241,10 @@ export function getTargetLangRoute(
     return unavailableRoute(targetLang);
   }
 
+  const staticPages = new Set(['about', 'contact', 'disclaimer', 'privacy', 'search', 'leaving', 'no-category', '404']);
+  if (parts.length > 1 || (parts[0] && !staticPages.has(parts[0]))) {
+    return unavailableRoute(targetLang);
+  }
   const basePath = parts.length === 0 ? '/' : `/${parts.join('/')}`;
   if (targetLang === defaultLang) {
     return route(basePath);

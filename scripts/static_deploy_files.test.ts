@@ -17,6 +17,12 @@ describe('static deployment file boundaries', () => {
     fs.rmSync(root, { force: true, recursive: true });
   });
 
+  test('rejects excessive nesting even when there are no files', () => {
+    fs.mkdirSync(path.join(root, ...Array<string>(66).fill('d')), { recursive: true });
+    expect(() => collectStaticDeployFiles(root, { maxFiles: 100, maxTotalBytes: 1024 }))
+      .toThrow('directory depth limit');
+  });
+
   test('collects sorted files with portable deployment paths', () => {
     fs.mkdirSync(path.join(root, 'nested'));
     fs.writeFileSync(path.join(root, 'z.txt'), 'z');
@@ -52,5 +58,13 @@ describe('static deployment file boundaries', () => {
 
     expect(() => assertSafeOutputPath(project, output)).not.toThrow();
     expect(() => assertSafeOutputPath(project, root)).toThrow(/Unsafe output directory/);
+    for (const name of ['src', 'public', 'scripts', '.git', 'node_modules']) {
+      expect(() => assertSafeOutputPath(project, path.join(project, name))).toThrow(/Unsafe output directory/);
+    }
+  });
+
+  test.each(['.env.production', 'id_ed25519', 'private.pem', '.npmrc'])('rejects sensitive output %s', name => {
+    fs.writeFileSync(path.join(root, name), 'fixture');
+    expect(() => collectStaticDeployFiles(root, { maxFiles: 10, maxTotalBytes: 100 })).toThrow(/sensitive file/);
   });
 });

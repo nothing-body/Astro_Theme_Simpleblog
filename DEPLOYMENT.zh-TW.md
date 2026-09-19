@@ -353,7 +353,7 @@ pnpm deploy:switch -- --mode=github:cf+vercel --git-remote=origin --git-branch=m
 | `--dry-run`                  | 只顯示計畫，不建置、不驗證憑證、不 push、不上傳。         |
 | `--yes`／`-y`                | 只略過 `deploy:switch` 的人工確認；正常專案檢查仍會執行。 |
 | `--skip-clean`               | 重新建置前不刪除既有輸出目錄；不代表略過 build。          |
-| `--dist=<dir>`               | Cloudflare、Netlify 或靜態 VPS 使用安全的專案內輸出目錄。 |
+| `--dist=<dir>` | 建置固定使用 `dist`。只有 VPS `--prebuilt` 接受經驗證的其他專案內目錄。 |
 | `--cf-project=<name>`        | 覆寫 Cloudflare Pages 專案名稱。                          |
 | `--cf-branch=<branch>`       | 覆寫 Cloudflare Pages 部署分支。                          |
 | `--cf-env=<file>`            | 使用另一個根目錄 Cloudflare `.env*`。                     |
@@ -404,3 +404,8 @@ git ls-files
 ```
 
 確認沒有追蹤真實 `.env`、Token、私鑰、私人文章／圖片、`dist`、`.wrangler`、`.vercel`、`.netlify` 或 `.supabase` 狀態。
+
+
+## 零基礎設定、環境檔、憑證與自動部署
+
+[零基礎設定、環境檔、憑證與自動部署](SETUP.zh-TW.md)。 Astro 7.3.3 / TypeScript 6 / pnpm 10.33.4.

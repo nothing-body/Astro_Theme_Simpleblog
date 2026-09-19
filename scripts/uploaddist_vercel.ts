@@ -116,6 +116,7 @@ async function describeFiles(files: StaticDeployFile[]): Promise<VercelFile[]> {
 async function uploadFile(file: VercelFile, token: string, teamId: string): Promise<void> {
   const body = Readable.toWeb(fs.createReadStream(file.absolutePath)) as ReadableStream<Uint8Array>;
   const response = await fetch(apiUrl('/v2/files', teamId), {
+    redirect: 'error',
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -154,6 +155,7 @@ async function createDeployment(
   }
 ): Promise<{ id?: string; readyState?: string; url?: string }> {
   const response = await fetch(apiUrl('/v13/deployments', credentials.teamId), {
+    redirect: 'error',
     method: 'POST',
     headers: {
       Authorization: `Bearer ${credentials.token}`,

@@ -185,3 +185,15 @@ pnpm analyze
 ```
 
 `pnpm analyze` 会完整检查构建输出、SEO、CSP、路由、文章、依赖、部署计划和浏览器行为。
+
+
+## 零基础设置、环境文件、凭证与自动部署
+
+[零基础设置、环境文件、凭证与自动部署](SETUP.zh-CN.md)。 Astro 7.3.3 / TypeScript 6 / pnpm 10.33.4.
+
+
+## 共享模块与发布验证
+
+`src/i18n/locales.ts` 定义支持的语言，`ui.ts` 保存翻译文字，`utils.ts` 对应实际存在的翻译内容。`src/scripts/language-links.ts` 统一保留切换语言时的搜索词与离站目的地。`src/lib/routes.ts` 验证并组合路径。`scripts/check-output.ts` 在 Astro、Pagefind 与搜索清理完成后检查产物；普通构建也会自动执行。
+
+[共享模块与发布验证](VALIDATION.zh-CN.md)

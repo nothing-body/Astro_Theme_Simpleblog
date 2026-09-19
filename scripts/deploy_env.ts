@@ -47,6 +47,9 @@ export function readEnvFileValues(envFile: string): Map<string, string> {
     if (!ENV_KEY.test(key)) {
       throw new Error(`Invalid environment key '${key}' in ${envFile}.`);
     }
+    if (values.has(key)) {
+      throw new Error(`Duplicate environment key '${key}' in ${envFile}.`);
+    }
     let value = assignment.slice(separator + 1).trim();
     if (
       value.length >= 2 &&

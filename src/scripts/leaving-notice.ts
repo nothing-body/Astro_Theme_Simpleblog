@@ -37,13 +37,4 @@ if (root) {
     fail();
   }
 
-  if (window.location.hash) {
-    document
-      .querySelectorAll<HTMLAnchorElement>('a[data-preserve-fragment="true"]')
-      .forEach(link => {
-        const target = new URL(link.href);
-        target.hash = window.location.hash;
-        link.href = target.href;
-      });
-  }
 }

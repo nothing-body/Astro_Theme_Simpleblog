@@ -1,9 +1,9 @@
-import { defaultLang, ui, type Lang } from '../i18n/ui';
+import { defaultLang, isLang, type Lang } from '../i18n/locales';
 
-/** 移除路徑中的語系前綴（含 legacy /en）。 */
+/** 移除已配置的中文語系前綴；英文路由沒有 /en 前綴。 */
 export function stripLocalePathParts(parts: string[]): string[] {
   const next = [...parts];
-  if (next[0] && next[0] in ui && next[0] !== defaultLang) {
+  if (next[0] && isLang(next[0]) && next[0] !== defaultLang) {
     next.shift();
   }
   return next;
@@ -101,7 +101,7 @@ export function getPostsPageUrl(lang: Lang, page = 1): string {
 export function getTagListUrl(lang: Lang, tag: string, page = 1): string {
   const normalizedTag = tag.trim().normalize('NFC');
   if (
-    !normalizedTag ||
+    !normalizedTag || normalizedTag === '.' || normalizedTag === '..' ||
     [...normalizedTag].some(isUnsafeRouteCharacter)
   ) {
     throw new Error('Tag routes require a safe, non-empty single segment.');

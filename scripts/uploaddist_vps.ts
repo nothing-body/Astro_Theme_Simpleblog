@@ -74,6 +74,11 @@ for (const arg of args) {
     options.env = arg.slice('--env='.length);
     continue;
   }
+  throw new Error(`Unknown VPS deployment option: ${arg}`);
+}
+
+if (!options.prebuilt && options.dist !== 'dist') {
+  throw new Error('This build pipeline requires --dist=dist. Custom directories are supported only by VPS --prebuilt uploads.');
 }
 
 const color = {
@@ -91,17 +96,8 @@ function info(message: string, tone: Tone = 'cyan'): void {
 }
 
 function fail(message: string): never {
-  console.error(`\n[vps-deploy] ${message}`);
-  process.exit(1);
+  throw new Error(`[vps-deploy] ${message}`);
 }
-
-const unknownArgs = args.filter(
-  arg =>
-    arg !== '--skip-clean' &&
-    arg !== '--prebuilt' &&
-    !['--dist=', '--env='].some(prefix => arg.startsWith(prefix))
-);
-if (unknownArgs.length > 0) fail(`Unknown option: ${unknownArgs.join(', ')}`);
 
 function run(
   command: string,
@@ -165,6 +161,7 @@ if (!isSafeRemoteTargetPath(targetDir)) {
     'VPS_TARGET_DIR must be an absolute Unix path using only letters, numbers, dot, dash, underscore, tilde and slash.'
   );
 }
+
 
 const distPath = path.resolve(process.cwd(), options.dist);
 assertSafeDistPath(distPath);

@@ -58,3 +58,6 @@ Example:
 Fix the reported source rather than disabling the rule. Run `pnpm selfcheck -- --quick` while editing, then run `pnpm analyze` before release.
 
 When you implement an optional reputation API, copy `link-reputation.audit.example.json` to `link-reputation.audit.json`, select `local-feed` or `remote-api`, name the provider, and list the actual TypeScript/Astro/disclosure files. This switches `LINKCHECK` from static-notice enforcement to strategy-specific API checks. An external backend cannot be inspected from this repository; the warning is intentional and must be addressed by checking that backend separately.
+
+
+[Shared modules and release validation](VALIDATION.en.md) · [Setup](SETUP.en.md)

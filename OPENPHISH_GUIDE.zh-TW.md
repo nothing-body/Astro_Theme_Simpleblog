@@ -345,3 +345,6 @@ Manifest 差異示例：
 6. 確認 API 已設定 rate limit 與精確 CORS origin。
 7. 確認三語路由都能保留目的網址，並在不重查 API 的情況下翻譯既有結果。
 8. 公開或商業使用前，再次確認 OpenPhish 條款及所需授權。
+
+
+[共用模組與發版驗證](VALIDATION.zh-TW.md) · [Setup](SETUP.zh-TW.md)

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { Audit, readText, relative, walkFiles } from './core.ts';
+import { collectStaticDeployFiles } from '../static_deploy_files.ts';
 
 function attribute(tag: string, name: string): string {
   for (const match of tag.matchAll(/\b([:\w-]+)=["']([^"']*)["']/gi)) {
@@ -39,17 +40,16 @@ function expectedPagePath(dist: string, file: string): string {
   return `/${relativePath.replace(/\/index\.html$/, '')}/`;
 }
 
-/*
- * Output audit inspects the real production artifact rather than trusting
- * source configuration alone. It verifies SEO ownership, CSP-compatible HTML,
- * responsive image output, internal-link existence, Pagefind/Partytown assets,
- * route policy, robots.txt, sitemap targets, and bundle-size budgets.
- */
 export function checkOutput(audit: Audit): void {
   const dist = path.join(process.cwd(), 'dist');
   if (!fs.existsSync(dist)) {
     audit.error('BUILD001', 'dist is missing; run the production build first.');
     return;
+  }
+  try {
+    collectStaticDeployFiles(dist, { maxFiles: 100_000, maxTotalBytes: 1024 * 1024 * 1024 });
+  } catch (error) {
+    audit.error('BUILD006', error instanceof Error ? error.message : 'Unsafe build output.');
   }
   if (fs.existsSync(path.join(dist, 'page', '1', 'index.html')))
     audit.error('ROUTE002', '/page/1 must not be generated.', 'dist/page/1/index.html');
@@ -107,7 +107,8 @@ export function checkOutput(audit: Audit): void {
       const alternates = [
         ...html.matchAll(/<link\b[^>]*rel=["']alternate["'][^>]*hreflang=["'][^"']+["'][^>]*>/gi),
       ].map(match => attribute(match[0], 'hreflang'));
-      for (const expected of ['en', 'zh-TW', 'zh-CN', 'x-default']) {
+      const ownLanguage = attribute(html.match(/<html\b[^>]*>/i)?.[0] ?? '', 'lang');
+      for (const expected of [ownLanguage, ...(alternates.includes('en') ? ['x-default'] : [])]) {
         if (!alternates.includes(expected))
           audit.error('SEO005', `Missing hreflang ${expected}.`, name);
       }
@@ -222,6 +223,7 @@ export function checkOutput(audit: Audit): void {
     }
 
     if (siteOrigin) {
+      const directExternalAllowlist = new Set<string>();
       for (const match of html.matchAll(/<a\b[^>]*>/gi)) {
         const tag = match[0];
         const href = attribute(tag, 'href');
@@ -234,11 +236,14 @@ export function checkOutput(audit: Audit): void {
         }
         if (target.origin === siteOrigin || !['http:', 'https:'].includes(target.protocol))
           continue;
-        audit.error(
-          'LINKCHECK007',
-          `External anchor bypasses the static leaving notice: ${target.href}`,
-          name
-        );
+        const direct = attribute(tag, 'data-external-direct');
+        if (!direct || !directExternalAllowlist.has(target.href)) {
+          audit.error(
+            'LINKCHECK007',
+            `External anchor bypasses the leaving-page check: ${target.href}`,
+            name
+          );
+        }
       }
 
       for (const tag of html.matchAll(/<(?:a|link|script|img)\b[^>]*>/gi)) {

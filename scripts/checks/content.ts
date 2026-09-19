@@ -14,26 +14,6 @@ type ArticleRecord = {
   tags: string[];
 };
 
-const allowedTopLevelCategories: Record<Language, ReadonlySet<string>> = {
-  en: new Set([
-    'Digital Rights',
-    'Guide',
-    'Network & Security',
-    'Privacy & Mail',
-    'Server',
-    'Software',
-    'Website',
-  ]),
-  'zh-tw': new Set(['伺服器', '指南', '數位權益', '網站', '網路與安全', '軟體', '隱私與信箱']),
-  'zh-cn': new Set(['服务器', '指南', '数字权益', '网站', '网络与安全', '软件', '隐私与邮箱']),
-};
-
-/*
- * Content audit treats articles as untrusted input. It validates YAML without
- * duplicate keys or excessive aliases, rejects executable/raw HTML content and
- * dangerous copy-paste commands, then verifies that all three translations
- * share a slug and compatible category/tag structure.
- */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -158,16 +138,8 @@ function checkArticle(audit: Audit, language: Language, filePath: string): Artic
   const updatedDate = data.updatedDate === undefined ? null : validDate(data.updatedDate);
 
   if (!title) audit.error('CONTENT001', 'title must be a non-empty string.', file);
-  if (
-    [title, description, category, ...(categoryPath ?? []), ...(tags ?? [])].some(
-      containsUnsafeUnicode
-    )
-  ) {
-    audit.error(
-      'CONTENT019',
-      'Content metadata contains control or bidirectional override characters.',
-      file
-    );
+  if ([title, description, category, ...(categoryPath ?? []), ...(tags ?? [])].some(containsUnsafeUnicode)) {
+    audit.error('CONTENT019', 'Content metadata contains control or bidirectional override characters.', file);
   }
   if (!description) audit.error('SEO001', 'A unique description is required.', file);
   else if (description.length < 30 || description.length > 180) {
@@ -184,8 +156,8 @@ function checkArticle(audit: Audit, language: Language, filePath: string): Artic
   if (pubDate && updatedDate && updatedDate < pubDate) {
     audit.error('CONTENT015', 'updatedDate cannot be earlier than pubDate.', file);
   }
-  if (!allowedTopLevelCategories[language].has(category)) {
-    audit.error('CONTENT006', `Unknown top-level category: ${category || '(empty)'}`, file);
+  if (!category || category.length > 100 || containsUnsafeUnicode(category)) {
+    audit.error('CONTENT006', 'Category must be a safe non-empty label of at most 100 characters.', file);
   }
   if (!categoryPath || categoryPath.length === 0 || categoryPath.some(segment => !segment)) {
     audit.error('CONTENT007', 'categoryPath must be a non-empty string array.', file);

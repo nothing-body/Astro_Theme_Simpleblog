@@ -21,6 +21,9 @@ describe('route decoding', () => {
 });
 
 describe('stripLocalePathParts', () => {
+  test.each(['constructor', '__proto__', 'toString'])('preserves non-locale %s', name => {
+    expect(stripLocalePathParts([name, 'posts'])).toEqual([name, 'posts']);
+  });
   test('does not treat the removed /en route as a locale prefix', () => {
     expect(stripLocalePathParts(['en', 'page', '2'])).toEqual(['en', 'page', '2']);
   });
@@ -69,6 +72,8 @@ describe('getTagListUrl', () => {
   });
 
   test('rejects empty tag routes', () => {
+    expect(() => getTagListUrl('en', '..')).toThrow(/safe, non-empty/);
+    expect(() => getTagListUrl('en', '.')).toThrow(/safe, non-empty/);
     expect(() => getTagListUrl('en', '  ', 1)).toThrow(/safe, non-empty/);
     expect(() => getTagListUrl('en', 'admin/secret', 1)).toThrow(/safe, non-empty/);
   });

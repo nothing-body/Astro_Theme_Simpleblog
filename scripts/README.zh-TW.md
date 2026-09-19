@@ -97,3 +97,6 @@ pnpm analyze
 - 建議配置 `VPS_KNOWN_HOSTS_FILE`。
 - VPS Docker 預設只綁 loopback；公開綁定必須明確允許。
 - 真實 env、平台狀態、私鑰、報告與建置輸出均由 `.gitignore` 排除。
+
+
+[零基礎設定、環境檔、憑證與自動部署](../SETUP.zh-TW.md)

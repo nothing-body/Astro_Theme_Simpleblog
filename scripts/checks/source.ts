@@ -689,6 +689,20 @@ export function checkSource(audit: Audit): void {
       audit.error('GIT002', 'Sensitive file must not be tracked by Git.', name);
   }
 
+  const workflow = parseYaml(readText(path.join(process.cwd(), '.github/workflows/deploy.yml'))) as {
+    jobs?: Record<string, { steps?: Array<{ run?: string; if?: string }> }>;
+  };
+  for (const job of Object.values(workflow.jobs ?? {})) {
+    for (const step of job.steps ?? []) {
+      if (step.run && /\$\{\{\s*(?:secrets\.|github\.event\.)/.test(step.run)) {
+        audit.error('CI001', 'Pass secrets and event data through environment variables, never shell interpolation.', '.github/workflows/deploy.yml');
+      }
+      if (typeof step.if === 'string' && /\bsecrets\./.test(step.if)) {
+        audit.error('CI002', 'Step conditions must reference job environment variables instead of secrets directly.', '.github/workflows/deploy.yml');
+      }
+    }
+  }
+
   const gitignore = readText(path.join(process.cwd(), '.gitignore'));
   for (const pattern of [
     '.env*',

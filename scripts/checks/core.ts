@@ -7,10 +7,6 @@ import { packageManagerCommand } from '../deploy_runtime.ts';
 type Severity = 'error' | 'warning';
 export type Finding = { severity: Severity; code: string; message: string; file?: string };
 
-/*
- * Findings use stable codes so documentation and CI logs can identify the
- * protected boundary. Errors fail the final command; warnings are advisory.
- */
 export class Audit {
   readonly findings: Finding[] = [];
 
@@ -25,9 +21,7 @@ export class Audit {
   print(): void {
     for (const finding of this.findings) {
       const location = finding.file ? ` ${finding.file}` : '';
-      console.log(
-        `[${finding.severity.toUpperCase()}] ${finding.code}${location}: ${finding.message}`
-      );
+      console.log(`[${finding.severity.toUpperCase()}] ${finding.code}${location}: ${finding.message}`);
     }
     const errors = this.findings.filter(item => item.severity === 'error').length;
     const warnings = this.findings.length - errors;
@@ -40,19 +34,11 @@ export class Audit {
 }
 
 const ignoredDirectories = new Set([
-  '.astro',
-  '.git',
-  '.vercel',
-  '.wrangler',
-  'dist',
-  'lighthouse_tmp',
-  'node_modules',
-  'playwright-report',
-  'test-results',
-  'tmp',
+  '.astro', '.git', '.vercel', '.wrangler', 'dist', 'lighthouse_tmp', 'node_modules',
+  'playwright-report', 'test-results', 'tmp', '.pnpm-store', '.netlify', '.supabase',
+  '.deploy-vps-docker', 'coverage', 'backup',
 ]);
 
-// Walk only reviewable project files; generated/vendor directories are audited separately.
 export function walkFiles(root: string): string[] {
   if (!fs.existsSync(root)) return [];
   const files: string[] = [];
@@ -75,12 +61,7 @@ export function readText(file: string): string {
 
 export function run(command: string, args: string[], label: string): void {
   console.log(`\n==> ${label}`);
-  const result = spawnSync(command, args, {
-    cwd: process.cwd(),
-    env: process.env,
-    stdio: 'inherit',
-    shell: false,
-  });
+  const result = spawnSync(command, args, { cwd: process.cwd(), env: process.env, stdio: 'inherit', shell: false });
   if (result.error) throw new Error(`${label} could not start: ${result.error.message}`);
   if (result.status !== 0) throw new Error(`${label} failed with exit code ${result.status ?? 1}.`);
 }

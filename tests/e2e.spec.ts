@@ -477,3 +477,21 @@ test.describe('layout regression checks', () => {
     expect(pageErrors).toEqual([]);
   });
 });
+
+
+test('search query survives all three language switches without copying unrelated parameters', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('bb-privacy-v1', JSON.stringify({ hasSetCookies: true, rememberTimezone: false, enableAnalytics: false })));
+  const query = 'Astro & 中文';
+  await page.goto('/search/?q=' + encodeURIComponent(query) + '&unrelated=discard');
+  for (const pathname of ['/zh-tw/search/', '/zh-cn/search/', '/search/']) {
+    await expect(page.locator('[data-search-input]')).toHaveValue(query);
+    await page.locator('#lang-trigger-btn').click();
+    await expect(page.locator('#lang-dropdown')).toHaveAttribute('aria-hidden', 'false');
+    const link = page.locator('.lang-switcher a[data-preserve-query="true"]');
+    const links = await link.evaluateAll(nodes => nodes.map(node => ({ href: (node as HTMLAnchorElement).href, text: node.textContent })));
+    const target = links.find(item => new URL(item.href).pathname.replace(/\/$/, '') === pathname.replace(/\/$/, ''));
+    if (!target?.text) throw new Error('Missing translated search link');
+    await page.locator('.lang-switcher a').filter({ hasText: target.text.trim() }).click();
+    await expect(page).toHaveURL(url => url.pathname.replace(/\/$/, '') === pathname.replace(/\/$/, '') && url.searchParams.get('q') === query && !url.searchParams.has('unrelated'));
+  }
+});

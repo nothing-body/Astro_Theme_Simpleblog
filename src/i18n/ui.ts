@@ -1,10 +1,5 @@
-export const languages = {
-  en: 'English',
-  'zh-tw': '繁體中文',
-  'zh-cn': '简体中文',
-} as const;
-
-export const defaultLang = 'en' as const;
+import { defaultLang } from './locales';
+export { languages, defaultLang } from './locales';
 
 export const ui = {
   en: {

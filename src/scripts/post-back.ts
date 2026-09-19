@@ -1,5 +1,5 @@
 import type { Lang } from '../i18n/ui';
-import { ui } from '../i18n/ui';
+import { isLang } from '../i18n/locales';
 import { decodeRouteSegment, getCategoryUrl, getPostsListUrl, getTagListUrl } from '../lib/routes';
 import { readSessionStorage } from './storage';
 
@@ -18,7 +18,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function parseConfig(element: HTMLElement): PostBackConfig | null {
   try {
     const value: unknown = JSON.parse(element.textContent || '{}');
-    if (!isRecord(value) || typeof value.lang !== 'string' || !(value.lang in ui)) return null;
+    if (!isRecord(value) || typeof value.lang !== 'string' || !isLang(value.lang)) return null;
     return {
       lang: value.lang as Lang,
       categoryMapping: isRecord(value.categoryMapping)

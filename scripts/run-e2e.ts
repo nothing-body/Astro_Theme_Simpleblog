@@ -91,8 +91,8 @@ function stop(child: ChildProcess | null | undefined): void {
 let activeCommand: ChildProcess | null = null;
 const port = await findAvailablePort();
 const baseUrl = `http://${host}:${port}`;
-const preview = spawn(process.execPath, [astroCli, 'preview', '--host', host, '--port', String(port)], {
-  stdio: 'ignore',
+const preview = spawn(process.execPath, [astroCli, 'preview', '--ignore-lock', '--host', host, '--port', String(port)], {
+  stdio: 'inherit',
   shell: false,
   env: process.env,
 });

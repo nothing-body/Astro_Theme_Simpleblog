@@ -104,3 +104,6 @@ The rule groups, severity behavior, and examples are documented in [SELF_CHECK_G
 - `VPS_KNOWN_HOSTS_FILE` is recommended. Without it, SSH uses `accept-new`; existing key changes still fail.
 - VPS Docker binds to loopback by default and requires an explicit opt-in for `0.0.0.0`.
 - Real env files, provider state, private keys, reports, and generated output remain excluded by `.gitignore`.
+
+
+[Step-by-step setup, environment files, credentials and CI](../SETUP.en.md)

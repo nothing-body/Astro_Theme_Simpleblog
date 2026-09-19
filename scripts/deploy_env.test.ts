@@ -36,6 +36,11 @@ describe('deployment environment files', () => {
     expect(() => readEnvFileValues('.env.test')).toThrow('Invalid environment key');
   });
 
+  test('rejects duplicate assignments instead of updating an ineffective first value', () => {
+    fs.writeFileSync('.env.test', 'TOKEN=first\nTOKEN=second\n');
+    expect(() => updateEnvValue('.env.test', 'TOKEN', 'replacement')).toThrow(/Duplicate/);
+  });
+
   test('updates only a validated single-line assignment', () => {
     fs.writeFileSync('.env.test', 'TOKEN=old\n', 'utf8');
     updateEnvValue('.env.test', 'TOKEN', 'new');

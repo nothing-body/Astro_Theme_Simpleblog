@@ -411,7 +411,7 @@ Supported options:
 | `--dry-run`                  | Print the plan only. It does not build, validate credentials, push, or upload.    |
 | `--yes` / `-y`               | Skip only the `deploy:switch` confirmation. Normal project checks still run.      |
 | `--skip-clean`               | Keep the existing output directory before rebuilding. It does not skip the build. |
-| `--dist=<dir>`               | Use a safe project-local output directory for Cloudflare, Netlify, or static VPS. |
+| `--dist=<dir>` | Builds use `dist`. Only VPS `--prebuilt` accepts a different, validated project-local directory. |
 | `--cf-project=<name>`        | Override the Cloudflare Pages project name.                                       |
 | `--cf-branch=<branch>`       | Override the Cloudflare Pages deployment branch.                                  |
 | `--cf-env=<file>`            | Use another root-level Cloudflare `.env*` file.                                   |
@@ -469,3 +469,8 @@ git ls-files
 ```
 
 Confirm no real `.env`, tokens, keys, private articles, private images, generated `dist`, `.wrangler`, `.vercel`, `.netlify`, or `.supabase` state is tracked.
+
+
+## Step-by-step setup, environment files, credentials and CI
+
+[Step-by-step setup, environment files, credentials and CI](SETUP.en.md)。 Astro 7.3.3 / TypeScript 6 / pnpm 10.33.4.

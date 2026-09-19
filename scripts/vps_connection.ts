@@ -78,8 +78,8 @@ export function createVpsConnection(
   const passphrase = process.env.VPS_SSH_PASSPHRASE || '';
 
   if (!host || !user) fail('VPS_HOST and VPS_USER are required.');
-  if (!/^[A-Za-z0-9._-]+$/.test(user)) fail('VPS_USER contains unsupported characters.');
-  if (!/^[A-Za-z0-9._:-]+$/.test(host)) fail('VPS_HOST contains unsupported characters.');
+  if (!/^[A-Za-z_][A-Za-z0-9._-]*$/.test(user)) fail('VPS_USER contains unsupported characters.');
+  if (!/^[A-Za-z0-9:][A-Za-z0-9._:-]*$/.test(host)) fail('VPS_HOST contains unsupported characters.');
   if (!/^\d{1,5}$/.test(port) || Number(port) < 1 || Number(port) > 65535) {
     fail('VPS_PORT must be a number between 1 and 65535.');
   }
@@ -93,7 +93,7 @@ export function createVpsConnection(
   assertNoShellMeta(keyArgument, 'VPS_SSH_KEY_PATH');
 
   const knownHostsValue = process.env.VPS_KNOWN_HOSTS_FILE?.trim() ?? '';
-  const knownHostsPath = knownHostsValue ? resolvePathMaybeHome(knownHostsValue) : '';
+  const knownHostsPath = knownHostsValue ? path.resolve(resolvePathMaybeHome(knownHostsValue)).replaceAll('\\', '/') : '';
   if (knownHostsPath) {
     assertRegularFile(knownHostsPath, 'VPS_KNOWN_HOSTS_FILE');
     assertNoShellMeta(knownHostsPath, 'VPS_KNOWN_HOSTS_FILE');

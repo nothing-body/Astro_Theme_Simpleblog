@@ -62,3 +62,8 @@ target="_blank" rel="noopener noreferrer"
 - 公开模板不要加入私人控制台、私人 IP、内部 hostname、API token 或个人账户网址。
 - 书签面板有固定滚动范围，较多分组或链接不会让首页无限变长。
 - 编辑后执行 `pnpm check`、`pnpm lint`、`pnpm lint:css`、`pnpm build`、`pnpm selfcheck -- --quick`。
+
+
+## 零基础设置、环境文件、凭证与自动部署
+
+[零基础设置、环境文件、凭证与自动部署](SETUP.zh-CN.md)。 Astro 7.3.3 / TypeScript 6 / pnpm 10.33.4.

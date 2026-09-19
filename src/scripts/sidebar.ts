@@ -50,7 +50,7 @@ function canPrefetch(): boolean {
 }
 
 function prefetch(link: HTMLAnchorElement): void {
-  if (!canPrefetch()) return;
+  if (!canPrefetch() || prefetched.size >= 3) return;
   const target = new URL(link.href, window.location.href);
   if (target.origin !== window.location.origin || prefetched.has(target.href)) return;
   const hint = document.createElement('link');

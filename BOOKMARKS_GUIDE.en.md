@@ -63,3 +63,8 @@ The public template opens bookmark destinations directly. The shared `ExternalLi
 - Do not add private control panels, private IPs, internal hostnames, API tokens, or personal account URLs to a public template.
 - The bookmark panel has bounded scrolling so many groups or links will not stretch the homepage indefinitely.
 - After editing, run `pnpm check`, `pnpm lint`, `pnpm lint:css`, `pnpm build`, and `pnpm selfcheck -- --quick`.
+
+
+## Step-by-step setup, environment files, credentials and CI
+
+[Step-by-step setup, environment files, credentials and CI](SETUP.en.md)。 Astro 7.3.3 / TypeScript 6 / pnpm 10.33.4.

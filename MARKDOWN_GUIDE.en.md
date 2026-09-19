@@ -214,3 +214,8 @@ The full self-check runs type checks, linting, tests, a clean production build, 
 The build cleans `.astro` and `dist` first. This prevents deleted or private posts from surviving in stale generated content.
 
 Before pushing to a public repository, search once more for real domains, email addresses, tokens, account IDs, private keys, verification files, private article titles, and image filenames.
+
+
+## Step-by-step setup, environment files, credentials and CI
+
+[Step-by-step setup, environment files, credentials and CI](SETUP.en.md)。 Astro 7.3.3 / TypeScript 6 / pnpm 10.33.4.

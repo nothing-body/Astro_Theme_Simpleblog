@@ -185,3 +185,15 @@ pnpm analyze
 ```
 
 `pnpm analyze` performs the full build-output, SEO, CSP, route, content, dependency, deployment-plan, and browser audit.
+
+
+## Step-by-step setup, environment files, credentials and CI
+
+[Step-by-step setup, environment files, credentials and CI](SETUP.en.md). Astro 7.3.3 / TypeScript 6 / pnpm 10.33.4.
+
+
+## Shared modules and release validation
+
+`src/i18n/locales.ts` defines supported languages; `ui.ts` holds translated text. `utils.ts` maps existing content across languages. `src/scripts/language-links.ts` preserves the search query and leaving-page destination during language changes. `src/lib/routes.ts` validates and constructs paths. `scripts/check-output.ts` checks the finished artifact after Astro, Pagefind and search cleanup; every normal build now runs it.
+
+[Shared modules and release validation](VALIDATION.en.md)

@@ -345,3 +345,6 @@ The page should:
 6. Confirm the lookup API is protected by rate limits and exact CORS origins.
 7. Confirm all three language routes preserve the destination and translate an existing result without a second lookup.
 8. Review the OpenPhish terms again before making the service public or commercial.
+
+
+[Shared modules and release validation](VALIDATION.en.md) · [Setup](SETUP.en.md)

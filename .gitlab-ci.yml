@@ -12,6 +12,7 @@ deploy:
     - when: manual
       allow_failure: false
   before_script:
+    - apt-get update && apt-get install -y --no-install-recommends openssh-client rsync
     - corepack enable
     - corepack prepare pnpm@10 --activate
     - pnpm install --frozen-lockfile

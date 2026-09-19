@@ -33,6 +33,14 @@ jobs:
       contents: read
     environment:
       name: production
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
+    env:
+      PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL || secrets.PUBLIC_SITE_URL }}
+      PUBLIC_CONTACT_EMAIL: ${{ vars.PUBLIC_CONTACT_EMAIL || secrets.PUBLIC_CONTACT_EMAIL }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,17 +63,17 @@ jobs:
         run: pnpm check
 
       - name: Prepare VPS SSH key
-        if: ${{ secrets.VPS_SSH_PRIVATE_KEY != '' }}
+        if: ${{ env.VPS_SSH_PRIVATE_KEY != '' }}
         run: |
           mkdir -p ~/.ssh
-          printf '%s' "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          printf '%s' "$VPS_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
       - name: Prepare VPS known hosts
-        if: ${{ secrets.VPS_SSH_KNOWN_HOSTS != '' }}
+        if: ${{ env.VPS_SSH_KNOWN_HOSTS != '' }}
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.VPS_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
       - name: Deploy

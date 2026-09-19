@@ -3,6 +3,7 @@ import {
   buildDynamicCategoryMapping,
   buildDynamicTagMapping,
   getTargetLangRoute,
+  getLangFromUrl,
 } from './utils';
 
 function post(
@@ -36,6 +37,18 @@ function resolve(url: string, target: 'en' | 'zh-tw' | 'zh-cn', posts: BlogPost[
 }
 
 describe('getTargetLangRoute', () => {
+  test.each(['constructor', '__proto__', 'toString'])('does not interpret %s as a locale', name => {
+    expect(getLangFromUrl(new URL(`https://example.com/${name}/`))).toBe('en');
+    expect(resolve(`https://example.com/${name}/`, 'zh-tw', []).available).toBe(false);
+    const posts = [post('en/shared.md', [name], [name]), post('zh-tw/shared.md', ['分類'], ['標籤'])];
+    expect(buildDynamicCategoryMapping(posts)[name]?.['zh-tw']).toBe('分類');
+    expect(buildDynamicTagMapping(posts)[name]?.['zh-tw']).toBe('標籤');
+  });
+
+  test.each(['/missing', '/page/2/extra', '/tags/test/1/extra', '/en/about'])('does not invent a translation for %s', pathname => {
+    expect(resolve(`https://example.com${pathname}`, 'zh-cn', []).available).toBe(false);
+  });
+
   test('keeps an article on its translated article route', () => {
     const posts = [
       post('en/shared-slug.md', ['Software']),

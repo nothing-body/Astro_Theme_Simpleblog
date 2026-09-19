@@ -141,7 +141,11 @@ class SearchController {
     const params = new URLSearchParams(window.location.search);
     this.#elements.input.value = (params.get('q') ?? '').slice(0, MAX_QUERY_LENGTH);
 
-    this.#elements.input.addEventListener('focus', () => void this.#initialize());
+    this.#elements.input.addEventListener('focus', () => {
+      void this.#initialize().catch(() => {
+        this.#elements.status.textContent = message(this.#elements.root, 'messageError');
+      });
+    });
     this.#elements.input.addEventListener('input', () => void this.#search(true));
     this.#elements.form.addEventListener('submit', event => {
       event.preventDefault();
@@ -217,6 +221,7 @@ class SearchController {
 
     try {
       const api = await this.#initialize();
+      if (request !== this.#request) return;
       this.#updateUrl(query);
       const options = this.#searchOptions();
       const response = debounced
@@ -255,7 +260,12 @@ class SearchController {
     if (nextPage === this.#currentPage) return;
     this.#currentPage = nextPage;
     const request = ++this.#request;
-    void this.#renderCurrentPage(request);
+    void this.#renderCurrentPage(request).catch(() => {
+      if (request !== this.#request) return;
+      this.#elements.results.replaceChildren();
+      this.#elements.pagination.hidden = true;
+      this.#elements.status.textContent = message(this.#elements.root, 'messageError');
+    });
     this.#elements.root.scrollIntoView({ behavior: 'auto', block: 'start' });
   }
 

@@ -16,6 +16,7 @@ const translatePath = useTranslatedPath(lang);
 const currentPath = Astro.url.pathname;
 const searchPath = translatePath('/search');
 const searchLabel = t('nav.search');
+const preserveSearchQuery = /^\/(?:zh-tw\/|zh-cn\/)?search\/?$/.test(currentPath);
 
 const languagePaths = (Object.keys(languages) as Lang[]).map(code => ({
   code,
@@ -122,6 +123,7 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
                 aria-disabled={lang === item.code ? 'true' : undefined}
                 hreflang={item.hreflang}
                 data-preserve-fragment={preserveLanguageFragment ? 'true' : undefined}
+                data-preserve-query={preserveSearchQuery ? 'true' : undefined}
               >
                 {item.label}
               </a>
@@ -179,6 +181,7 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
           aria-disabled={lang === item.code ? 'true' : undefined}
           hreflang={item.hreflang}
           data-preserve-fragment={preserveLanguageFragment ? 'true' : undefined}
+          data-preserve-query={preserveSearchQuery ? 'true' : undefined}
         >
           {item.label}
         </a>
@@ -254,6 +257,8 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
   }
 
   .nav-logo {
+    min-width: 0;
+    overflow-wrap: anywhere;
     color: var(--text-heading);
     font-weight: 900;
   }
@@ -265,6 +270,7 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
   }
 
   .nav-right {
+    flex-shrink: 0;
     gap: 1rem;
   }
 
@@ -391,6 +397,7 @@ const isActive = (path: string) => currentPath === path || currentPath === `${pa
   }
 
   .mobile-menu {
+    overflow-y: auto;
     position: fixed;
     inset: 70px 0 0;
     z-index: 1990;

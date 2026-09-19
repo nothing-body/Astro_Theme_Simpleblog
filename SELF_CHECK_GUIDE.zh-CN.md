@@ -56,3 +56,6 @@ pnpm analyze
 请修复被报告的来源，不要直接关闭规则。开发中使用 `pnpm selfcheck -- --quick`，发布前再执行 `pnpm analyze`。
 
 实现可选的信誉检测 API 时，请将 `link-reputation.audit.example.json` 复制为 `link-reputation.audit.json`，选择 `local-feed` 或 `remote-api`、填写供应商名称，并列出实际 TypeScript／Astro／披露文件。这会让 `LINKCHECK` 从静态提示保护切换到对应策略的 API 检查。如果后端位于另一个仓库，本项目无法读取它；此时出现警告是有意设计，必须另外在后端仓库完成安全检查。
+
+
+[共享模块与发布验证](VALIDATION.zh-CN.md) · [Setup](SETUP.zh-CN.md)

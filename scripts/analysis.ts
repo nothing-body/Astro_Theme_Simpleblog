@@ -1,16 +1,4 @@
 #!/usr/bin/env node
-/*
- * Self-check orchestrator.
- *
- * Quick mode audits source, content, images, TypeScript, lint rules,
- * dependency usage, and unit tests. Full mode additionally performs the OSV
- * vulnerability query, production build/output audit, every supported
- * deployment plan as a no-upload dry run, and Playwright E2E tests.
- *
- * Individual findings are accumulated so one run exposes multiple problems.
- * ERROR findings make the process exit non-zero; WARNING findings remain
- * visible without blocking release. Use --explain for the rule-group catalog.
- */
 import process from 'node:process';
 import { Audit, runPackageManager } from './checks/core.ts';
 import { checkSource } from './checks/source.ts';
@@ -20,10 +8,10 @@ import { checkOutput } from './checks/output.ts';
 import { printRuleCatalog } from './checks/rule-catalog.ts';
 
 const flags = new Set(process.argv.slice(2));
-if (flags.has('--explain') || flags.has('--help')) {
-  printRuleCatalog();
-  process.exit(0);
+for (const flag of flags) {
+  if (!['--', '--quick', '--explain', '--help'].includes(flag)) throw new Error(`Unknown self-check option: ${flag}`);
 }
+if (flags.has('--explain') || flags.has('--help')) { printRuleCatalog(); process.exit(0); }
 const quick = flags.has('--quick');
 const audit = new Audit();
 
@@ -73,7 +61,14 @@ if (!quick) {
   for (const language of ['en', 'zh-tw', 'zh-cn']) {
     for (const mode of deploymentModes) {
       command(
-        ['run', 'deploy:switch', `--mode=${mode}`, `--lang=${language}`, '--dry-run', '--yes'],
+        [
+          'run',
+          'deploy:switch',
+          `--mode=${mode}`,
+          `--lang=${language}`,
+          '--dry-run',
+          '--yes',
+        ],
         `Deployment dry run (${mode}, ${language})`
       );
     }
