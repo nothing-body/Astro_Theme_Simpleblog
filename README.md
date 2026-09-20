@@ -197,3 +197,6 @@ pnpm analyze
 `src/i18n/locales.ts` defines supported languages; `ui.ts` holds translated text. `utils.ts` maps existing content across languages. `src/scripts/language-links.ts` preserves the search query and leaving-page destination during language changes. `src/lib/routes.ts` validates and constructs paths. `scripts/check-output.ts` checks the finished artifact after Astro, Pagefind and search cleanup; every normal build now runs it.
 
 [Shared modules and release validation](VALIDATION.en.md)
+
+
+[Editable sample post](src/content/blog/en/first-post.md)

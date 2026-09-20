@@ -197,3 +197,6 @@ pnpm analyze
 `src/i18n/locales.ts` 定義支援語言，`ui.ts` 存放翻譯文字，`utils.ts` 對應實際存在的翻譯內容。`src/scripts/language-links.ts` 統一保留切換語言時的搜尋字詞與離站目的地。`src/lib/routes.ts` 驗證並組合路徑。`scripts/check-output.ts` 在 Astro、Pagefind 與搜尋清理完成後檢查產物；一般建置也會自動執行。
 
 [共用模組與發版驗證](VALIDATION.zh-TW.md)
+
+
+[可直接修改的範例文章](src/content/blog/zh-tw/first-post.md)
